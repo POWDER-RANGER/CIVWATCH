@@ -1,0 +1,7 @@
+{
+  "name": "civwatch-ml",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "echo 'ML dev not yet implemented.'"
+  }
+}
