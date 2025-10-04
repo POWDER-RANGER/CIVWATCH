@@ -1,5 +1,7 @@
 # CIVWATCH
 
+![CI Pipeline](https://github.com/POWDER-RANGER/CIVWATCH/actions/workflows/ci.yml/badge.svg)
+
 Civic transparency platform (early development).
 
 ## Status
