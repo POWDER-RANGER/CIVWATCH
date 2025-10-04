@@ -1,0 +1,14 @@
+{
+  "name": "@civwatch/frontend",
+  "version": "0.1.0",
+  "description": "CIVWATCH frontend application",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Frontend workspace created - add your frontend code here\"",
+    "start": "echo \"Frontend workspace created - add your frontend code here\"",
+    "build": "echo \"No frontend build yet\"",
+    "test": "echo \"No frontend tests yet\""
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
