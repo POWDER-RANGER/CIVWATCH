@@ -1,0 +1,13 @@
+{
+  "name": "@civwatch/backend",
+  "version": "0.1.0",
+  "description": "CIVWATCH backend API",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Backend workspace created - add your backend code here\"",
+    "start": "echo \"Backend workspace created - add your backend code here\"",
+    "test": "echo \"No backend tests yet\""
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
