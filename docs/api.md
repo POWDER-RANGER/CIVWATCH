@@ -1,4 +1,8 @@
-# CIVWATCH API Documentation
+# CIVWATCH API Documentation (Planned)
+
+⚠️ **IMPORTANT**: This API is not yet implemented. This document describes planned API design for future development.
+
+---
 
 Version: v1.0.0
 Base URL: /api
@@ -145,16 +149,9 @@ function verify(sigHeader, payload, secret){
 }
 ```
 
-## SDKs
-- JavaScript/TypeScript: @civwatch/sdk
-- Python: civwatch-sdk
-
-Install:
-```bash
-npm i @civwatch/sdk
-# or
-pip install civwatch-sdk
-```
+## SDKs (Planned)
+- JavaScript/TypeScript: @civwatch/sdk (not yet published)
+- Python: civwatch-sdk (not yet published)
 
 ## Rate Limits
 - 1000 rpm per token (burst 2x)
@@ -162,7 +159,7 @@ pip install civwatch-sdk
 - Backoff: Retry-After header on 429
 
 ## Changelog
-- 1.0.0: Initial public API
+- 1.0.0: Initial planned API design
 
 ## See Also
 - Authentication guide: ./user-guide.md#configuration
