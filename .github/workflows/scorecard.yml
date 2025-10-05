@@ -1,8 +1,9 @@
 name: OpenSSF Scorecard
-
 on:
   # Run on branch protection changes, releases, and schedule
   branch_protection_rule:
+  release:
+    types: [published]
   schedule:
     # Weekly on Saturdays at 00:00 UTC
     - cron: '0 0 * * 6'
@@ -22,9 +23,10 @@ jobs:
       security-events: write
       # Needed to publish results and get a badge
       id-token: write
-      # Uncomment the permissions below if installing in a private repository
-      # contents: read
-      # actions: read
+      # Required to read repository content
+      contents: read
+      # Required to read Actions workflows
+      actions: read
 
     steps:
       - name: Checkout code
