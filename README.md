@@ -1,6 +1,6 @@
 # CIVWATCH
 
-![CI Pipeline](https://github.com/POWDER-RANGER/CIVWATCH/actions/workflows/ci.yml/badge.svg) ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg) ![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/POWDER-RANGER/CIVWATCH?label=OpenSSF%20Scorecard)
+![CI Pipeline](https://github.com/POWDER-RANGER/CIVWATCH/actions/workflows/ci.yml/badge.svg) ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg) [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/POWDER-RANGER/CIVWATCH/badge)](https://securityscorecards.dev/viewer/?uri=github.com/POWDER-RANGER/CIVWATCH)
 
 **AI-powered civic transparency platform delivering real-time government oversight through ML-driven analysis.**
   
