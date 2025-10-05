@@ -1,0 +1,11 @@
+name: Feature Request
+description: Propose a new feature or enhancement for CIVWATCH.
+title: "[FEATURE] <brief description>"
+labels: ["feature", "enhancement"]
+body:
+  - type: textarea
+    attributes:
+      label: Feature description
+      description: "Describe your feature or idea."
+    validations:
+      required: true
