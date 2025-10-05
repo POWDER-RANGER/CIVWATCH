@@ -1,119 +1,20 @@
-# CIVWATCH Docker Compose Configuration
-# Local development environment setup
-
 version: '3.8'
-
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: civwatch-postgres
-    environment:
-      POSTGRES_DB: civwatch_dev
-      POSTGRES_USER: civwatch
-      POSTGRES_PASSWORD: civwatch_dev_password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U civwatch"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: civwatch-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-
-  # Frontend React App
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-    container_name: civwatch-frontend
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
-      - REACT_APP_API_URL=http://localhost:4000
-    depends_on:
-      - backend
-
-  # Backend Node.js API
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
-    container_name: civwatch-backend
     ports:
-      - "4000:4000"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://civwatch:civwatch_dev_password@postgres:5432/civwatch_dev
-      - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=dev_jwt_secret_change_in_production
-      - ML_SERVICE_URL=http://ml:8000
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
-  # ML/AI Service (Python/FastAPI)
+      - '3000:3000'
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - '4000:4000'
   ml:
     build:
       context: ./ml
       dockerfile: Dockerfile.dev
-    container_name: civwatch-ml
     ports:
-      - "8000:8000"
-    volumes:
-      - ./ml:/app
-      - ml_models:/app/models
-    environment:
-      - PYTHONUNBUFFERED=1
-      - DATABASE_URL=postgresql://civwatch:civwatch_dev_password@postgres:5432/civwatch_dev
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
-  # PgAdmin for Database Management (optional)
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: civwatch-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@civwatch.local
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "5050:80"
-    depends_on:
-      - postgres
-
-volumes:
-  postgres_data:
-  redis_data:
-  ml_models:
-
-networks:
-  default:
-    name: civwatch-network
+      - '5000:5000'
