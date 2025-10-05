@@ -1,0 +1,11 @@
+name: Documentation Request
+description: Request updates or improvements to CIVWATCH documentation.
+title: "[DOCS] <brief description>"
+labels: ["documentation"]
+body:
+  - type: textarea
+    attributes:
+      label: What needs documentation?
+      description: "Describe what's missing or unclear."
+    validations:
+      required: true
