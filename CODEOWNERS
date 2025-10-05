@@ -1,0 +1,10 @@
+# CODEOWNERS
+# This file defines code ownership for the CIVWATCH repository.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything in the repository
+* @POWDER-RANGER
+
+# Secondary/backup maintainers (to be assigned)
+# * @maintainer2
+# * @maintainer3
