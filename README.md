@@ -2,10 +2,10 @@
 
 ![CI Pipeline](https://github.com/POWDER-RANGER/CIVWATCH/actions/workflows/ci.yml/badge.svg) ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg) [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/POWDER-RANGER/CIVWATCH/badge)](https://securityscorecards.dev/viewer/?uri=github.com/POWDER-RANGER/CIVWATCH)
 
-**AI-powered civic transparency platform delivering real-time government oversight through ML-driven analysis.**
-  
-**Solves:** Opaque government processes, inaccessible public data, delayed civic engagement.
-  
+**AI-powered civic transparency platform delivering real-time government oversight through ML-driven analysis.**  
+
+**Solves:** Opaque government processes, inaccessible public data, delayed civic engagement.  
+
 **Technical edge:** Three-tier microservices (React/Node.js/Python ML), NLP sentiment analysis, predictive policy analytics—all containerized for instant deployment.
 
 ---
@@ -51,14 +51,14 @@ docker-compose up
 
 ## 📡 Core API Endpoints
 
-| Endpoint | Method | Purpose |
-|----------|--------|----------|
-| `/api/health` | GET | Service health status |
-| `/api/auth/login` | POST | User authentication (JWT) |
-| `/api/dashboard` | GET | Real-time legislative activity feed |
-| `/api/reports` | POST | Submit documents for ML analysis |
-| `/api/analytics/:id` | GET | Retrieve processed insights |
-| `/api/notific ations` | GET | User-configured alerts |
+| Endpoint              | Method | Purpose                             |
+|-----------------------|--------|-------------------------------------|
+| /api/health           | GET    | Service health status               |
+| /api/auth/login       | POST   | User authentication (JWT)           |
+| /api/dashboard        | GET    | Real-time legislative activity feed |
+| /api/reports          | POST   | Submit documents for ML analysis    |
+| /api/analytics/:id    | GET    | Retrieve processed insights         |
+| /api/notifications    | GET    | User-configured alerts              |
 
 [→ Full API Documentation](docs/api.md)
 
@@ -68,37 +68,41 @@ docker-compose up
 
 ### Compliance & Security
 
-**Status Dashboard:** 
-- ✅ [CI/CD Workflow](https://github.com/POWDER-RANGER/CIVWATCH/actions/workflows/ci.yml) - Basic monorepo testing  
-- ⚠️ [OpenSSF Scorecard](https://github.com/POWDER-RANGER/CIVWATCH/actions/workflows/scorecard.yml) - *Currently failing due to private repo access limitations*  
-- ✅ [SECURITY.md](SECURITY.md) - NASA NPR 7150.2 compliant policy
+**Status Dashboard:**
+
+• ✅ [CI/CD Workflow](https://github.com/POWDER-RANGER/CIVWATCH/actions/workflows/ci.yml) - Basic monorepo testing  
+• ⚠️ [OpenSSF Scorecard](https://github.com/POWDER-RANGER/CIVWATCH/actions/workflows/scorecard.yml) - Currently failing due to private repo access limitations  
+• ✅ [SECURITY.md](SECURITY.md) - Comprehensive security policy
 
 **Known Issues:**
-- OpenSSF Scorecard requires special configuration for private repositories  
-- Docker Compose services lack health check configuration (tracked in CI improvements)  
-- Test coverage reporting not yet integrated into CI pipeline
+
+• OpenSSF Scorecard requires special configuration for private repositories  
+• Test coverage reporting not yet integrated into CI pipeline
 
 ### Architecture & Testing
 
 **Design Documentation:**
-- [Architecture Diagram](docs/architecture.md) - System components and data flows  
-- [API Specification](docs/api.md) - Endpoint contracts and examples  
-- [Testing Strategy](docs/testing.md) - QA approach and test structure
+
+• [Architecture Diagram](docs/architecture.md) - System components and data flows  
+• [API Specification](docs/api.md) - Endpoint contracts and examples  
+• [Testing Strategy](docs/testing.md) - QA approach and test structure
 
 **Test Coverage:**
-- Backend (Jest): Unit tests for analytics module  
-- ML Service (Pytest): Configuration in place, tests pending  
-- E2E Tests: Not yet implemented
+
+• Backend (Jest): Unit tests for analytics module  
+• ML Service (Pytest): Configuration in place, tests pending  
+• E2E Tests: Not yet implemented
 
 **Configuration Evidence:**
-- [docker-compose.yml](docker-compose.yml) - Service definitions (3 microservices)  
-- [jest.config.js](jest.config.js) - TypeScript test configuration  
-- [pytest.ini](pytest.ini) - Python ML test configuration  
-- [.github/workflows/ci.yml](.github/workflows/ci.yml) - CI/CD pipeline
+
+• [docker-compose.yml](docker-compose.yml) - Service definitions (3 microservices with health checks)  
+• [jest.config.js](jest.config.js) - TypeScript test configuration  
+• [pytest.ini](pytest.ini) - Python ML test configuration  
+• [.github/workflows/ci.yml](.github/workflows/ci.yml) - CI/CD pipeline
 
 ### Roadmap Items
 
-1. Add Docker health checks for all services  
+1. ✅ ~~Add Docker health checks for all services~~ (Completed)  
 2. Integrate code coverage badges (Codecov/Coveralls)  
 3. Configure OpenSSF Scorecard for private repo access  
 4. Implement E2E test suite with Playwright/Cypress  
@@ -148,8 +152,8 @@ cd frontend && npm start  # Frontend dev server
 • **TLS:** 1.3 for all external traffic  
 • **CORS:** Whitelist-only origins
 
-**Found a vulnerability?** Report privately via [GitHub Security Advisories](https://github.com/POWDER-RANGER/CIVWATCH/security/advisories).
-  
+**Found a vulnerability?** Report privately via [GitHub Security Advisories](https://github.com/POWDER-RANGER/CIVWATCH/security/advisories).  
+
 [→ Full Security Policy](SECURITY.md)
 
 ---
