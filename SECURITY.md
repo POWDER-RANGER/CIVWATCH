@@ -1,335 +1,199 @@
-# SECURITY.md
+# Security Policy
 
-**Document Version:** 1.0.0  
-**Last Updated:** October 4, 2025  
-**Classification:** Public  
-**Authority:** CIVWATCH Security Team  
+## Supported Versions
 
----
+We actively maintain security patches for the following versions:
 
-## 1. Supported Versions
+- v0.1.x and later releases on the main branch
+- All tagged releases from v0.1.0 forward
 
-The following table outlines the CIVWATCH versions currently receiving security updates:
+Versions prior to v0.1.0 are considered pre-release development builds and do not receive security updates. If you are using a pre-release version, please upgrade to the latest stable release.
 
-| Version | Support Status | End-of-Life Date |
-|---------|----------------|------------------|
-| main    | ✅ Supported   | Rolling          |
-| develop | ✅ Supported   | Rolling          |
-| < 1.0   | ❌ Unsupported | N/A              |
+## Threat Model and Scope
 
-**Note:** Pre-1.0 releases are in active development. Security patches apply to `main` and `develop` branches. Post-1.0, semantic versioning will govern support timelines.
+OBELISK operates in sensitive multi-agent environments where autonomous agents coordinate tasks, share encrypted state, and execute plans. We consider the following security concerns in scope for vulnerability reports:
 
----
+**In Scope:**
+- Vulnerabilities in the encrypted vault implementation that could lead to unauthorized cross-agent state access or data exfiltration
+- Authentication or authorization bypass vulnerabilities in the role-based access control (RBAC) system
+- Denial-of-service vulnerabilities in the agent orchestration layer that could prevent legitimate task execution
+- PDDL planning engine exploits that could cause resource exhaustion, infinite loops, or execution of unintended actions
+- Cryptographic weaknesses in inter-agent communication protocols or key derivation functions
+- Injection vulnerabilities in task parameters or agent configuration
+- Information disclosure through logging, error messages, or metrics endpoints
 
-## 2. Threat Model and Scope
+**Out of Scope:**
+- Issues requiring physical access to the host system or privileged local access
+- Denial-of-service attacks via legitimate resource-intensive planning tasks (rate limiting is the responsibility of system operators)
+- Social engineering attacks against system operators or administrators
+- Vulnerabilities in third-party dependencies (report these to the upstream project, though we appreciate being notified)
+- Issues that require the attacker to already have admin-level RBAC permissions
 
-### 2.1 In-Scope Assets
+## Reporting a Vulnerability
 
-The following components are covered by this security policy:
+We use GitHub Security Advisories for coordinated vulnerability disclosure. This ensures that security issues are handled privately until patches are available.
 
-- **Web Application**: Frontend (React/TypeScript), Backend (Node.js/Express), ML Service (Python/FastAPI)
-- **API Endpoints**: All `/api/*` routes exposed by the backend service
-- **Authentication System**: JWT-based authentication, OAuth 2.0 integrations
-- **Data Storage**: PostgreSQL database, Redis cache, encrypted backups
-- **Infrastructure**: Docker containers, CI/CD pipelines, GitHub Actions workflows
-- **Dependencies**: Third-party libraries listed in `package.json`, `requirements.txt`
+### Reporting Process
 
-### 2.2 Out-of-Scope
+**Option 1: GitHub Security Advisories (Recommended)**
 
-- Denial-of-service (DoS/DDoS) attacks on public-facing infrastructure
-- Social engineering attacks targeting CIVWATCH personnel
-- Physical security of development or deployment environments
-- Third-party services (e.g., GitHub, npm registry, PyPI) outside CIVWATCH control
+1. Navigate to the Security tab of this repository at: https://github.com/POWDER-RANGER/OBLISK/security
+2. Click "Report a vulnerability" 
+3. Provide a detailed description including:
+   - **Affected component**: Specify which subsystem is vulnerable (vault, orchestrator, planner, RBAC, etc.)
+   - **Attack scenario**: Describe how an attacker could exploit this vulnerability
+   - **Impact assessment**: Explain the potential consequences (data breach, DoS, privilege escalation, etc.)
+   - **Proof-of-concept**: If available, include code, logs, curl commands, or step-by-step reproduction instructions
+   - **Suggested remediation**: If you have ideas for fixing the issue, we welcome them
+   - **Affected versions**: Specify which versions you've tested and confirmed vulnerable
 
-### 2.3 Threat Categories
+**Option 2: Encrypted Email**
 
-We prioritize the following threat classes per NASA NPR 7150.2:
+For researchers who prefer email contact or have concerns too sensitive for GitHub's platform, you can send GPG-encrypted reports to:
 
-1. **Critical**: Remote code execution, authentication bypass, data exfiltration
-2. **High**: Privilege escalation, SQL injection, cross-site scripting (XSS)
-3. **Medium**: Information disclosure, cross-site request forgery (CSRF)
-4. **Low**: Denial of service (application-level), insecure configurations
+**Email**: security@[YOUR-DOMAIN-HERE]  
+**GPG Key Fingerprint**: `ABCD 1234 EFGH 5678 IJKL 9012 MNOP 3456 QRST 7890`  
+<!-- CUSTOMIZE: Replace with your actual GPG key fingerprint -->
 
----
+Our public key is available at:
+- Keybase: [https://keybase.io/YOURUSERNAME](https://keybase.io/YOURUSERNAME)
+- OpenPGP Keyserver: [https://keys.openpgp.org](https://keys.openpgp.org)
 
-## 3. Reporting a Vulnerability
+<!-- CUSTOMIZE: Replace YOURUSERNAME with your actual Keybase username and ensure your key is published -->
 
-### 3.1 Secure Disclosure Channels
+### What to Expect
 
-To report a security vulnerability, use **one** of the following methods:
+We are committed to responsive and transparent security practices:
 
-#### Option A: Encrypted Email (Preferred)
-- **Email Address**: `security@civwatch.example` (placeholder - to be updated)
-- **GPG Public Key**: See Section 6 (Artifact Verification)
-- **Expected Response Time**: 24 hours (acknowledgment)
+**Response Timeline:**
+- **Initial acknowledgment**: Within 24 hours of receiving your report
+- **Triage and severity assessment**: Within 72 hours, including our preliminary analysis and classification
+- **Patch development timeline**: Provided within 72 hours for confirmed vulnerabilities
+- **Status updates**: We will provide updates at least weekly during the remediation process
 
-#### Option B: GitHub Security Advisories
-- Navigate to: [https://github.com/POWDER-RANGER/CIVWATCH/security/advisories](https://github.com/POWDER-RANGER/CIVWATCH/security/advisories)
-- Click "Report a vulnerability" (requires GitHub account)
-- Expected Response Time: 24 hours (acknowledgment)
+**Severity Classification**: We use CVSS 3.1 scoring to assess vulnerability severity and prioritize remediation efforts.
 
-**⚠️ Do NOT report security vulnerabilities via:**
-- Public GitHub Issues
-- Pull Requests
-- Discussions or community forums
-- Social media platforms
+## Disclosure Coordination
 
-### 3.2 Required Information
+For confirmed vulnerabilities, we follow a coordinated disclosure process that balances security with transparency:
 
-To expedite triage and remediation, include:
+1. **Patch Development**: We develop and thoroughly test patches in a private security branch
+2. **Downstream Notification**: If applicable, we notify known downstream users or dependent projects before public disclosure
+3. **Security Advisory Publication**: We publish a GitHub Security Advisory with severity assessment, affected versions, and remediation guidance
+4. **CVE Assignment**: For high or critical severity vulnerabilities, we request CVE identifiers through GitHub's CVE Numbering Authority partnership
+5. **Patched Release**: We release a new version containing the security fix with clear upgrade instructions in the release notes
+6. **Public Disclosure**: After the embargo period, we publicly disclose technical details to help the security community
 
-1. **Vulnerability Description**: Clear summary of the issue
-2. **Affected Components**: Specific services, endpoints, or modules
-3. **Reproduction Steps**: Detailed, repeatable proof-of-concept
-4. **Impact Assessment**: Potential consequences (data breach, privilege escalation, etc.)
-5. **Suggested Remediation**: Optional—if you have mitigation recommendations
-6. **CVE/CWE Mapping**: If applicable (e.g., CWE-89 for SQL Injection)
-7. **Proof-of-Concept**: Code snippets, screenshots, or logs (sanitize sensitive data)
+**Embargo Period**: We request a 90-day embargo for critical vulnerabilities to allow time for patch development, testing, and deployment. This timeline is negotiable based on severity, active exploitation, and the complexity of remediation. For lower-severity issues, we may use shorter embargo periods.
 
-### 3.3 Report Template
+**Researcher Recognition**: We believe in recognizing the valuable work of security researchers. We will credit you in:
+- The security advisory
+- Release notes for the patched version
+- Our security acknowledgments page (if you wish to be listed)
 
-```markdown
-**Vulnerability Title:**  
-**Severity (Self-Assessment):** [Critical/High/Medium/Low]  
-**Affected Versions:**  
-**Component/Service:**  
+Credit will use the name and affiliation you provide, or we can keep your report anonymous if you prefer.
 
-**Description:**  
-[Detailed explanation of the vulnerability]
+## Security Best Practices for Deployers
 
-**Steps to Reproduce:**  
-1. [Step 1]
-2. [Step 2]
-...
+If you are deploying OBELISK in a production environment, we recommend the following security hardening measures:
 
-**Expected Behavior:**  
-[What should happen]
+**Network Security:**
+- Deploy OBELISK behind a firewall with strict ingress/egress rules
+- Use TLS for all inter-agent communication (configure with your own certificates)
+- Implement rate limiting on the orchestrator API to prevent DoS attacks
+- Monitor metrics endpoints for unusual patterns (sudden spikes in failed authentication, vault access denials, etc.)
 
-**Actual Behavior:**  
-[What actually happens]
+**Access Control:**
+- Follow the principle of least privilege when assigning RBAC roles
+- Rotate agent secrets regularly (we recommend every 30 days for production deployments)
+- Use strong, randomly generated secrets for vault master keys
+- Enable audit logging to track all administrative actions
 
-**Impact:**  
-[Potential consequences]
+**Cryptographic Hygiene:**
+- Ensure your vault master secret has at least 256 bits of entropy
+- Use hardware security modules (HSMs) or key management services (KMS) for production vault keys when possible
+- Regularly review and update cryptographic algorithms as new recommendations emerge
 
-**Remediation Suggestion:**  
-[Optional: Your recommended fix]
+**Monitoring and Incident Response:**
+- Set up alerts for authentication failures, authorization denials, and abnormal vault access patterns
+- Maintain backups of vault data with encryption at rest
+- Have an incident response plan that includes procedures for agent compromise scenarios
 
-**References:**  
-- CVE/CWE: [If applicable]
-- Related Issues: [Links to similar reports]
-```
+## Artifact Verification
 
----
+All releases of OBELISK are cryptographically signed to ensure integrity and authenticity. This prevents attackers from distributing modified versions of our software.
 
-## 4. Service Level Agreement (SLA)
+### Verifying Release Signatures
 
-### 4.1 Response Timeline
+Every release includes a detached GPG signature file with a `.sig` or `.asc` extension. To verify a release:
 
-| Phase                | Timeline          | Description                                              |
-|----------------------|-------------------|----------------------------------------------------------|
-| **Acknowledgment**   | 24 hours          | Confirmation of receipt and case ID assignment           |
-| **Initial Triage**   | 72 hours          | Severity classification and validation                   |
-| **Patch Development**| 7-30 days         | Based on severity (see 4.2)                              |
-| **Public Disclosure**| 90 days (default) | Coordinated release (see Section 5)                      |
+**Step 1: Download the release archive and signature**
 
-### 4.2 Severity-Based Patch Schedule
-
-| Severity  | Target Patch Time | Public Disclosure Delay |
-|-----------|-------------------|-------------------------|
-| Critical  | 7 days            | 30 days                 |
-| High      | 14 days           | 60 days                 |
-| Medium    | 30 days           | 90 days                 |
-| Low       | Best effort       | 120 days                |
-
-**Exception Handling:**  
-If a patch cannot be delivered within the target window, we will:
-1. Notify the reporter within the initial timeline
-2. Provide a revised delivery estimate
-3. Offer mitigation guidance or workarounds (if available)
-
-### 4.3 Communication Cadence
-
-- **Weekly Updates**: For Critical/High severity issues
-- **Bi-weekly Updates**: For Medium severity issues
-- **Monthly Updates**: For Low severity issues
-
----
-
-## 5. Disclosure Coordination
-
-### 5.1 Coordinated Vulnerability Disclosure (CVD)
-
-CIVWATCH follows the ISO/IEC 29147:2018 standard for vulnerability disclosure:
-
-1. **Private Disclosure Period**: Reporter and CIVWATCH team coordinate privately
-2. **Embargo Period**: Default 90 days from acknowledgment (adjustable by mutual agreement)
-3. **Public Disclosure**: Simultaneous release of:
-   - Security advisory (GitHub Security Advisories)
-   - Patched release (tagged commit)
-   - CVE assignment (if applicable)
-   - Credit attribution (if authorized by reporter)
-
-### 5.2 Early Disclosure Criteria
-
-We may accelerate public disclosure if:
-- The vulnerability is actively exploited in the wild
-- Proof-of-concept code becomes publicly available
-- Multiple independent researchers discover the same issue
-
-### 5.3 Researcher Recognition
-
-With permission, we will credit security researchers via:
-- **GitHub Security Advisories**: Named attribution
-- **CHANGELOG.md**: Recognition in release notes
-- **Security Hall of Fame**: Dedicated acknowledgment page (coming soon)
-
-**Opt-Out**: Researchers may request anonymous attribution at any time.
-
----
-
-## 6. Artifact Verification
-
-### 6.1 GPG Signature for Secure Communications
-
-**Placeholder Notice**: GPG keys will be published upon production deployment. During the current development phase (pre-1.0), use the email contact in Section 3.1.
-
-**Future Implementation**:
-```
------BEGIN PGP PUBLIC KEY BLOCK-----
-[GPG PUBLIC KEY PLACEHOLDER]
------END PGP PUBLIC KEY BLOCK-----
-
-Fingerprint: [XXXX XXXX XXXX XXXX XXXX  XXXX XXXX XXXX XXXX XXXX]
-Key ID: [Placeholder]
-Expiration: [Placeholder]
-```
-
-**Verification Steps** (post-deployment):
-1. Download the public key from this document or from a keyserver:
-   ```bash
-   gpg --keyserver keyserver.ubuntu.com --recv-keys [KEY_ID]
-   ```
-2. Verify the fingerprint matches the one published above
-3. Encrypt your vulnerability report:
-   ```bash
-   gpg --encrypt --armor --recipient security@civwatch.example report.txt
-   ```
-4. Send the encrypted file to `security@civwatch.example`
-
-### 6.2 Release Artifact Signing
-
-**Future Implementation**: All production releases will be GPG-signed:
-- **Git Tags**: Signed with maintainer GPG keys
-- **Docker Images**: Cosign signatures for container images
-- **npm Packages**: Provenance attestations via npm signatures
-
-**Verification Example** (post-1.0):
 ```bash
-# Verify Git tag signature
-git verify-tag v1.0.0
-
-# Verify Docker image with Cosign
-cosign verify ghcr.io/powder-ranger/civwatch:latest
+# Download both the release archive and its signature
+wget https://github.com/POWDER-RANGER/OBLISK/releases/download/v0.1.0/obelisk-v0.1.0.tar.gz
+wget https://github.com/POWDER-RANGER/OBLISK/releases/download/v0.1.0/obelisk-v0.1.0.tar.gz.sig
 ```
 
-### 6.3 Key Rotation Policy
+**Step 2: Import our signing key** (first time only)
 
-- **Rotation Schedule**: Every 2 years or upon compromise
-- **Notification**: 30 days advance notice via GitHub Discussions
-- **Overlap Period**: Old and new keys valid for 90 days during rotation
+```bash
+# Import from Keybase (recommended)
+curl https://keybase.io/YOURUSERNAME/pgp_keys.asc | gpg --import
 
----
+# OR import from OpenPGP keyserver
+gpg --keyserver keys.openpgp.org --recv-keys ABCD1234EFGH5678IJKL9012MNOP3456QRST7890
+```
 
-## 7. Security Measures
+<!-- CUSTOMIZE: Replace YOURUSERNAME and the key ID with your actual values -->
 
-### 7.1 Current Implementation Status
+**Step 3: Verify the signature**
 
-⚠️ **Development Notice**: CIVWATCH is in early development (pre-1.0). The measures below represent our target architecture. Implementation status is tracked in [Issue #6](https://github.com/POWDER-RANGER/CIVWATCH/issues/6).
+```bash
+gpg --verify obelisk-v0.1.0.tar.gz.sig obelisk-v0.1.0.tar.gz
+```
 
-### 7.2 Defense-in-Depth Architecture
+**Expected Output:**
 
-#### Encryption
-- **Data in Transit**: TLS 1.3 for all HTTPS connections, HSTS enabled
-- **Data at Rest**: PostgreSQL encryption, AES-256 for backups
-- **Secrets Management**: Environment-based secrets (not in repository)
+```
+gpg: Signature made Fri 04 Oct 2025 02:15:33 PM CDT
+gpg:                using RSA key ABCD1234EFGH5678IJKL9012MNOP3456QRST7890
+gpg: Good signature from "Curtis (POWDER-RANGER) <your-email@domain.com>" [ultimate]
+Primary key fingerprint: ABCD 1234 EFGH 5678 IJKL 9012 MNOP 3456 QRST 7890
+```
 
-#### Authentication & Authorization
-- **Password Storage**: bcrypt (cost factor 12)
-- **Session Management**: JWT tokens (1-hour expiry), refresh tokens (7-day TTL)
-- **OAuth 2.0**: Third-party authentication (Google, GitHub)
-- **MFA**: Multi-factor authentication support (planned)
+Look for "Good signature" in the output. If you see "BAD signature" or any warnings about the signature not being valid, do not trust the release archive.
 
-#### API Security
-- **Rate Limiting**: 100 requests/minute per IP (adjustable)
-- **Input Validation**: Parameterized queries, ORM-based database access
-- **CORS Policies**: Strict origin whitelisting
-- **Security Headers**: CSP, X-Frame-Options, X-Content-Type-Options, X-XSS-Protection
+**Key Fingerprint Verification**: When importing our key for the first time, verify the fingerprint matches what is published here:
 
-#### Infrastructure
-- **Container Isolation**: Docker with minimal privileges (non-root user)
-- **Network Segmentation**: Internal service communication on isolated Docker networks
-- **Dependency Scanning**: GitHub Dependabot, npm audit, safety (Python)
-- **CI/CD Security**: GitHub Actions with OIDC authentication
+```
+Primary Key Fingerprint: ABCD 1234 EFGH 5678 IJKL 9012 MNOP 3456 QRST 7890
+```
 
----
+<!-- CUSTOMIZE: Replace with your actual 40-character GPG fingerprint, formatted with spaces every 4 characters -->
 
-## 8. Legal and Compliance
+You can also verify this fingerprint is correct by checking:
+- Our Keybase profile: [https://keybase.io/YOURUSERNAME](https://keybase.io/YOURUSERNAME)
+- The repository's README.md file
+- Our official website: [https://your-domain.com/security](https://your-domain.com/security)
 
-### 8.1 Responsible Research Safe Harbor
+**Important Security Note**: Releases without valid signatures should not be trusted and may have been tampered with by attackers. Always verify signatures before deploying OBELISK in any environment.
 
-CIVWATCH commits to not pursuing legal action against security researchers who:
-- Act in good faith and follow this policy
-- Do not intentionally harm users or systems
-- Do not exfiltrate, modify, or destroy data
-- Do not publicly disclose vulnerabilities before coordinated release
+## Security Acknowledgments
 
-### 8.2 License and Usage
+We would like to thank the following security researchers who have responsibly disclosed vulnerabilities and helped improve OBELISK's security:
 
-This software is provided under the MIT License for **legitimate civic transparency purposes only**. Prohibited uses include:
-- Unauthorized access to systems or data
-- Harassment, stalking, or privacy violations
-- Any illegal activities contrary to local, state, or federal law
+<!-- This section will be populated as researchers report and we remediate vulnerabilities -->
 
-### 8.3 Bug Bounty Program
+- *No vulnerabilities reported yet*
 
-**Status**: Not currently active. A bug bounty program will be announced once CIVWATCH reaches production (v1.0+).
+If you have reported a vulnerability and would like to be listed here, please let us know your preferred name and affiliation (or choose to remain anonymous).
 
----
+## Questions or Concerns
 
-## 9. Additional Resources
+If you have questions about this security policy, our security practices, or need clarification on the reporting process, please contact:
 
-- **Contributing Guidelines**: [CONTRIBUTING.md](https://github.com/POWDER-RANGER/CIVWATCH/blob/main/CONTRIBUTING.md)
-- **Code of Conduct**: [CODE_OF_CONDUCT.md](https://github.com/POWDER-RANGER/CIVWATCH/blob/main/CODE_OF_CONDUCT.md)
-- **License**: [LICENSE](https://github.com/POWDER-RANGER/CIVWATCH/blob/main/LICENSE)
-- **Architecture Documentation**: [docs/architecture.md](https://github.com/POWDER-RANGER/CIVWATCH/blob/main/docs/architecture.md)
+- **Public inquiries**: Open an issue in this repository with the `security` label
+- **Private security concerns**: Use the reporting channels described above
 
----
-
-## 10. Policy Updates
-
-This security policy is a living document. Changes will be:
-- Committed to the `main` branch with version increments
-- Announced via GitHub Discussions
-- Logged in [CHANGELOG.md](https://github.com/POWDER-RANGER/CIVWATCH/blob/main/CHANGELOG.md)
-
-**Notification Channels**:
-- GitHub Watch/Notifications
-- Repository README
-- Security advisories
-
----
-
-## Appendix A: Standards and Frameworks
-
-This policy aligns with:
-- **NASA NPR 7150.2**: Software Engineering Requirements
-- **ISO/IEC 29147:2018**: Vulnerability Disclosure
-- **NIST SP 800-53**: Security and Privacy Controls
-- **OWASP Top 10**: Web Application Security Risks
-- **CWE Top 25**: Most Dangerous Software Weaknesses
-
----
-
-**End of Document**
-
-*For questions or clarifications regarding this security policy, contact: security@civwatch.example (placeholder)*
+We take security seriously and appreciate the security research community's efforts to keep open source software safe.

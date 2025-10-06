@@ -1,10 +1,123 @@
 # CODEOWNERS
-# This file defines code ownership for the CIVWATCH repository.
-# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# This file defines code ownership for automated review requests.
+# When a pull request modifies files matching these patterns, the listed
+# users/teams are automatically requested as reviewers.
+#
+# Format: path-pattern @username
+#
+# Learn more: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
 # Default owner for everything in the repository
+# This ensures all PRs have at least one reviewer
 * @POWDER-RANGER
 
-# Secondary/backup maintainers (to be assigned)
-# * @maintainer2
-# * @maintainer3
+# Core subsystems - require review from primary maintainer
+# These are architectural boundaries where changes have wide impact
+
+# Vault encryption and key management
+# Changes here affect security properties of the entire system
+/vault/* @POWDER-RANGER
+/obelisk/vault/ @POWDER-RANGER
+
+# Agent orchestration and lifecycle management  
+# Core coordination logic that affects all agent operations
+/agents/* @POWDER-RANGER
+/obelisk/agents/ @POWDER-RANGER
+/obelisk/orchestrator/ @POWDER-RANGER
+
+# Planning engine integration
+# PDDL parsing, plan generation, and domain validation
+/planning/* @POWDER-RANGER
+/obelisk/planning/ @POWDER-RANGER
+*.pddl @POWDER-RANGER
+
+# Security and access control
+# RBAC policies, authentication, authorization logic
+/obelisk/auth/ @POWDER-RANGER
+/obelisk/rbac/ @POWDER-RANGER
+
+# Critical configuration files
+# Changes to these affect system behavior in production
+docker-compose.yml @POWDER-RANGER
+/config/*.yml @POWDER-RANGER
+prometheus.yml @POWDER-RANGER
+
+# API definitions
+# Protocol buffer changes affect all clients and agents
+/proto/*.proto @POWDER-RANGER
+/api/ @POWDER-RANGER
+
+# CI/CD and automation
+# Changes affect how code is tested and released
+/.github/workflows/* @POWDER-RANGER
+/.github/actions/* @POWDER-RANGER
+
+# Security and governance documentation
+# These files affect how vulnerabilities are handled and disclosed
+SECURITY.md @POWDER-RANGER
+CODEOWNERS @POWDER-RANGER
+
+# Release and versioning
+# Ensure changelog and versioning are reviewed carefully
+CHANGELOG.md @POWDER-RANGER
+
+# Documentation - can have more lenient review for typo fixes
+# but architectural docs should still be reviewed
+/docs/ @POWDER-RANGER
+
+# Tests - ensure test coverage for critical paths
+/tests/security/ @POWDER-RANGER
+/tests/integration/ @POWDER-RANGER
+
+# Examples and demos - ensure they actually work
+/examples/*.sh @POWDER-RANGER
+
+# --- TEAM EXPANSION EXAMPLE ---
+# When you have multiple maintainers or teams, you can specify them here:
+#
+# /frontend/* @POWDER-RANGER @frontend-team
+# /backend/* @POWDER-RANGER @backend-team  
+# *.sql @POWDER-RANGER @database-experts
+# /docs/api/* @POWDER-RANGER @technical-writers
+#
+# For organizations with GitHub Teams:
+# /vault/* @your-org/security-team
+# /planning/* @your-org/ai-team
+
+# --- NOTES FOR SOLO MAINTAINERS ---
+#
+# As the sole maintainer, listing yourself as CODEOWNER serves several purposes:
+#
+# 1. **Self-discipline**: Forces you to open PRs instead of pushing directly to main,
+#    creating a reviewable history of changes and their rationale
+#
+# 2. **Documentation**: PR descriptions serve as inline documentation explaining
+#    why changes were made, which is valuable when you revisit code months later
+#
+# 3. **CI enforcement**: Combined with branch protection, ensures all changes
+#    go through CI tests before merging
+#
+# 4. **Future-proofing**: When contributors join, the ownership structure is
+#    already in place and they know who to ask for reviews
+#
+# 5. **Professionalism signal**: Shows you follow industry-standard workflows
+#    even on personal projects, which recruiters value
+
+# --- CUSTOMIZATION INSTRUCTIONS ---
+#
+# 1. Replace @POWDER-RANGER with your actual GitHub username throughout
+#
+# 2. Add additional paths for subsystems specific to your project structure
+#
+# 3. If you have collaborators, add them to relevant paths:
+#    /docs/* @POWDER-RANGER @contributor-username
+#
+# 4. For organizations, use team syntax:
+#    /critical-path/* @org-name/team-name
+#
+# 5. Order matters: more specific patterns should come after general ones
+#    GitHub uses the last matching pattern for each file
+#
+# 6. Test this file: Open a test PR that modifies a protected path and verify
+#    the correct reviewers are automatically assigned
