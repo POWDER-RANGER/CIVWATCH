@@ -1,31 +1,36 @@
-# Dependabot configuration for CIVWATCH
-# Automated dependency updates for Python/ML, Node.js, Docker, and GitHub Actions
-# Updates run weekly to keep dependencies current and secure
+# Dependabot Configuration for CIVWATCH
+# This file configures automated dependency updates across all package ecosystems
+# used in the project. Dependabot will automatically create pull requests to keep
+# dependencies up-to-date and secure.
 
 version: 2
+
+# Registries for private package sources (if needed)
+# Uncomment and configure if using private registries
+# registries:
+#   npm-private:
+#     type: npm-registry
+#     url: https://npm.example.com
+#     token: ${{secrets.NPM_PRIVATE_TOKEN}}
+#   python-private:
+#     type: python-index
+#     url: https://pypi.example.com
+#     token: ${{secrets.PYPI_PRIVATE_TOKEN}}
+
 updates:
-  # Python dependencies (ML/Backend services)
+  # Python Dependencies (pip/requirements.txt/setup.py/pyproject.toml)
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
+      # Check for updates weekly on Monday at 9:00 AM UTC
       interval: "weekly"
       day: "monday"
       time: "09:00"
-    # Enable security updates with auto-merge for patches
-    open-pull-requests-limit: 10
-    labels:
-      - "dependencies"
-      - "python"
-      - "automated"
-    reviewers:
-      - "POWDER-RANGER/civwatch-maintainers"
-    assignees:
-      - "POWDER-RANGER/civwatch-maintainers"
-    commit-message:
-      prefix: "deps"
-      prefix-development: "deps-dev"
-      include: "scope"
-    # Group minor and patch updates together
+      timezone: "UTC"
+    # Allow both direct and indirect (transitive) dependency updates
+    allow:
+      - dependency-type: "all"
+    # Group all patch and minor updates together to reduce PR noise
     groups:
       python-minor-patch:
         patterns:
@@ -33,14 +38,48 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    # Number of open pull requests allowed (prevents overwhelming the team)
+    open-pull-requests-limit: 10
+    # Apply labels for easy filtering and automation
+    labels:
+      - "dependencies"
+      - "python"
+      - "automated"
+    # Add reviewers (uncomment and customize as needed)
+    reviewers:
+      - "POWDER-RANGER/civwatch-maintainers"
+    # Add assignees (uncomment and customize as needed)
+    assignees:
+      - "POWDER-RANGER/civwatch-maintainers"
+    # Commit message prefix for consistency
+    commit-message:
+      prefix: "deps(python)"
+      include: "scope"
+    # Rebase strategy for cleaner git history
+    rebase-strategy: "auto"
+    # Security updates get higher priority
+    versioning-strategy: "increase"
 
-  # Node.js/npm dependencies (Frontend/Backend)
+  # Node.js Dependencies (package.json/package-lock.json/yarn.lock)
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "09:00"
+      timezone: "UTC"
+    allow:
+      - dependency-type: "all"
+    groups:
+      npm-development:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      npm-production:
+        dependency-type: "production"
+        update-types:
+          - "patch"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
@@ -51,67 +90,121 @@ updates:
     assignees:
       - "POWDER-RANGER/civwatch-maintainers"
     commit-message:
-      prefix: "deps"
-      prefix-development: "deps-dev"
+      prefix: "deps(npm)"
       include: "scope"
-    # Group minor and patch updates
-    groups:
-      npm-minor-patch:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
-    # Ignore specific packages if needed
+    rebase-strategy: "auto"
+    versioning-strategy: "increase"
+    # Ignore specific packages if needed (e.g., packages with breaking changes)
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
-  # Docker dependencies
+  # Docker Dependencies (Dockerfile)
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
+      # Check Docker images more frequently for security patches
       interval: "weekly"
-      day: "monday"
+      day: "tuesday"
       time: "09:00"
+      timezone: "UTC"
+    allow:
+      - dependency-type: "all"
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
       - "docker"
       - "automated"
+      - "infrastructure"
     reviewers:
       - "POWDER-RANGER/civwatch-maintainers"
     assignees:
       - "POWDER-RANGER/civwatch-maintainers"
     commit-message:
-      prefix: "deps"
+      prefix: "deps(docker)"
       include: "scope"
+    rebase-strategy: "auto"
 
-  # GitHub Actions workflows (Security updates)
+  # GitHub Actions (Workflow files in .github/workflows/)
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
+      # Check GitHub Actions weekly
       interval: "weekly"
-      day: "monday"
+      day: "wednesday"
       time: "09:00"
+      timezone: "UTC"
+    allow:
+      - dependency-type: "all"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
       - "github-actions"
       - "automated"
-      - "security"
+      - "ci-cd"
     reviewers:
       - "POWDER-RANGER/civwatch-maintainers"
     assignees:
       - "POWDER-RANGER/civwatch-maintainers"
     commit-message:
-      prefix: "ci"
+      prefix: "deps(actions)"
       include: "scope"
-    # Group all GitHub Actions updates together
-    groups:
-      github-actions:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
+    rebase-strategy: "auto"
+
+  # Git Submodules (if used)
+  # - package-ecosystem: "gitsubmodule"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "weekly"
+  #     day: "thursday"
+  #     time: "09:00"
+  #     timezone: "UTC"
+  #   open-pull-requests-limit: 5
+  #   labels:
+  #     - "dependencies"
+  #     - "submodules"
+  #     - "automated"
+  #   commit-message:
+  #     prefix: "deps(submodules)"
+
+  # Terraform (if used for infrastructure as code)
+  # - package-ecosystem: "terraform"
+  #   directory: "/terraform"
+  #   schedule:
+  #     interval: "weekly"
+  #     day: "thursday"
+  #     time: "09:00"
+  #     timezone: "UTC"
+  #   open-pull-requests-limit: 5
+  #   labels:
+  #     - "dependencies"
+  #     - "terraform"
+  #     - "automated"
+  #     - "infrastructure"
+  #   commit-message:
+  #     prefix: "deps(terraform)"
+
+# Best Practices Applied:
+# 1. Version 2 syntax for latest features
+# 2. Separate schedules to avoid overwhelming CI/CD at once
+# 3. Grouping similar updates to reduce PR noise
+# 4. Open PR limits to prevent backlog
+# 5. Consistent labeling for automation and filtering
+# 6. Semantic commit message prefixes for changelog generation
+# 7. Auto-rebase strategy for clean git history
+# 8. Increase versioning strategy for security updates
+# 9. Comprehensive coverage of all ecosystems
+# 10. Comments for future customization and private registries
+#
+# Additional Configuration Options (uncomment as needed):
+# - milestone: Set a milestone for dependency PRs
+# - target-branch: Target a specific branch instead of default
+# - insecure-external-code-execution: Control code execution (default: deny)
+# - pull-request-branch-name.separator: Customize PR branch naming
+#
+# For more information:
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
