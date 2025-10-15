@@ -1,0 +1,117 @@
+# Dependabot configuration for CIVWATCH
+# Automated dependency updates for Python/ML, Node.js, Docker, and GitHub Actions
+# Updates run weekly to keep dependencies current and secure
+
+version: 2
+updates:
+  # Python dependencies (ML/Backend services)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    # Enable security updates with auto-merge for patches
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "python"
+      - "automated"
+    reviewers:
+      - "POWDER-RANGER/civwatch-maintainers"
+    assignees:
+      - "POWDER-RANGER/civwatch-maintainers"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    # Group minor and patch updates together
+    groups:
+      python-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Node.js/npm dependencies (Frontend/Backend)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "javascript"
+      - "automated"
+    reviewers:
+      - "POWDER-RANGER/civwatch-maintainers"
+    assignees:
+      - "POWDER-RANGER/civwatch-maintainers"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    # Group minor and patch updates
+    groups:
+      npm-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    # Ignore specific packages if needed
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # Docker dependencies
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "docker"
+      - "automated"
+    reviewers:
+      - "POWDER-RANGER/civwatch-maintainers"
+    assignees:
+      - "POWDER-RANGER/civwatch-maintainers"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+
+  # GitHub Actions workflows (Security updates)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "automated"
+      - "security"
+    reviewers:
+      - "POWDER-RANGER/civwatch-maintainers"
+    assignees:
+      - "POWDER-RANGER/civwatch-maintainers"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    # Group all GitHub Actions updates together
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
