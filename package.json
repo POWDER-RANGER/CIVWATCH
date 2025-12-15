@@ -38,11 +38,11 @@
     "install:all": "npm install && cd ml && pip install -r requirements.txt"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
+    "@types/node": "^20.19.26",
     "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
-    "prettier": "^3.2.5",
     "typescript": "^5.9.3"
+    "prettier": "^3.7.4",
   },
   "engines": {
     "node": ">=18.0.0",
