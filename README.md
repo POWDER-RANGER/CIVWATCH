@@ -1,66 +1,67 @@
-# CIVWATCH
-
-[![CI Pipeline](https://github.com/POWDER-RANGER/CIVWATCH/actions/workflows/ci.yml/badge.svg)](https://github.com/POWDER-RANGER/CIVWATCH/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![codecov](https://codecov.io/gh/POWDER-RANGER/CIVWATCH/branch/main/graph/badge.svg)](https://codecov.io/gh/POWDER-RANGER/CIVWATCH)
-## 📥 [Download v1.0.0](https://github.com/POWDER-RANGER/CIVWATCH/releases/tag/v1.0.0)
-
-| Platform | Download | Size | System Reqs |
-|----------|----------|------|-------------|
-| **Windows** | [civwatch-1.0.0-windows-x64.exe](https://github.com/POWDER-RANGER/CIVWATCH/releases/download/v1.0.0/civwatch-1.0.0-windows-x64.exe) | 145MB | Windows 10+ |
-| **macOS (Apple Silicon)** | [civwatch-1.0.0-macos-arm64.dmg](https://github.com/POWDER-RANGER/CIVWATCH/releases/download/v1.0.0/civwatch-1.0.0-macos-arm64.dmg) | 132MB | M1/M2/M3 |
-| **macOS (Intel)** | [civwatch-1.0.0-macos-x64.dmg](https://github.com/POWDER-RANGER/CIVWATCH/releases/download/v1.0.0/civwatch-1.0.0-macos-x64.dmg) | 138MB | Intel Mac |
-| **Linux** | [civwatch-1.0.0-linux-x64.AppImage](https://github.com/POWDER-RANGER/CIVWATCH/releases/download/v1.0.0/civwatch-1.0.0-linux-x64.AppImage) | 128MB | Ubuntu 20.04+ |
-
-**No installation needed** — Download and run. Everything is bundled.
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&color=00F7FF&center=true&width=700&lines=CIVWATCH+%7C+Real-Time+Anomaly+Detection;Civic+Transparency+%2B+ML+Pipeline;Pre-Alpha%3A+Planning+%26+Scaffolding)](https://git.io/typing-svg)
 
 ---
 
+## ⚠️ Status: Pre-Alpha (Planning Phase)
 
-## 🎯 Civic Mission
+**CIVWATCH is in active development.** Docs describe intended architecture; core implementation is scaffolded. This repo is honest about what works and what's planned.
 
-> **CIVWATCH** transforms opaque government processes into transparent, actionable intelligence through real-time ML-driven analysis of civic data. Citizens deserve visibility into how government works—we make that possible.
-
-**Solves:**
-- Opaque government decision-making
-- Inaccessible public spending & procurement data
-- Delayed civic engagement (meetings happen before citizens know about them)
-- Fragmented data across government platforms
+### Quick Links
+- 📋 [Architecture Docs](./docs/architecture.md) — Intended design
+- 🧪 [Testing Strategy](./docs/testing.md) — How we'll validate
+- 🔒 [Security Policy](./SECURITY.md) — Responsible disclosure
+- 🐛 [Issues & Roadmap](https://github.com/POWDER-RANGER/CIVWATCH/issues) — What's next
 
 ---
 
-## 🏗️ System Architecture
+## 🎯 What Actually Works Right Now
+
+| Component | Status | Details |
+|-----------|--------|---------|
+| **Backend Status API** | ✅ Live | `GET /api/status` → `{status: 'ok'}` on `:3000` |
+| **Frontend Bootstrap** | ✅ Renders | Static header + React scaffolding at `:4000` |
+| **Analytics Module** | ✅ Partial | `src/analytics/dataAnalyzer.ts` — mean, median, stddev calculations |
+| **Test Stubs** | ✅ Present | `tests/analytics/` — ready for real test implementation |
+| **Docker Compose** | ⚠️ Partial | Services start; healthchecks need endpoint alignment |
+| **ML Service** | ❌ Stub | Currently placeholder; DBSCAN + NLP planned |
+| **Dashboard UI** | ❌ Stub | React shell exists; no real components yet |
+| **DB/Redis Integration** | ❌ Not Wired | PostgreSQL + Redis placeholders in compose |
+| **Real-Time Updates** | ❌ Planned | WebSocket layer not built |
+
+---
+
+## 🗺️ Architecture Vision
 
 ```mermaid
-architecture LR
+flowchart LR
   subgraph Ingestion["📥 Data Ingestion"]
     APIs["Public APIs"]
     PDF["PDF Extraction"]
     Web["Web Scraping"]
   end
-  
+
   subgraph Processing["⚙️ Processing Pipeline"]
     Clean["Data Cleaning"]
     NLP["NLP Analysis"]
     ML["DBSCAN Clustering"]
     Anomaly["Anomaly Detection"]
   end
-  
+
   subgraph Storage["💾 Storage"]
     PG[("PostgreSQL")]
     Cache["Redis Cache"]
   end
-  
+
   subgraph API["🔌 API Layer"]
     GraphQL["GraphQL Endpoint"]
     REST["REST API"]
   end
-  
+
   subgraph Frontend["🎨 UI"]
     React["React Dashboard"]
     Maps["Interactive Maps"]
   end
-  
+
   APIs --> Clean
   PDF --> Clean
   Web --> Clean
@@ -79,194 +80,145 @@ architecture LR
 
 ---
 
-## 📊 Real-World ML Output Examples
-
-### DBSCAN Anomaly Detection
-
-Detects unusual spending clusters in procurement:
-
-```json
-{
-  "anomaly_id": "SPEND_2026_042",
-  "entity": "Parks & Recreation Department",
-  "anomaly_type": "unusual_cluster",
-  "detection_method": "DBSCAN (eps=2.5, min_samples=5)",
-  "flagged_contracts": [
-    {
-      "contract_id": "PRC-2025-18945",
-      "vendor": "TechVendor LLC",
-      "amount": "$2.8M",
-      "historical_avg": "$340K",
-      "deviation": "725% above normal",
-      "risk_score": 0.94
-    }
-  ],
-  "cluster_centroid": [2100000, 0.82, 0.67],
-  "confidence": 0.91,
-  "action_required": true
-}
-```
-
-### NLP Sentiment & Intent Analysis
-
-Extracts agenda items from meeting minutes:
-
-```json
-{
-  "meeting": "City Council 2026-02-10",
-  "document_source": "https://citycouncil.gov/agenda/feb-10-2026",
-  "extracted_items": [
-    {
-      "agenda_number": "5.2",
-      "title": "Budget Amendment - Police Overtime",
-      "sentiment": "contentious",
-      "sentiment_score": -0.67,
-      "key_concerns": [
-        "accountability",
-        "transparency",
-        "fiscal responsibility"
-      ],
-      "public_comment_count": 12,
-      "vote_expectation": "close",
-      "transparency_flag": false
-    }
-  ],
-  "meeting_risk_level": "medium",
-  "requires_follow_up": true
-}
-```
-
-### Live API Usage
-
-```bash
-# Query spending anomalies
-curl -X POST https://api.civwatch.io/graphql \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": "query { anomalies(riskScore: {min: 0.8}) { id entity amount riskScore status } }"
-  }'
-
-# Response
-{
-  "data": {
-    "anomalies": [
-      {
-        "id": "SPEND_2026_042",
-        "entity": "Parks & Recreation",
-        "amount": "$2.8M",
-        "riskScore": 0.94,
-        "status": "flagged_for_review"
-      }
-    ]
-  }
-}
-```
-
----
-
-## ✅ Active Hardening Sprint Status
-
-Currently undergoing **intensive quality improvements and CI/CD pipeline hardening**.
-
-### ✓ Completed
-
-- [x] GraphQL schema validation
-- [x] PostgreSQL connection pooling optimization
-- [x] DBSCAN performance tuning (processing 10K+ records in <2s)
-- [x] NLP sentiment model calibration against civic datasets
-- [x] Redis caching layer for API response times (<100ms)
-- [x] GitHub Actions CI/CD pipeline setup
-- [x] Unit test coverage expansion (70% → 85%)
-- [x] Docker containerization for deployment
-
-### 🔄 In Progress
-
-- [ ] End-to-end integration tests (E2E)
-- [ ] Load testing for 1M+ record queries
-- [ ] Sentiment model fine-tuning on local government data
-- [ ] API rate limiting & authentication hardening
-- [ ] Security audit of anomaly detection logic
-
----
-
-## 🚀 Getting Started
+## 🚀 Get Started (Realistic Expectations)
 
 ### Prerequisites
+- Docker & Docker Compose
+- Node.js 18+ (for local dev)
+- Python 3.10+ (for ML service)
 
+### Start the Stack
 ```bash
-Python 3.9+
-PostgreSQL 13+
-Redis 6.0+
-Node.js 16+ (for frontend)
-```
-
-### Installation
-
-```bash
-# Clone repository
 git clone https://github.com/POWDER-RANGER/CIVWATCH.git
 cd CIVWATCH
-
-# Backend setup
-cd backend
-pip install -r requirements.txt
-
-# Frontend setup
-cd ../frontend
-npm install
-
-# Database initialization
-cd ../backend
-python manage.py migrate
+docker-compose up
 ```
 
-### Running Locally
+### What You'll See
+```
+✅ Backend running on http://localhost:3000
+   - GET /api/status → {"status": "ok"}
+   - Other endpoints: planned
 
+✅ Frontend on http://localhost:4000
+   - Static header rendering
+   - React scaffolding ready for dashboard
+
+⚠️  ML service: placeholder (HTTP server not running yet)
+
+❌ Database connections: stub environment variables only
+```
+
+### Local Development
 ```bash
-# Backend (starts on port 8000)
-python manage.py runserver
+# Backend
+cd backend && npm install && npm run dev
 
-# Frontend (starts on port 3000)
-cd frontend && npm start
+# Frontend
+cd frontend && npm install && npm run dev
 
-# Access dashboard at http://localhost:3000
+# ML Service (when ready)
+cd ml && pip install -r requirements.txt && python main.py
 ```
 
 ---
 
-## 📦 API Reference
+## 📊 Tech Stack
 
-### GraphQL Endpoint
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
-- **URL**: `https://api.civwatch.io/graphql`
-- **Authentication**: JWT Bearer token required
-- **Rate Limit**: 10,000 requests/hour
+---
 
-### REST Endpoints
+## 🛣️ Roadmap
 
-| Method | Endpoint | Purpose |
-|--------|----------|----------|
-| `GET` | `/api/anomalies` | List all detected anomalies |
-| `POST` | `/api/anomalies/scan` | Trigger new scan |
-| `GET` | `/api/reports/:id` | Retrieve analysis report |
-| `GET` | `/api/entities` | List government entities |
+### Phase 1: Foundation (In Progress)
+- [ ] Align Docker healthcheck endpoints
+- [ ] Implement real `/api/health` endpoint
+- [ ] Fix type mismatches in `dataAnalyzer.ts`
+- [ ] Write actual test cases (replace stubs)
+- [ ] Wire PostgreSQL connection
+- [ ] Wire Redis client
+
+**Issues:** [#2](https://github.com/POWDER-RANGER/CIVWATCH/issues/2), [#3](https://github.com/POWDER-RANGER/CIVWATCH/issues/3)
+
+### Phase 2: ML Core (Planned)
+- [ ] Implement DBSCAN clustering in ML service
+- [ ] Add NLP preprocessing pipeline
+- [ ] Create GraphQL schema and resolvers
+- [ ] Build real React dashboard components
+- [ ] Integrate WebSocket for real-time updates
+
+**Issues:** [#4](https://github.com/POWDER-RANGER/CIVWATCH/issues/4), [#5](https://github.com/POWDER-RANGER/CIVWATCH/issues/5)
+
+### Phase 3: Production Hardening (Future)
+- [ ] Security audit and penetration testing
+- [ ] Performance optimization (caching strategies)
+- [ ] Comprehensive test coverage (target: 80%+)
+- [ ] CI/CD pipeline automation
+- [ ] Packaged releases (Windows exe, macOS dmg, Linux AppImage)
+
+---
+
+## 🧪 Testing
+
+Test structure exists but is scaffolded:
+```bash
+# Run (stub) tests
+npm test
+
+# Python tests (when ML service is ready)
+pytest tests/ -v
+```
+
+See [docs/testing.md](./docs/testing.md) for testing strategy.
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+We're actively building CIVWATCH! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
+### Best Places to Jump In
+1. **Finish Phase 1** — Help implement real tests and database wiring
+2. **Fix docs** — Break a link? Open an issue
+3. **Code review** — PRs always welcome
+
+---
+
+## 🔒 Security
+
+Found a vulnerability? Please follow our [Responsible Disclosure](./RESPONSIBLE_DISCLOSURE.md) process instead of opening a public issue.
+
+See [SECURITY.md](./SECURITY.md) for security practices and contact.
 
 ---
 
 ## 📄 License
 
-MIT License - [LICENSE](./LICENSE)
+MIT License — see [LICENSE](./LICENSE) for details.
 
 ---
 
-## 📞 Support
+## 📚 Learn More
 
-- **Issues**: [GitHub Issues](https://github.com/POWDER-RANGER/CIVWATCH/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/POWDER-RANGER/CIVWATCH/discussions)
-- **Email**: civwatch@powder-ranger.io
+- **[Architecture Docs](./docs/architecture.md)** — System design, data flow, component breakdown
+- **[API Spec](./docs/api.md)** — Planned REST + GraphQL endpoints
+- **[Setup Guide](./SETUP.md)** — Detailed environment setup
+- **[Changelog](./CHANGELOG.md)** — Version history and release notes
+
+---
+
+## 💬 Questions?
+
+Open an [issue](https://github.com/POWDER-RANGER/CIVWATCH/issues) or check existing discussions.
+
+---
+
+**Built by Curtis Farrar** | Independent Systems Engineer & AI Security Architect  
+[GitHub](https://github.com/POWDER-RANGER) · [Portfolio](mailto:contact@example.com)
