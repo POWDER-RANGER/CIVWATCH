@@ -1,21 +1,55 @@
-name: CI
-on: [push, pull_request]
+name: Release Pipeline
+
+on:
+  release:
+    types: [published]
+
 jobs:
-  build-test:
+  test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: [backend, frontend, ml]
     steps:
-      - uses: actions/checkout@v6.0.2
-      - name: Setup Node and Python
-        uses: actions/setup-node@v6
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          node-version: '18'
-      - name: Install for ${{ matrix.service }}
+          python-version: '3.11'
+      - name: Install dependencies
         run: |
-          cd ${{ matrix.service }}
-          if [ -f package.json ]; then npm install; fi
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Test Status
-        run: echo 'Tests executed'
+          pip install -r requirements.txt
+      - name: Run tests
+        run: pytest
+
+  build-and-upload:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required for uploads
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install build deps
+        run: |
+          pip install build twine
+      - name: Build Python package
+        run: python -m build
+      # Example: Build JS (TensorFlow.js predictions)
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build JS bundle
+        run: |
+          npm ci
+          npm run build
+        continue-on-error: true  # Skip if no JS
+      - name: Upload assets
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: dist/*
+          asset_content_type: auto
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
