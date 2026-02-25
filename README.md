@@ -3,6 +3,19 @@
 [![CI Pipeline](https://github.com/POWDER-RANGER/CIVWATCH/actions/workflows/ci.yml/badge.svg)](https://github.com/POWDER-RANGER/CIVWATCH/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/POWDER-RANGER/CIVWATCH/branch/main/graph/badge.svg)](https://codecov.io/gh/POWDER-RANGER/CIVWATCH)
+## 📥 [Download v1.0.0](https://github.com/POWDER-RANGER/CIVWATCH/releases/tag/v1.0.0)
+
+| Platform | Download | Size | System Reqs |
+|----------|----------|------|-------------|
+| **Windows** | [civwatch-1.0.0-windows-x64.exe](https://github.com/POWDER-RANGER/CIVWATCH/releases/download/v1.0.0/civwatch-1.0.0-windows-x64.exe) | 145MB | Windows 10+ |
+| **macOS (Apple Silicon)** | [civwatch-1.0.0-macos-arm64.dmg](https://github.com/POWDER-RANGER/CIVWATCH/releases/download/v1.0.0/civwatch-1.0.0-macos-arm64.dmg) | 132MB | M1/M2/M3 |
+| **macOS (Intel)** | [civwatch-1.0.0-macos-x64.dmg](https://github.com/POWDER-RANGER/CIVWATCH/releases/download/v1.0.0/civwatch-1.0.0-macos-x64.dmg) | 138MB | Intel Mac |
+| **Linux** | [civwatch-1.0.0-linux-x64.AppImage](https://github.com/POWDER-RANGER/CIVWATCH/releases/download/v1.0.0/civwatch-1.0.0-linux-x64.AppImage) | 128MB | Ubuntu 20.04+ |
+
+**No installation needed** — Download and run. Everything is bundled.
+
+---
+
 
 ## 🎯 Civic Mission
 
