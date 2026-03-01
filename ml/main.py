@@ -144,4 +144,4 @@ if __name__ == "__main__":
     logger.info(f"Starting CIVWATCH ML Service on http://localhost:{port}")
     logger.info("  Health: http://localhost:5000/health")
     logger.info("  API Docs: http://localhost:5000/docs")
-    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")
+        unicorn.run(app, host="localhost", port=port, log_level="info")
