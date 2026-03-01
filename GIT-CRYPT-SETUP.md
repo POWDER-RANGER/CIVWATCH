@@ -68,11 +68,10 @@ services:
     organization: "org-xyz789"
     
   stripe:
-    secret_key: "sk_live_abcdefghijklmnop1234567890"
+    
     publishable_key: "pk_live_qrstuvwxyz9876543210"
     
   sendgrid:
-    api_key: "SG.abcdefghijklmnop.qrstuvwxyz1234567890-_ABCDEFGH"
     
 database:
   production:
