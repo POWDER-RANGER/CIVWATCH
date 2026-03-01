@@ -1,0 +1,31 @@
+name: PSScriptAnalyzer PowerShell Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  psscriptanalyzer:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run PSScriptAnalyzer
+        uses: microsoft/psscriptanalyzer-action@v1.1
+        with:
+          path: .\
+          recurse: true
+          output: results.sarif
+          settings: CodeFormatting
+
+      - name: Upload PSScriptAnalyzer results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
