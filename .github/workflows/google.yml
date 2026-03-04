@@ -60,7 +60,7 @@ jobs:
 
     steps:
       - name: 'Checkout'
-        uses: 'actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98' # actions/checkout@v4
+        uses: 'actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5' # actions/checkout@v4
 
       # Configure Workload Identity Federation and generate an access token.
       #
@@ -74,7 +74,7 @@ jobs:
 
       # Authenticate Docker to Google Cloud Artifact Registry
       - name: 'Docker Auth'
-        uses: 'docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9' # docker/login-action@v3
+        uses: 'docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2' # docker/login-action@v4.0.0
         with:
           username: 'oauth2accesstoken'
           password: '${{ steps.auth.outputs.auth_token }}'
