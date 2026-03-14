@@ -1,69 +1,39 @@
 /**
- * CIVWATCH — Database Migration Runner
- * Reads SQL files from migrations/ in order and applies them idempotently.
- * Usage: npx ts-node src/db/migrate.ts
+ * Lightweight migration runner — runs SQL files in order on startup.
+ * For production scale, replace with node-pg-migrate or Flyway.
  */
-import fs from 'fs';
-import path from 'path';
-import { Pool } from 'pg';
-import dotenv from 'dotenv';
+import { pool } from '.';
+import * as fs from 'fs';
+import * as path from 'path';
 
-dotenv.config();
+const MIGRATIONS_DIR = path.join(__dirname, 'migrations');
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+export async function runMigrations(): Promise<void> {
+  // Ensure migrations tracking table exists
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS _migrations (
+      id SERIAL PRIMARY KEY,
+      filename TEXT NOT NULL UNIQUE,
+      applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
 
-async function run(): Promise<void> {
-  const client = await pool.connect();
-  try {
-    // Create migrations tracking table
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS _migrations (
-        id         SERIAL PRIMARY KEY,
-        filename   TEXT NOT NULL UNIQUE,
-        applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      )
-    `);
+  const applied = await pool.query<{ filename: string }>(
+    'SELECT filename FROM _migrations ORDER BY id'
+  );
+  const appliedSet = new Set(applied.rows.map((r) => r.filename));
 
-    const migrationsDir = path.join(__dirname, 'migrations');
-    const files = fs
-      .readdirSync(migrationsDir)
-      .filter(f => f.endsWith('.sql'))
-      .sort();
+  const files = fs
+    .readdirSync(MIGRATIONS_DIR)
+    .filter((f) => f.endsWith('.sql'))
+    .sort();
 
-    for (const file of files) {
-      const { rows } = await client.query(
-        'SELECT 1 FROM _migrations WHERE filename = $1',
-        [file]
-      );
-      if (rows.length > 0) {
-        console.log(`  ⏭  Already applied: ${file}`);
-        continue;
-      }
-
-      console.log(`  ⚙  Applying: ${file}`);
-      const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf-8');
-      await client.query('BEGIN');
-      try {
-        await client.query(sql);
-        await client.query(
-          'INSERT INTO _migrations (filename) VALUES ($1)',
-          [file]
-        );
-        await client.query('COMMIT');
-        console.log(`  ✅ Applied: ${file}`);
-      } catch (err) {
-        await client.query('ROLLBACK');
-        throw err;
-      }
-    }
-    console.log('\n✅ All migrations complete.');
-  } finally {
-    client.release();
-    await pool.end();
+  for (const file of files) {
+    if (appliedSet.has(file)) continue;
+    const sql = fs.readFileSync(path.join(MIGRATIONS_DIR, file), 'utf8');
+    console.log(`\u23f3  Applying migration: ${file}`);
+    await pool.query(sql);
+    await pool.query('INSERT INTO _migrations (filename) VALUES ($1)', [file]);
+    console.log(`\u2705  Applied: ${file}`);
   }
 }
-
-run().catch(err => {
-  console.error('❌ Migration failed:', err.message);
-  process.exit(1);
-});

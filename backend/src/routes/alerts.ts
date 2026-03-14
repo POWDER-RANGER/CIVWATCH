@@ -1,46 +1,49 @@
-import { Router, Response } from 'express';
-import { pool } from '../db/pool';
-import { requireAuth, AuthRequest } from '../middleware/auth';
+import { Router, Request, Response } from 'express';
+import { pool } from '../db';
+import { requireAuth } from '../middleware/auth';
+import { AppError } from '../middleware/errorHandler';
 
 const router = Router();
 
-/** POST /api/alerts — create threshold alert rule */
-router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
-  const { name, rule_type = 'avg_sentiment', threshold, operator = 'lt', source_id, notification_url } = req.body;
+// POST /api/alerts  — create alert rule
+router.post('/', requireAuth, async (req: Request, res: Response, next) => {
+  try {
+    const { name, source_id, metric = 'avg_sentiment', operator = 'lt', threshold } = req.body;
+    if (!name || threshold === undefined) throw new AppError(400, 'VALIDATION_ERROR', 'name and threshold are required');
 
-  if (!name || threshold === undefined) {
-    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'name and threshold are required' } });
-    return;
-  }
-
-  const { rows: [rule] } = await pool.query(
-    `INSERT INTO alert_rules (user_id, name, rule_type, threshold, operator, source_id, notification_url)
-     VALUES ($1,$2,$3,$4,$5,$6,$7)
-     RETURNING id, name, rule_type, threshold, operator, is_active, created_at`,
-    [req.user!.id, name, rule_type, threshold, operator, source_id ?? null, notification_url ?? null]
-  );
-
-  res.status(201).json({ alert_rule: rule });
+    const rows = await pool.query(
+      `INSERT INTO alert_rules (user_id, source_id, name, metric, operator, threshold)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [req.user!.userId, source_id ?? null, name, metric, operator, threshold]
+    );
+    res.status(201).json({ rule: rows.rows[0] });
+  } catch (e) { next(e); }
 });
 
-/** GET /api/alerts — list user's alert rules + recent triggers */
-router.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
-  const { rows: rules } = await pool.query(
-    `SELECT id, name, rule_type, threshold, operator, is_active, created_at
-     FROM alert_rules WHERE user_id = $1 ORDER BY created_at DESC`,
-    [req.user!.id]
-  );
+// GET /api/alerts  — list active alert rules
+router.get('/', requireAuth, async (req: Request, res: Response, next) => {
+  try {
+    const rows = await pool.query(
+      'SELECT * FROM alert_rules WHERE user_id = $1 AND active = TRUE ORDER BY created_at DESC',
+      [req.user!.userId]
+    );
+    res.json({ rules: rows.rows });
+  } catch (e) { next(e); }
+});
 
-  const { rows: recent } = await pool.query(
-    `SELECT al.id, al.message, al.actual_value, al.created_at, ar.name AS rule_name
-     FROM alerts al
-     JOIN alert_rules ar ON ar.id = al.alert_rule_id
-     WHERE ar.user_id = $1
-     ORDER BY al.created_at DESC LIMIT 20`,
-    [req.user!.id]
-  );
-
-  res.json({ alert_rules: rules, recent_alerts: recent });
+// GET /api/alerts/recent  — recent triggered alerts
+router.get('/recent', requireAuth, async (req: Request, res: Response, next) => {
+  try {
+    const rows = await pool.query(
+      `SELECT al.*, ar.name AS rule_name, ar.threshold
+       FROM alerts al
+       JOIN alert_rules ar ON ar.id = al.rule_id
+       WHERE ar.user_id = $1
+       ORDER BY al.triggered_at DESC LIMIT 20`,
+      [req.user!.userId]
+    );
+    res.json({ alerts: rows.rows });
+  } catch (e) { next(e); }
 });
 
 export default router;

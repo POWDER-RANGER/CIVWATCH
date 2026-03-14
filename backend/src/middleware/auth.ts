@@ -1,32 +1,39 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { env } from '../config/env';
 
-export interface AuthRequest extends Request {
-  user?: { id: string; email: string; role: string };
+export interface JwtPayload {
+  userId: string;
+  email: string;
+  role: string;
 }
 
-export function requireAuth(req: AuthRequest, res: Response, next: NextFunction): void {
+declare global {
+  namespace Express {
+    interface Request {
+      user?: JwtPayload;
+    }
+  }
+}
+
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) {
-    res.status(401).json({ error: { code: 'AUTHENTICATION_ERROR', message: 'Missing or invalid Authorization header' } });
-    return;
+    return res.status(401).json({ error: { code: 'AUTHENTICATION_ERROR', message: 'Bearer token required' } });
   }
-
   const token = header.slice(7);
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as any;
-    req.user = { id: payload.sub, email: payload.email, role: payload.role };
+    req.user = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
     next();
   } catch {
-    res.status(401).json({ error: { code: 'TOKEN_EXPIRED', message: 'Token is invalid or expired' } });
+    res.status(401).json({ error: { code: 'TOKEN_EXPIRED', message: 'Invalid or expired token' } });
   }
 }
 
 export function requireRole(...roles: string[]) {
-  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+  return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {
-      res.status(403).json({ error: { code: 'AUTHORIZATION_ERROR', message: 'Insufficient permissions' } });
-      return;
+      return res.status(403).json({ error: { code: 'AUTHORIZATION_ERROR', message: 'Insufficient permissions' } });
     }
     next();
   };

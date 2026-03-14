@@ -1,36 +1,29 @@
-import { Request, Response } from 'express';
-import { pool } from '../db/pool';
+import { Router, Request, Response } from 'express';
+import { pool } from '../db';
 
-/**
- * GET /api/health
- * Liveness + DB connectivity check. Used by Docker healthcheck.
- */
-export async function healthCheck(req: Request, res: Response): Promise<void> {
-  const start = Date.now();
+const router = Router();
+
+router.get('/health', async (_req: Request, res: Response) => {
   let dbStatus = 'disconnected';
-
+  let dbLatencyMs = -1;
   try {
+    const t = Date.now();
     await pool.query('SELECT 1');
+    dbLatencyMs = Date.now() - t;
     dbStatus = 'connected';
   } catch {
-    res.status(503).json({
-      status: 'error',
-      database: 'disconnected',
-      uptime: process.uptime(),
-      timestamp: new Date().toISOString(),
-    });
-    return;
+    return res.status(503).json({ status: 'error', database: 'disconnected' });
   }
-
   res.json({
     status: 'ok',
-    database: dbStatus,
-    uptime: Math.round(process.uptime()),
-    latency_ms: Date.now() - start,
     timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version ?? '0.1.0',
+    uptime: process.uptime(),
+    database: dbStatus,
+    dbLatencyMs,
   });
-}
+});
 
-/** GET /api/status — backward-compat alias */
-export const statusCheck = healthCheck;
+// Backward-compat alias
+router.get('/status', (_req, res) => res.json({ status: 'ok' }));
+
+export default router;

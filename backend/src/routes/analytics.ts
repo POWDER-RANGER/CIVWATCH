@@ -1,46 +1,43 @@
-import { Router, Response } from 'express';
-import { pool } from '../db/pool';
-import { requireAuth, AuthRequest } from '../middleware/auth';
+import { Router, Request, Response } from 'express';
+import { pool } from '../db';
+import { requireAuth } from '../middleware/auth';
 
 const router = Router();
 
-/** GET /api/analytics/overview */
-router.get('/overview', requireAuth, async (req: AuthRequest, res: Response) => {
-  const userId = req.user!.id;
+// GET /api/analytics/overview
+router.get('/overview', requireAuth, async (req: Request, res: Response, next) => {
+  try {
+    const userId = req.user!.userId;
 
-  const [docResult, sentimentResult, alertResult] = await Promise.all([
-    pool.query(
-      `SELECT COUNT(*)::int AS total_documents
-       FROM documents d
-       JOIN sources s ON s.id = d.source_id
-       WHERE s.user_id = $1`,
-      [userId]
-    ),
-    pool.query(
-      `SELECT ROUND(AVG(a.score)::numeric, 4) AS avg_sentiment
-       FROM analyses a
-       JOIN documents d ON d.id = a.document_id
-       JOIN sources s ON s.id = d.source_id
-       WHERE s.user_id = $1 AND a.analysis_type = 'sentiment'`,
-      [userId]
-    ),
-    pool.query(
-      `SELECT id, message, created_at
-       FROM alerts al
-       JOIN alert_rules ar ON ar.id = al.alert_rule_id
-       WHERE ar.user_id = $1
-       ORDER BY al.created_at DESC
-       LIMIT 10`,
-      [userId]
-    ),
-  ]);
+    const [docCount, avgSentiment, recentAlerts] = await Promise.all([
+      pool.query<any>(
+        `SELECT COUNT(d.id)::int AS total
+         FROM documents d
+         JOIN sources s ON s.id = d.source_id
+         WHERE s.user_id = $1`, [userId]
+      ),
+      pool.query<any>(
+        `SELECT ROUND(AVG(a.score)::numeric, 4) AS avg_score
+         FROM analyses a
+         JOIN documents d ON d.id = a.document_id
+         JOIN sources s ON s.id = d.source_id
+         WHERE s.user_id = $1 AND a.type = 'sentiment'`, [userId]
+      ),
+      pool.query<any>(
+        `SELECT al.id, al.triggered_at, al.value, ar.name AS rule_name
+         FROM alerts al
+         JOIN alert_rules ar ON ar.id = al.rule_id
+         WHERE ar.user_id = $1
+         ORDER BY al.triggered_at DESC LIMIT 10`, [userId]
+      ),
+    ]);
 
-  res.json({
-    total_documents: docResult.rows[0]?.total_documents ?? 0,
-    avg_sentiment:   sentimentResult.rows[0]?.avg_sentiment ?? null,
-    recent_alerts:   alertResult.rows,
-    generated_at:    new Date().toISOString(),
-  });
+    res.json({
+      documentsTotal: docCount.rows[0]?.total ?? 0,
+      avgSentimentScore: avgSentiment.rows[0]?.avg_score ?? null,
+      recentAlerts: recentAlerts.rows,
+    });
+  } catch (e) { next(e); }
 });
 
 export default router;
