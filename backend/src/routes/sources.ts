@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { pool } from '../db';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
+import { runIngestion } from '../services/ingestionWorker';
 
 const router = Router();
 
@@ -22,13 +23,20 @@ router.post('/', requireAuth, requireRole('admin', 'analyst'), async (req: Reque
     const { name, type = 'rss', url, config = {} } = req.body;
     if (!name) throw new AppError(400, 'VALIDATION_ERROR', 'name is required');
     if (type === 'rss' && !url) throw new AppError(400, 'VALIDATION_ERROR', 'url is required for RSS sources');
-
     const rows = await pool.query(
       `INSERT INTO sources (user_id, name, type, url, config)
        VALUES ($1, $2, $3, $4, $5) RETURNING id, name, type, url, active, created_at`,
       [req.user!.userId, name, type, url, JSON.stringify(config)]
     );
     res.status(201).json({ source: rows.rows[0] });
+  } catch (e) { next(e); }
+});
+
+// POST /api/sources/:id/run — trigger ingestion
+router.post('/:id/run', requireAuth, requireRole('admin', 'analyst'), async (req: Request, res: Response, next) => {
+  try {
+    const result = await runIngestion(req.params.id);
+    res.json({ message: 'Ingestion complete', documentsIngested: result.count });
   } catch (e) { next(e); }
 });
 
