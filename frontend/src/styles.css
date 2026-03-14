@@ -1,0 +1,105 @@
+:root {
+  --bg:        #0f1117;
+  --surface:   #1a1d27;
+  --border:    #2d3148;
+  --accent:    #6366f1;
+  --accent-h:  #818cf8;
+  --danger:    #ef4444;
+  --success:   #22c55e;
+  --warn:      #f59e0b;
+  --text:      #e2e8f0;
+  --muted:     #94a3b8;
+  --radius:    8px;
+}
+
+body { background: var(--bg); color: var(--text); }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .55rem 1.2rem;
+  border-radius: var(--radius);
+  border: none; cursor: pointer;
+  font-size: .9rem; font-weight: 600;
+  transition: opacity .15s;
+}
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn-primary  { background: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled)  { background: var(--accent-h); }
+.btn-danger   { background: var(--danger); color: #fff; }
+.btn-ghost    { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-ghost:hover:not(:disabled) { color: var(--text); border-color: var(--accent); }
+
+input, select {
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: .55rem .85rem; width: 100%; font-size: .9rem;
+  outline: none;
+}
+input:focus, select:focus { border-color: var(--accent); }
+
+label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: .3rem; }
+
+.form-group { margin-bottom: 1rem; }
+
+.badge {
+  display: inline-block; padding: .2rem .6rem;
+  border-radius: 999px; font-size: .75rem; font-weight: 600;
+}
+.badge-positive { background: #14532d; color: #4ade80; }
+.badge-negative { background: #450a0a; color: #f87171; }
+.badge-neutral  { background: #1e1b4b; color: #a5b4fc; }
+
+.spinner {
+  width: 2rem; height: 2rem;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin: 2rem auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.layout { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 220px; background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 1.5rem 1rem;
+  display: flex; flex-direction: column; gap: .3rem;
+  position: sticky; top: 0; height: 100vh;
+}
+.sidebar h1 { font-size: 1.1rem; font-weight: 700; color: var(--accent); margin-bottom: 1rem; }
+.nav-link {
+  display: block; padding: .55rem .8rem;
+  border-radius: var(--radius);
+  color: var(--muted); text-decoration: none; font-size: .9rem;
+  transition: background .15s, color .15s;
+}
+.nav-link:hover, .nav-link.active { background: var(--bg); color: var(--text); }
+.main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+.page-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 1.5rem; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+.stat-card .label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.stat-card .value { font-size: 2rem; font-weight: 700; margin-top: .25rem; }
+
+table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+th { text-align: left; color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; padding: .6rem .8rem; border-bottom: 1px solid var(--border); }
+td { padding: .7rem .8rem; border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+
+.empty-state { text-align: center; color: var(--muted); padding: 3rem 1rem; }
+.empty-state p { margin-top: .5rem; font-size: .9rem; }
+
+/* Login */
+.login-wrap { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+.login-box { width: 100%; max-width: 380px; }
+.login-box h1 { font-size: 1.8rem; font-weight: 700; color: var(--accent); text-align: center; margin-bottom: .4rem; }
+.login-box p  { text-align: center; color: var(--muted); margin-bottom: 1.5rem; font-size: .9rem; }
