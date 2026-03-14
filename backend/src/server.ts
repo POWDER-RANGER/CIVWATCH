@@ -1,14 +1,12 @@
-import express from 'express'
+import app from './app';
+import dotenv from 'dotenv';
 
-const app = express()
-const PORT = process.env.PORT || 3000
+dotenv.config();
 
-app.use(express.json())
-
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: 'CIVWATCH Backend' })
-})
+const PORT = Number(process.env.PORT ?? 3000);
 
 app.listen(PORT, () => {
-  console.log(`Backend server running on port ${PORT}`)
-})
+  console.log(`🚀 CIVWATCH Backend running on http://localhost:${PORT}`);
+  console.log(`   Health: http://localhost:${PORT}/api/health`);
+  console.log(`   Env:    ${process.env.NODE_ENV ?? 'development'}`);
+});
