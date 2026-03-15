@@ -1,14 +1,28 @@
 {
-  "name": "@civwatch/frontend",
+  "name": "civwatch-frontend",
   "version": "0.1.0",
-  "description": "CIVWATCH frontend application",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
-    "dev": "echo \"Frontend workspace created - add your frontend code here\"",
-    "start": "echo \"Frontend workspace created - add your frontend code here\"",
-    "build": "echo \"No frontend build yet\"",
-    "test": "echo \"No frontend tests yet\""
+    "dev": "vite --port ${VITE_PORT:-5173}",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test": "vitest run"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "axios": "^1.7.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.23.1",
+    "react-toastify": "^10.0.5",
+    "recharts": "^2.12.7"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.12",
+    "vitest": "^1.6.0"
+  }
 }
