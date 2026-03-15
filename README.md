@@ -1,3 +1,17 @@
+# CIVWATCH — Civic Transparency Platform
+
+> 🔒 Maintenance Sprint — CIVWATCH is temporarily private while CI/CD, dependency hygiene, and quality gates are upgraded. Public access will return once the v0.4 pipeline is green.
+
+CIVWATCH is a **civic transparency platform** that turns fragmented public records into legible, queryable feeds so residents can see how decisions are made, not just read PDFs.
+
+It is designed as an end‑to‑end stack for:
+- Collecting and normalizing civic data streams (agendas, minutes, budgets, contracts, votes).
+- Indexing and enriching them with machine‑readable metadata.
+- Exposing them through dashboards, APIs, and alerting workflows.
+
+---
+
+## Status
 [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&color=00F7FF&center=true&width=700&lines=CIVWATCH+%7C+Real-Time+Anomaly+Detection;Civic+Transparency+%2B+ML+Pipeline;Pre-Alpha+%7C+Active+Development)](https://git.io/typing-svg)
 
 ---
@@ -45,55 +59,14 @@ This README reflects **actual current state** — not aspirations.
 | **Authentication** | ❌ Not started | All API routes fully open |
 | **Rate Limiting** | ❌ Not started | No middleware |
 
----
+- **Repo visibility:** Private during maintenance sprint.
+- **Focus areas:** CI/CD pipelines, test coverage, dependency hygiene, security scanning.[web:27]
+- **Owner:** @POWDER-RANGER (systems architect • AI tooling • civic monitoring).[web:5]
 
-## 🗺️ Architecture Vision
-
-```mermaid
-flowchart LR
-  subgraph Ingestion["📥 Data Ingestion"]
-    APIs["Public APIs"]
-    PDF["PDF Extraction"]
-    Web["Web Scraping"]
-  end
-
-  subgraph Processing["⚙️ Processing Pipeline"]
-    Clean["Data Cleaning"]
-    NLP["NLP Analysis"]
-    ML["DBSCAN Clustering"]
-    Anomaly["Anomaly Detection"]
-  end
-
-  subgraph Storage["💾 Storage"]
-    PG[("PostgreSQL")]
-    Cache["Redis Cache"]
-  end
-
-  subgraph API["🔌 API Layer"]
-    GraphQL["GraphQL Endpoint"]
-    REST["REST API"]
-  end
-
-  subgraph Frontend["🎨 UI"]
-    React["React Dashboard"]
-    Maps["Interactive Maps"]
-  end
-
-  APIs --> Clean
-  PDF --> Clean
-  Web --> Clean
-  Clean --> NLP
-  Clean --> ML
-  NLP --> Anomaly
-  ML --> Anomaly
-  Anomaly --> PG
-  Anomaly --> Cache
-  PG --> GraphQL
-  PG --> REST
-  GraphQL --> React
-  REST --> React
-  Cache --> Maps
-```
+Key sprint goals:
+- Make `main` fully reproducible from a clean checkout.
+- Enforce green CI and code‑owner review for core services.
+- Document install, configuration, and contribution paths clearly.
 
 ### Repo Layout
 
@@ -110,6 +83,19 @@ infra/      CI/CD config
 
 ---
 
+## Features
+
+- **Civic data ingestion**
+  - Pluggable pipelines for agendas, minutes, budgets, contracts, and vote records.
+  - Normalization into a common schema suitable for search and analysis.
+
+- **Search & exploration**
+  - Text and filter‑based search over entities, dates, and decision types.
+  - Human‑readable event timelines built from raw public records.
+
+- **Monitoring & alerts**
+  - Configurable watches on topics, agencies, and locations.
+  - Alert channels (email / webhook) for new or changed records.
 ## 🚀 Get Started — Realistic Expectations
 
 ### Prerequisites
@@ -148,17 +134,30 @@ docker-compose up
 # Backend
 cd backend && npm install && npm run dev
 
-# Frontend
-cd frontend && npm install && npm run dev
+- **Auditability**
+  - Provenance metadata for each artifact (source URL, timestamp, hash).
+  - Change‑history where upstream records are corrected or replaced.
 
+(This section should be kept in sync with the public docs and UI as they evolve.)
 # ML Service (runs today)
 cd ml && pip install -r requirements.txt && python main.py
 ```
 
 ---
 
-## 📊 Tech Stack
+## Architecture
 
+CIVWATCH is structured as a multi‑service TypeScript/Node stack with a documented installation tutorial.[web:24]
+
+High‑level layout (simplified):
+
+- `api/` — HTTP/GraphQL API surface for UI and integrations.
+- `worker/` — ingestion, normalization, and enrichment workers.
+- `ui/` — front‑end for browsing, search, and watch configuration.
+- `infra/` — infrastructure as code, deployment manifests, CI/CD config.
+- `docs/` — tutorials, architecture notes, and operator runbooks.[web:24]
+
+Refer to `docs/` for up‑to‑date diagrams and detailed component descriptions.
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
@@ -204,8 +203,21 @@ cd ml && pip install -r requirements.txt && python main.py
 
 ---
 
-## 🧪 Testing
+## Installation
 
+For detailed steps, see `docs/tutorials/installation.md`.[web:24] The short version:
+
+```bash
+# 1. Clone
+git clone https://github.com/POWDER-RANGER/CIVWATCH.git
+cd CIVWATCH
+
+# 2. Install dependencies (root monorepo)
+npm install        # or pnpm install
+
+# 3. Configure environment
+cp .env.example .env
+# Edit .env with database, queue, and auth settings
 **Current state: 1 test file · 1 stub assert · 0% real coverage.**
 
 This is a top Phase 1 priority. Tracked in [#15](https://github.com/POWDER-RANGER/CIVWATCH/issues/15).
@@ -263,7 +275,11 @@ MIT — see [LICENSE](./LICENSE).
 | [RESPONSIBLE_DISCLOSURE.md](./RESPONSIBLE_DISCLOSURE.md) | Vulnerability reporting |
 | [CREDIBILITY_CHECKLIST.md](./CREDIBILITY_CHECKLIST.md) | Repo health checklist |
 
----
+# 4. Verify baseline
+npm run lint
+npm test
 
+# 5. Run dev stack
+npm run dev
 **Built by Curtis Farrar** · Independent Systems Engineer & AI Security Architect  
 [POWDER-RANGER on GitHub](https://github.com/POWDER-RANGER)
