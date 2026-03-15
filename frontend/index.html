@@ -1,17 +1,627 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CIVWATCH — Civic Transparency Platform</title>
-    <style>
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-             background: #0f1117; color: #e2e8f0; min-height: 100vh; }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <title>POWDER-RANGER — Artifact Catalog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content="Interactive work catalog — 157 entries across 9 domains. Oct 2024–Mar 2026."
+  />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --bg: #050509;
+      --bg-elevated: #0b0b13;
+      --bg-card: #11111c;
+      --border-subtle: #222232;
+      --text: #f5f5ff;
+      --text-muted: #9a9ab8;
+      --accent: #8075e5;
+      --accent-soft: rgba(128, 117, 229, 0.2);
+      --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.7);
+      --radius-lg: 18px;
+      --radius-pill: 999px;
+      --space: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Barlow", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #17172b 0, #050509 55%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+    }
+
+    .shell {
+      max-width: 1280px;
+      width: 100%;
+      background: linear-gradient(135deg, #090911 0, #050509 45%, #050509 100%);
+      border-radius: 24px;
+      border: 1px solid #232342;
+      box-shadow: var(--shadow-soft);
+      display: grid;
+      grid-template-columns: 290px minmax(0, 1fr);
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      padding: 22px 20px 20px 22px;
+      border-right: 1px solid rgba(145, 145, 212, 0.2);
+      background: radial-gradient(circle at top left, rgba(128, 117, 229, 0.4), transparent 55%);
+      position: relative;
+    }
+
+    .sidebar::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at bottom, rgba(11, 243, 184, 0.16), transparent 55%);
+      mix-blend-mode: screen;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .sidebar-inner {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      height: 100%;
+    }
+
+    .logo-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 13px;
+      border-radius: var(--radius-pill);
+      background: rgba(9, 9, 24, 0.9);
+      border: 1px solid rgba(128, 117, 229, 0.6);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .logo-mark {
+      width: 20px;
+      height: 20px;
+      border-radius: 9px;
+      background:
+        conic-gradient(
+          from 180deg,
+          #2cf2b1,
+          #8075e5,
+          #e05c28,
+          #db4f7a,
+          #2cf2b1
+        );
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #020206;
+      font-weight: 700;
+      font-size: 11px;
+      box-shadow: 0 0 16px rgba(128, 117, 229, 0.9);
+    }
+
+    .logo-text {
+      font-family: "Barlow Condensed", system-ui, sans-serif;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: 11px;
+      color: #d6d6ff;
+    }
+
+    .hero-title {
+      font-family: "Barlow Condensed", system-ui, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 13px;
+      color: #a5a5ff;
+    }
+
+    .hero-heading {
+      margin-top: 4px;
+      font-size: 21px;
+      font-weight: 600;
+      line-height: 1.25;
+      color: #ffffff;
+    }
+
+    .hero-sub {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .stat-grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .stat-card {
+      padding: 9px 11px;
+      border-radius: 14px;
+      background: rgba(7, 7, 18, 0.95);
+      border: 1px solid rgba(92, 168, 240, 0.3);
+      box-shadow: 0 0 0 1px rgba(4, 4, 12, 0.9);
+    }
+
+    .stat-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #8181b2;
+      margin-bottom: 5px;
+    }
+
+    .stat-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fefeff;
+    }
+
+    .stat-sub {
+      font-size: 11px;
+      color: #a1a1cf;
+      margin-top: 2px;
+    }
+
+    .domain-pills {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .domain-pill {
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(128, 117, 229, 0.45);
+      background: rgba(7, 7, 22, 0.95);
+      color: #d5d5ff;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .domain-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #1aab7d;
+      box-shadow: 0 0 8px rgba(26, 171, 125, 0.9);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px solid rgba(68, 68, 120, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .author-name {
+      font-weight: 500;
+      color: #e5e5ff;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .status-pill {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(44, 242, 177, 0.6);
+      color: #d9fff4;
+      background: rgba(9, 9, 24, 0.9);
+    }
+
+    /* Main pane */
+    .main {
+      padding: 22px 22px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .search-wrap {
+      flex: 1 1 220px;
+      max-width: 420px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      border-radius: 999px;
+      padding: 8px 30px 8px 28px;
+      border: 1px solid rgba(88, 88, 150, 0.7);
+      background: radial-gradient(circle at left, rgba(128, 117, 229, 0.28), rgba(7, 7, 20, 0.96));
+      color: #f7f7ff;
+      font-size: 13px;
+      outline: none;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8);
+    }
+
+    .search-input::placeholder {
+      color: #6b6b9a;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 13px;
+      color: #8a8abf;
+    }
+
+    .kbd-hint {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 5px;
+      border: 1px solid rgba(124, 124, 180, 0.6);
+      color: #9b9bd6;
+      background: rgba(6, 6, 19, 0.9);
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono";
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-pill {
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      border: 1px solid rgba(82, 82, 142, 0.9);
+      background: rgba(5, 5, 16, 0.9);
+      color: #c8c8ff;
+      cursor: pointer;
+      transition: all 0.16s ease-out;
+    }
+
+    .filter-pill[data-active="true"] {
+      border-color: #8075e5;
+      background: radial-gradient(circle at top, rgba(128, 117, 229, 0.85), #141426);
+      color: #ffffff;
+      box-shadow: 0 0 0 1px rgba(117, 223, 185, 0.3);
+    }
+
+    .grid {
+      margin-top: 6px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      position: relative;
+      border-radius: var(--radius-lg);
+      padding: 11px 12px 11px 11px;
+      background: radial-gradient(circle at top, rgba(32, 32, 64, 0.92), rgba(4, 4, 11, 0.98));
+      border: 1px solid rgba(70, 70, 133, 0.85);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.95);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        135deg,
+        rgba(128, 117, 229, 0.26),
+        rgba(44, 242, 177, 0.07)
+      );
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease-out;
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-bar {
+      width: 4px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #8075e5, #2cf2b1);
+      height: 40px;
+    }
+
+    .card-title-block {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .card-meta {
+      font-size: 10px;
+      color: #9a9ac7;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-top: 1px;
+    }
+
+    .card-badge {
+      font-size: 10px;
+      border-radius: 999px;
+      padding: 2px 7px;
+      border: 1px solid rgba(44, 242, 177, 0.9);
+      color: #d7fff4;
+      background: rgba(6, 26, 22, 0.9);
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+    }
+
+    .card-body {
+      font-size: 11px;
+      color: #c1c1e6;
+      line-height: 1.5;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 2px;
+    }
+
+    .tag {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(98, 98, 164, 0.9);
+      color: #bdbdf5;
+      background: rgba(7, 7, 24, 0.9);
+    }
+
+    @media (max-width: 860px) {
+      body {
+        padding: 12px;
+      }
+      .shell {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .sidebar {
+        border-right: none;
+        border-bottom: 1px solid rgba(145, 145, 212, 0.2);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="sidebar-inner">
+        <div>
+          <div class="logo-chip">
+            <div class="logo-mark">PR</div>
+            <div class="logo-text">Artifact Catalog</div>
+          </div>
+
+          <div style="margin-top: 14px;">
+            <div class="hero-title">Work systems · 2024–2026</div>
+            <div class="hero-heading">157 artifacts across 9 domains</div>
+            <p class="hero-sub">
+              A single-file, searchable catalog for AI, security, gaming, music,
+              systems, and more. Every card here points to a real experiment or deployed tool.
+            </p>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total entries</div>
+              <div class="stat-value" id="stat-total">157</div>
+              <div class="stat-sub">Oct 2024 – Mar 2026</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Domains</div>
+              <div class="stat-value" id="stat-domains">9</div>
+              <div class="stat-sub">AI · Security · Gaming · +</div>
+            </div>
+          </div>
+
+          <div class="domain-pills" aria-label="Domain overview">
+            <div class="domain-pill">
+              <span class="domain-dot"></span>
+              Space Viz
+            </div>
+            <div class="domain-pill">
+              <span class="domain-dot" style="background:#8075e5; box-shadow:0 0 8px rgba(128,117,229,0.9);"></span>
+              AI Agent
+            </div>
+            <div class="domain-pill">
+              <span class="domain-dot" style="background:#e05c28; box-shadow:0 0 8px rgba(224,92,40,0.9);"></span>
+              Gaming
+            </div>
+            <div class="domain-pill">
+              <span class="domain-dot" style="background:#db4f7a; box-shadow:0 0 8px rgba(219,79,122,0.9);"></span>
+              Security
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-footer">
+          <div>
+            <span class="author-name">Curtis Charles Farrar</span> · Independent Systems Engineer &amp; AI Security Architect
+          </div>
+          <div>Keokuk / Muscatine, Iowa · Remote</div>
+          <div class="badge-row">
+            <span class="status-pill">Status: Active</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="top-bar">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input
+            id="search"
+            class="search-input"
+            type="search"
+            placeholder="Search artifacts by title, tags, or domain…"
+            autocomplete="off"
+          />
+          <span class="kbd-hint">⌘K</span>
+        </div>
+        <div class="filter-row" aria-label="Domain filters">
+          <button class="filter-pill" data-filter="all" data-active="true">All</button>
+          <button class="filter-pill" data-filter="ai-agent">AI Agent</button>
+          <button class="filter-pill" data-filter="security">Security</button>
+          <button class="filter-pill" data-filter="gaming">Gaming</button>
+          <button class="filter-pill" data-filter="systems">Systems</button>
+        </div>
+      </div>
+
+      <section class="grid" id="grid" aria-label="Artifact cards">
+        <!-- Placeholder card so layout isn't empty before dataset wiring -->
+        <article class="card" data-domain="ai-agent" data-tags="obelisk agents governance">
+          <div class="card-header">
+            <div class="card-bar"></div>
+            <div class="card-title-block">
+              <div class="card-title">OBELISK_CORE · Multi‑agent AI with encrypted vaults</div>
+              <div class="card-meta">AI Agent · 2025</div>
+            </div>
+            <span class="card-badge">Active</span>
+          </div>
+          <div class="card-body">
+            Coordinator for autonomous tools with governance, encrypted state, and safety rails.
+            This is a sample card; the full catalog wiring comes from the artifact dataset.
+          </div>
+          <div class="tag-row">
+            <span class="tag">multi‑agent</span>
+            <span class="tag">vaults</span>
+            <span class="tag">governance</span>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const searchInput = document.getElementById("search");
+    const grid = document.getElementById("grid");
+    const filterButtons = Array.from(document.querySelectorAll(".filter-pill"));
+    let activeFilter = "all";
+    let searchTerm = "";
+
+    function normalize(text) {
+      return (text || "").toLowerCase();
+    }
+
+    function matches(card) {
+      const domain = card.getAttribute("data-domain") || "";
+      const tags = card.getAttribute("data-tags") || "";
+      const title = card.querySelector(".card-title")?.textContent || "";
+      const haystack = normalize(domain + " " + tags + " " + title);
+
+      if (activeFilter !== "all" && domain !== activeFilter) return false;
+      if (!searchTerm) return true;
+      return haystack.includes(searchTerm);
+    }
+
+    function applyFilters() {
+      const cards = Array.from(grid.children);
+      cards.forEach(card => {
+        card.style.display = matches(card) ? "" : "none";
+      });
+    }
+
+    let searchTimeout = null;
+    searchInput.addEventListener("input", e => {
+      const value = normalize(e.target.value);
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        searchTerm = value;
+        applyFilters();
+      }, 80);
+    });
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        activeFilter = btn.getAttribute("data-filter") || "all";
+        filterButtons.forEach(b => b.dataset.active = "false");
+        btn.dataset.active = "true";
+        applyFilters();
+      });
+    });
+
+    window.addEventListener("keydown", e => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        searchInput.focus();
+        searchInput.select();
+      }
+    });
+  </script>
+</body>
 </html>
+
