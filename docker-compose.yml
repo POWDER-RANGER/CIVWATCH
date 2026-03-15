@@ -1,40 +1,122 @@
-version: '3.8'
+version: '3.9'
+
+networks:
+  civwatch_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+
 services:
+
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: civwatch
+      POSTGRES_USER: civwatch
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-devpassword123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - civwatch_net
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U civwatch -d civwatch"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 15s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - civwatch_net
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://civwatch:${DB_PASSWORD:-devpassword123}@postgres:5432/civwatch
+      REDIS_URL: redis://redis:6379
+      ML_SERVICE_URL: http://ml:5000
+      NODE_ENV: ${NODE_ENV:-development}
     ports:
-      - '3000:3000'
+      - "${BACKEND_PORT:-3000}:3000"
+    networks:
+      - civwatch_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-  
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-    ports:
-      - '4000:4000'
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-  
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
   ml:
     build:
       context: ./ml
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./ml/.env
+    environment:
+      FASTAPI_HOST: 0.0.0.0
+      FASTAPI_PORT: 5000
     ports:
-      - '5000:5000'
+      - "${ML_SERVICE_PORT:-5000}:5000"
+    networks:
+      - civwatch_net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      test: ["CMD", "curl", "-f", "http://localhost:5000/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./frontend/.env
+    environment:
+      VITE_API_BASE_URL: http://localhost:${BACKEND_PORT:-3000}/api
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    networks:
+      - civwatch_net
+    depends_on:
+      backend:
+        condition: service_healthy
