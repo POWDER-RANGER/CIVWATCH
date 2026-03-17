@@ -11,8 +11,6 @@
  */
 import Parser from 'rss-parser';
 import { pool } from '../db';
-import https from 'https';
-import http from 'http';
 import { evaluateAlerts } from './alertEngine';
 import { env } from '../config/env';
 
@@ -88,59 +86,25 @@ async function scoreBatch(
   items: ParsedItem[]
 ): Promise<BatchScoreResult[]> {
   if (items.length === 0) return [];
-
-  const payload = JSON.stringify({
-    items: items.map((item, i) => ({
-      item_id: i,
-      title:   item.title,
-      body:    item.body.slice(0, 2000),
-    })),
-  });
-
-  return new Promise((resolve) => {
-    const mlUrl   = new URL(`${env.ML_SERVICE_URL}/analyze/batch`);
-    const isHttps = mlUrl.protocol === 'https:';
-    const mod     = isHttps ? https : http;
-    const options = {
-      hostname: mlUrl.hostname,
-      port:     Number(mlUrl.port) || (isHttps ? 443 : 80),
-      path:     mlUrl.pathname,
-      method:   'POST',
-      headers:  {
-        'Content-Type':   'application/json',
-        'Content-Length': Buffer.byteLength(payload),
-      },
-    };
-
-    let resolved = false;
-    let data     = '';
-
-    const req = mod.request(options, (res) => {
-      res.on('data', (c) => { data += c; });
-      res.on('end', () => {
-        if (resolved) return;
-        resolved = true;
-        try {
-          const parsed = JSON.parse(data) as { results: BatchScoreResult[] };
-          resolve(parsed.results ?? []);
-        } catch {
-          console.warn('[ingestion] ML batch parse error — neutral scores');
-          resolve(items.map((_, i) => ({ item_id: i, score: 0, confidence: 0.5, label: 'neutral' })));
-        }
-      });
+  try {
+    const res = await fetch(`${env.ML_SERVICE_URL}/analyze/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        items: items.map((item, i) => ({
+          item_id: i,
+          title:   item.title,
+          body:    item.body.slice(0, 2000),
+        })),
+      }),
+      signal: AbortSignal.timeout(30000),
     });
-
-    req.on('error', (err) => {
-      if (resolved) return;
-      resolved = true;
-      console.warn('[ingestion] ML service unreachable:', err.message);
-      resolve(items.map((_, i) => ({ item_id: i, score: 0, confidence: 0, label: 'unscored' })));
-    });
-
-    req.setTimeout(30000, () => { req.destroy(new Error('ML batch timeout')); });
-    req.write(payload);
-    req.end();
-  });
+    const data = await res.json() as { results: BatchScoreResult[] };
+    return data.results ?? [];
+  } catch (err: any) {
+    console.warn('[ingestion] ML service error:', err.message);
+    return items.map((_, i) => ({ item_id: i, score: 0, confidence: 0, label: 'unscored' }));
+  }
 }
 
 // ── Main Export ───────────────────────────────────────────────────────────────
@@ -204,14 +168,11 @@ export async function runIngestion(sourceId: string): Promise<IngestionResult> {
     }
 
     // 3. Build index: original position → doc UUID
-    // FIX: track originalIndex so scoreBatch item_id (offset within newItems)
-    // correctly resolves back to orderedDocIds (offset within items).
     const urlToDocId = new Map(insertedDocs.map(d => [d.url, d.id]));
     const orderedDocIds: (string | null)[] = items.map(item =>
       item.url ? (urlToDocId.get(item.url) ?? null) : null
     );
 
-    // newItemsWithIndex preserves the mapping: scoreBatch position → original items[] index
     const newItemsWithIndex = items
       .map((item, originalIndex) => ({ item, originalIndex }))
       .filter(({ originalIndex }) => orderedDocIds[originalIndex] !== null);

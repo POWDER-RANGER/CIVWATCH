@@ -36,7 +36,13 @@ router.post('/', requireAuth, requireRole('admin', 'analyst'), async (req: Reque
 router.post('/:id/run', requireAuth, requireRole('admin', 'analyst'), async (req: Request, res: Response, next) => {
   try {
     const result = await runIngestion(req.params.id);
-    res.json({ message: 'Ingestion complete', documentsIngested: result.count });
+    res.json({
+      message: 'Ingestion complete',
+      documentsIngested: result.new_count,
+      skipped: result.skipped_count,
+      scored: result.scored_count,
+      failed: result.failed_count,
+    });
   } catch (e) { next(e); }
 });
 
