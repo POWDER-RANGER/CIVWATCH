@@ -25,17 +25,23 @@
     "ml"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:ai\"",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:ml\"",
     "dev:frontend": "npm run dev --workspace=frontend",
     "dev:backend": "npm run dev --workspace=backend",
-    "dev:ai": "cd ml && python -m uvicorn main:app --reload",
+    "dev:ml": "cd ml && python -m uvicorn main:app --host ${FASTAPI_HOST:-0.0.0.0} --port ${FASTAPI_PORT:-5000} --reload",
+    "dev:electron": "cd civwatch-desktop && npm run dev",
     "build": "npm run build --workspaces",
+    "build:electron": "cd civwatch-desktop && npm run make",
     "test": "npm run test --workspaces",
     "lint": "npm run lint --workspaces",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "check:health": "concurrently \"curl -sf http://localhost:5173/\" \"curl -sf http://localhost:3000/health\" \"curl -sf http://localhost:5000/health\"",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "install:all": "npm install && cd ml && pip install -r requirements.txt"
+    "docker:logs": "docker-compose logs -f",
+    "setup": "npm install && pip install -r ml/requirements.txt",
+    "install:all": "npm install && pip install -r ml/requirements.txt && cd civwatch-desktop && npm install",
+    "clean": "find . -name 'dist' -not -path '*/node_modules/*' -exec rm -rf {} + 2>/dev/null; echo 'Clean done'"
   },
   "devDependencies": {
     "@types/node": "^20.19.37",
