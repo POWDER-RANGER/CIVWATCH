@@ -1,382 +1,109 @@
-version: '3.8'
-
-# CIVWATCH - Civic Transparency Analytics Stack
+# CIVWATCH — Local Development Stack
+# Node.js API (3000) + Vite React (4000) + FastAPI ML (5000) + PostgreSQL (5432)
 #
-# This compose file orchestrates a full-stack application with TypeScript frontend,
-# Python backend, and PostgreSQL database. The configuration demonstrates production-
-# ready practices including health checks, dependency ordering, resource limits, and
-# proper secret management.
+# Quick start:
+#   cp .env.example .env
+#   docker-compose -f docker-compose-civwatch.yml up -d --build
 #
-# Quick Start:
-#   docker-compose up -d
-#   curl http://localhost:8080/health
-#   open http://localhost:3000
-#
-# Services:
-#   - frontend: React + TypeScript dashboard (port 3000)
-#   - backend: FastAPI + Python analytics engine (port 8080)
-#   - db: PostgreSQL with civic data schema (port 5432)
-#   - (optional) pgadmin: Database administration interface (port 5050)
+# Dashboard:  http://localhost:4000
+# API:        http://localhost:3000
+# ML docs:    http://localhost:5000/docs
+# DB:         localhost:5432  user=postgres  db=civwatch
 
 services:
-  # --- FRONTEND: TypeScript React Application ---
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      # Use multi-stage builds to keep image size small
-      target: production
-    
-    container_name: civwatch-frontend
-    
-    ports:
-      - "3000:3000"
-    
-    environment:
-      # Backend API endpoint
-      # In production, this should be a proper domain name
-      - REACT_APP_API_URL=http://backend:8080
-      
-      # Node environment
-      - NODE_ENV=production
-      
-      # Optional: Analytics and monitoring
-      # - REACT_APP_ANALYTICS_ID=${ANALYTICS_ID}
-    
-    # Wait for backend to be healthy before starting frontend
-    # This prevents frontend from attempting API calls before backend is ready
-    depends_on:
-      backend:
-        condition: service_healthy
-    
-    # Health check ensures the web server is responding
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    
-    # Resource limits prevent a single service from consuming all host resources
-    # Adjust these based on your actual resource usage patterns
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 512M
-        reservations:
-          cpus: '0.5'
-          memory: 256M
-    
-    # Restart policy ensures service recovers from crashes
-    restart: unless-stopped
-    
-    # Networks allow services to communicate by name
-    networks:
-      - civwatch-network
-    
-    # Labels for monitoring and management
-    labels:
-      com.civwatch.service: "frontend"
-      com.civwatch.description: "TypeScript React dashboard for civic data visualization"
 
-  # --- BACKEND: Python FastAPI Application ---
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  db:
+    image: postgres:15-alpine
+    container_name: civwatch-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: civwatch
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d civwatch"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - civwatch
+
+  # ── Node.js Backend ─────────────────────────────────────────────────────────
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      target: production
-    
     container_name: civwatch-backend
-    
+    restart: unless-stopped
     ports:
-      - "8080:8080"
-    
+      - "3000:3000"
     environment:
-      # Database connection
-      # In production, use secrets management instead of environment variables
-      - DATABASE_URL=postgresql://civwatch:${DB_PASSWORD:-civwatch_password}/civwatch@db:5432
-      
-      # Application configuration
-      - APP_ENV=production
-      - LOG_LEVEL=info
-      
-      # CORS configuration
-      # In production, restrict this to your actual frontend domain
-      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
-      
-      # API rate limiting
-      - RATE_LIMIT_PER_MINUTE=100
-      
-      # Optional: External service API keys
-      # These should be provided via .env file or secrets management
-      # - CIVIC_DATA_API_KEY=${CIVIC_DATA_API_KEY}
-      # - GEOCODING_API_KEY=${GEOCODING_API_KEY}
-    
-    # Wait for database to be healthy before starting backend
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD:-postgres}@db:5432/civwatch
+      ML_SERVICE_URL: http://ml:5000
+      NODE_ENV: development
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:-civwatch_dev_secret_change_in_prod}
     depends_on:
       db:
         condition: service_healthy
-    
-    # Health check verifies the API is responding correctly
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
-    
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 1G
-        reservations:
-          cpus: '1.0'
-          memory: 512M
-    
-    restart: unless-stopped
-    
-    networks:
-      - civwatch-network
-    
-    # Mount application code for development
-    # Comment this out in production to use code baked into the image
-    volumes:
-      - ./backend:/app
-      # Don't mount node_modules or __pycache__
-      - /app/__pycache__
-      - /app/.pytest_cache
-    
-    labels:
-      com.civwatch.service: "backend"
-      com.civwatch.description: "FastAPI analytics engine for civic transparency data"
-
-  # --- DATABASE: PostgreSQL ---
-  db:
-    image: postgres:15-alpine
-    
-    container_name: civwatch-db
-    
-    ports:
-      # Expose on non-standard port for security
-      # In production, don't expose this port externally at all
-      - "5432:5432"
-    
-    environment:
-      # Database credentials
-      # In production, use Docker secrets or external secrets management
-      - POSTGRES_USER=civwatch
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-civwatch_password}
-      - POSTGRES_DB=civwatch
-      
-      # Performance tuning
-      # These settings are for development; tune for production workloads
-      - POSTGRES_SHARED_BUFFERS=256MB
-      - POSTGRES_EFFECTIVE_CACHE_SIZE=1GB
-      - POSTGRES_MAX_CONNECTIONS=100
-    
-    # Health check verifies PostgreSQL is accepting connections
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U civwatch -d civwatch"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
       start_period: 30s
-    
-    # Persist database data across container restarts
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      
-      # Initialize database with schema and seed data
-      # Files in this directory run in alphabetical order on first start
-      - ./database/init:/docker-entrypoint-initdb.d:ro
-    
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 2G
-        reservations:
-          cpus: '1.0'
-          memory: 1G
-    
-    restart: unless-stopped
-    
     networks:
-      - civwatch-network
-    
-    labels:
-      com.civwatch.service: "database"
-      com.civwatch.description: "PostgreSQL database for civic transparency data"
+      - civwatch
 
-  # --- PGADMIN: Optional Database Administration Interface ---
-  # Comment this out in production environments
-  # Uncomment for local development and debugging
-  # pgadmin:
-  #   image: dpage/pgadmin4:latest
-  #   
-  #   container_name: civwatch-pgadmin
-  #   
-  #   ports:
-  #     - "5050:80"
-  #   
-  #   environment:
-  #     - PGADMIN_DEFAULT_EMAIL=admin@civwatch.local
-  #     - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD:-admin}
-  #     - PGADMIN_CONFIG_SERVER_MODE=False
-  #   
-  #   depends_on:
-  #     - db
-  #   
-  #   volumes:
-  #     - pgadmin-data:/var/lib/pgadmin
-  #   
-  #   networks:
-  #     - civwatch-network
-  #   
-  #   labels:
-  #     com.civwatch.service: "pgadmin"
-  #     com.civwatch.description: "Database administration interface"
+  # ── FastAPI ML Service ──────────────────────────────────────────────────────
+  ml:
+    build:
+      context: ./ml
+      dockerfile: Dockerfile
+    container_name: civwatch-ml
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      CORS_ORIGINS: http://localhost:4000,http://frontend:4000
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - civwatch
 
-# --- NETWORKS ---
-# Define a custom network so services can communicate by name
+  # ── Vite React Frontend ─────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: civwatch-frontend
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      VITE_API_URL: http://localhost:3000
+      VITE_ML_URL: http://localhost:5000
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - civwatch
+
 networks:
-  civwatch-network:
+  civwatch:
     driver: bridge
-    # Optional: Configure network settings
-    # ipam:
-    #   config:
-    #     - subnet: 172.28.0.0/16
 
-# --- VOLUMES ---
-# Named volumes persist data across container lifecycle
 volumes:
-  # PostgreSQL data
   pgdata:
     driver: local
-    # Optional: Use a specific driver for production
-    # driver_opts:
-    #   type: none
-    #   device: /mnt/data/civwatch/postgres
-    #   o: bind
-  
-  # PgAdmin configuration (if enabled)
-  # pgadmin-data:
-  #   driver: local
-
-# --- CONFIGURATION NOTES ---
-#
-# Environment Variables:
-#   This compose file references several environment variables that should be
-#   provided via a .env file in the same directory. Create a .env file with:
-#
-#     DB_PASSWORD=your-secure-password-here
-#     PGADMIN_PASSWORD=your-pgadmin-password
-#     CIVIC_DATA_API_KEY=your-api-key
-#     GEOCODING_API_KEY=your-geocoding-key
-#
-#   The .env file should be in .gitignore and never committed to version control.
-#
-# Health Checks:
-#   All services have health checks that verify they are functioning correctly.
-#   Docker Compose uses these health checks to:
-#   - Determine when a service is ready (affects depends_on with condition)
-#   - Decide when to restart unhealthy services
-#   - Provide status information via `docker-compose ps`
-#
-# Resource Limits:
-#   Resource limits prevent services from consuming excessive CPU or memory.
-#   The limits are set conservatively for development. In production:
-#   - Measure actual resource usage under load
-#   - Set limits based on observed patterns with headroom for spikes
-#   - Use reservations to guarantee minimum resources
-#
-# Restart Policies:
-#   - unless-stopped: Restart on failure, but not if manually stopped
-#   - always: Always restart, even after manual stop (be careful with this)
-#   - on-failure: Only restart if container exits with error code
-#
-# Networking:
-#   Services communicate via service names as DNS entries.
-#   Frontend can reach backend at http://backend:8080
-#   Backend can reach database at postgresql://db:5432
-#
-# Development vs Production:
-#   This file is configured for development. For production:
-#   - Remove volume mounts that overlay source code
-#   - Use proper secrets management (Docker secrets, Vault, AWS Secrets Manager)
-#   - Don't expose database ports externally
-#   - Use specific image tags instead of 'latest'
-#   - Enable TLS/SSL for all services
-#   - Configure proper backup procedures for volumes
-#   - Set up monitoring and alerting
-#   - Use read-only root filesystems where possible
-#   - Run containers as non-root users
-
-# --- USAGE EXAMPLES ---
-#
-# Start all services:
-#   docker-compose up -d
-#
-# View logs:
-#   docker-compose logs -f
-#   docker-compose logs -f backend  # Specific service
-#
-# Check service health:
-#   docker-compose ps
-#
-# Execute command in running container:
-#   docker-compose exec backend python manage.py migrate
-#   docker-compose exec db psql -U civwatch -d civwatch
-#
-# Stop services:
-#   docker-compose stop
-#
-# Stop and remove containers (volumes persist):
-#   docker-compose down
-#
-# Stop, remove containers, and remove volumes (data loss):
-#   docker-compose down -v
-#
-# Rebuild images:
-#   docker-compose build
-#   docker-compose up -d --build
-#
-# Scale a service:
-#   docker-compose up -d --scale backend=3
-
-# --- TROUBLESHOOTING ---
-#
-# Issue: Services fail to start with "address already in use"
-# Solution: Another process is using the port. Change ports in this file or
-#           stop the conflicting service.
-#
-# Issue: Backend can't connect to database
-# Solution: Check DATABASE_URL environment variable matches service name (db)
-#           and credentials. Ensure database is healthy before backend starts.
-#
-# Issue: Frontend shows connection refused to backend
-# Solution: Verify REACT_APP_API_URL points to correct backend address.
-#           In browser, it should be http://localhost:8080, not http://backend:8080
-#
-# Issue: Database data is lost on restart
-# Solution: Ensure volume is defined and mounted correctly. Check that you're
-#           not running `docker-compose down -v` which removes volumes.
-#
-# Issue: Services are slow to start
-# Solution: Increase start_period in health checks. Services need time to
-#           initialize, especially on first run.
-
-# --- CUSTOMIZATION CHECKLIST ---
-#
-# 1. Create .env file with required environment variables
-# 2. Update service names and ports if they conflict with existing services
-# 3. Adjust resource limits based on your available system resources
-# 4. Configure database initialization scripts in database/init/
-# 5. Review and customize CORS_ORIGINS for your deployment domain
-# 6. Decide whether to enable pgadmin (useful for dev, remove in prod)
-# 7. Test health checks work correctly: curl http://localhost:8080/health
-# 8. Verify services can communicate: docker-compose exec frontend ping backend
-# 9. Test the full stack: open http://localhost:3000 in browser
-# 10. Add monitoring and logging as needed for your environment
