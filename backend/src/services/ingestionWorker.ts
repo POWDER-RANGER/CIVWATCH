@@ -23,7 +23,7 @@ export interface ParsedItem {
   body:        string;
   url:         string | null;
   publishedAt: string | null;
-  metadata:    Record<string, unknown>; // adapter-specific fields (agency, bill_no, etc.)
+  metadata:    Record<string, unknown>;
 }
 
 interface BatchScoreResult {
@@ -40,15 +40,13 @@ interface IngestionResult {
   failed_count:  number;
 }
 
-// ── RSS Adapter ──────────────────────────────────────────────────────────────
-// rss-parser handles: RSS 1.0, 2.0, Atom, CDATA, namespaced feeds, malformed XML.
-// The previous regex implementation silently corrupted CDATA and missed Atom <entry> tags.
+// ── RSS Adapter ───────────────────────────────────────────────────────────────
 
 const _rssParser = new Parser({
-  timeout:         15000,
-  maxRedirects:    5,
-  headers:         { 'User-Agent': 'CIVWATCH/0.1.0' },
-  customFields:    { item: ['media:content', 'media:description'] },
+  timeout:      15000,
+  maxRedirects: 5,
+  headers:      { 'User-Agent': 'CIVWATCH/0.1.0' },
+  customFields: { item: ['media:content', 'media:description'] },
 });
 
 async function fetchRss(url: string): Promise<ParsedItem[]> {
@@ -62,10 +60,7 @@ async function fetchRss(url: string): Promise<ParsedItem[]> {
   }));
 }
 
-// ── Adapter Dispatch ─────────────────────────────────────────────────────────
-// This is the hook point for the full adapter layer (USASpending, FEC, Congress, etc.).
-// Today: RSS only. When backend/src/adapters/registry.ts lands, swap the body of
-// getAdapter() to: import { getAdapter } from '../adapters/registry'; return getAdapter(source);
+// ── Adapter Dispatch ──────────────────────────────────────────────────────────
 
 async function fetchFromSource(source: {
   type:   string;
@@ -73,28 +68,21 @@ async function fetchFromSource(source: {
   config: Record<string, unknown>;
 }): Promise<ParsedItem[]> {
   const adapterType = (source.config?.adapter as string | undefined) ?? source.type;
-
   switch (adapterType) {
     case 'rss':
       if (!source.url) throw new Error('RSS source requires a URL');
       return fetchRss(source.url);
-
-    // Stub hooks — each becomes a real import when the adapter file exists:
     // case 'usaspending': return (await import('../adapters/usaspending')).USASpendingAdapter.fetch(source.config);
     // case 'fec':         return (await import('../adapters/fec')).FecAdapter.fetch(source.config);
     // case 'congress':    return (await import('../adapters/congress')).CongressAdapter.fetch(source.config);
     // case 'socrata':     return (await import('../adapters/socrata')).SocrataAdapter.fetch(source.config);
     // case 'legiscan':    return (await import('../adapters/legiscan')).LegiscanAdapter.fetch(source.config);
-
     default:
       throw new Error(`No adapter registered for source type: ${adapterType}`);
   }
 }
 
-// ── ML Batch Scoring ─────────────────────────────────────────────────────────
-// Single HTTP call scores all items in one round-trip.
-// Previous implementation: 1 HTTP call per document inside a for-loop.
-// At 50 items × 10 sources = 500 sequential HTTP calls → now always 10 (one per source run).
+// ── ML Batch Scoring ──────────────────────────────────────────────────────────
 
 async function scoreBatch(
   items: ParsedItem[]
@@ -105,7 +93,7 @@ async function scoreBatch(
     items: items.map((item, i) => ({
       item_id: i,
       title:   item.title,
-      body:    item.body.slice(0, 2000), // ML service input cap
+      body:    item.body.slice(0, 2000),
     })),
   });
 
@@ -124,51 +112,40 @@ async function scoreBatch(
       },
     };
 
-    let data = '';
+    let resolved = false;
+    let data     = '';
+
     const req = mod.request(options, (res) => {
       res.on('data', (c) => { data += c; });
       res.on('end', () => {
+        if (resolved) return;
+        resolved = true;
         try {
           const parsed = JSON.parse(data) as { results: BatchScoreResult[] };
           resolve(parsed.results ?? []);
         } catch {
-          // ML parse failure: return neutral scores for all items
-          // Documents are still persisted — scoring failure is non-fatal
-          console.warn('[ingestion] ML batch parse error — persisting docs with neutral scores');
-          resolve(items.map((_, i) => ({
-            item_id:    i,
-            score:      0,
-            confidence: 0.5,
-            label:      'neutral',
-          })));
+          console.warn('[ingestion] ML batch parse error — neutral scores');
+          resolve(items.map((_, i) => ({ item_id: i, score: 0, confidence: 0.5, label: 'neutral' })));
         }
       });
     });
 
     req.on('error', (err) => {
-      // ML service unreachable: return neutral scores, never block ingestion
+      if (resolved) return;
+      resolved = true;
       console.warn('[ingestion] ML service unreachable:', err.message);
-      resolve(items.map((_, i) => ({
-        item_id:    i,
-        score:      0,
-        confidence: 0,
-        label:      'unscored',
-      })));
+      resolve(items.map((_, i) => ({ item_id: i, score: 0, confidence: 0, label: 'unscored' })));
     });
 
-    req.setTimeout(30000, () => {
-      req.destroy(new Error('ML batch timeout'));
-    });
-
+    req.setTimeout(30000, () => { req.destroy(new Error('ML batch timeout')); });
     req.write(payload);
     req.end();
   });
 }
 
-// ── Main Export ──────────────────────────────────────────────────────────────
+// ── Main Export ───────────────────────────────────────────────────────────────
 
 export async function runIngestion(sourceId: string): Promise<IngestionResult> {
-  // Load source record
   const srcRes = await pool.query<{
     id: string; url: string | null; type: string; config: Record<string, unknown>;
   }>('SELECT id, url, type, config FROM sources WHERE id = $1', [sourceId]);
@@ -176,7 +153,6 @@ export async function runIngestion(sourceId: string): Promise<IngestionResult> {
   const source = srcRes.rows[0];
   if (!source) throw new Error(`Source not found: ${sourceId}`);
 
-  // Open ingestion record
   const ingRes = await pool.query<{ id: string }>(
     `INSERT INTO ingestions (source_id, status, started_at)
      VALUES ($1, 'running', NOW()) RETURNING id`,
@@ -185,7 +161,7 @@ export async function runIngestion(sourceId: string): Promise<IngestionResult> {
   const ingestionId = ingRes.rows[0].id;
 
   try {
-    // ── 1. Fetch ───────────────────────────────────────────────────────────
+    // 1. Fetch
     const items = await fetchFromSource(source);
 
     if (items.length === 0) {
@@ -196,13 +172,10 @@ export async function runIngestion(sourceId: string): Promise<IngestionResult> {
       return { new_count: 0, skipped_count: 0, scored_count: 0, failed_count: 0 };
     }
 
-    // ── 2. Bulk INSERT documents (skip duplicates by URL) ──────────────────
-    // unnest() sends all rows in a single query — no per-row round-trips.
+    // 2. Bulk INSERT documents
     const insertRes = await pool.query<{ id: string; url: string | null }>(
       `INSERT INTO documents (source_id, ingestion_id, title, body, url, published_at)
-       SELECT
-         $1,
-         $2,
+       SELECT $1, $2,
          unnest($3::text[]),
          unnest($4::text[]),
          unnest($5::text[]),
@@ -210,8 +183,7 @@ export async function runIngestion(sourceId: string): Promise<IngestionResult> {
        ON CONFLICT (url) WHERE url IS NOT NULL DO NOTHING
        RETURNING id, url`,
       [
-        sourceId,
-        ingestionId,
+        sourceId, ingestionId,
         items.map(i => i.title),
         items.map(i => i.body),
         items.map(i => i.url),
@@ -219,8 +191,8 @@ export async function runIngestion(sourceId: string): Promise<IngestionResult> {
       ]
     );
 
-    const insertedDocs = insertRes.rows;
-    const new_count    = insertedDocs.length;
+    const insertedDocs  = insertRes.rows;
+    const new_count     = insertedDocs.length;
     const skipped_count = items.length - new_count;
 
     if (new_count === 0) {
@@ -228,22 +200,34 @@ export async function runIngestion(sourceId: string): Promise<IngestionResult> {
         `UPDATE ingestions SET status='completed', documents_count=0, completed_at=NOW() WHERE id=$1`,
         [ingestionId]
       );
-      console.log(`[ingestion] Source ${sourceId} — all ${items.length} items already exist, skipping ML`);
       return { new_count: 0, skipped_count, scored_count: 0, failed_count: 0 };
     }
 
-    // Build index: position in items[] → doc UUID
-    // Match by URL first; fall back to insertion order for url-less items
+    // 3. Build index: original position → doc UUID
+    // FIX: track originalIndex so scoreBatch item_id (offset within newItems)
+    // correctly resolves back to orderedDocIds (offset within items).
     const urlToDocId = new Map(insertedDocs.map(d => [d.url, d.id]));
-    const orderedDocIds: (string | null)[] = items.map(item => urlToDocId.get(item.url) ?? null);
+    const orderedDocIds: (string | null)[] = items.map(item =>
+      item.url ? (urlToDocId.get(item.url) ?? null) : null
+    );
 
-    // ── 3. Batch ML scoring — ONE HTTP call for all new documents ──────────
-    const newItems  = items.filter((_, i) => orderedDocIds[i] !== null);
-    const scores    = await scoreBatch(newItems);
+    // newItemsWithIndex preserves the mapping: scoreBatch position → original items[] index
+    const newItemsWithIndex = items
+      .map((item, originalIndex) => ({ item, originalIndex }))
+      .filter(({ originalIndex }) => orderedDocIds[originalIndex] !== null);
 
-    // ── 4. Bulk INSERT analyses ────────────────────────────────────────────
-    const validScores = scores.filter(s => orderedDocIds[s.item_id] !== null);
+    // 4. Batch ML scoring — ONE HTTP call
+    const scores = await scoreBatch(newItemsWithIndex.map(({ item }) => item));
 
+    // 5. Map scores back using originalIndex, never item_id directly
+    const validScores = scores
+      .map(s => ({
+        ...s,
+        docId: orderedDocIds[newItemsWithIndex[s.item_id]?.originalIndex ?? -1],
+      }))
+      .filter((s): s is typeof s & { docId: string } => s.docId !== null && s.docId !== undefined);
+
+    // 6. Bulk INSERT analyses
     let scored_count = 0;
     let failed_count = 0;
 
@@ -258,9 +242,9 @@ export async function runIngestion(sourceId: string): Promise<IngestionResult> {
              unnest($3::float[]),
              unnest($4::text[]),
              '{}'::jsonb
-           ON CONFLICT DO NOTHING`,
+           ON CONFLICT (document_id, type) DO NOTHING`,
           [
-            validScores.map(s => orderedDocIds[s.item_id]!),
+            validScores.map(s => s.docId),
             validScores.map(s => s.score),
             validScores.map(s => s.confidence),
             validScores.map(s => s.label),
@@ -268,21 +252,17 @@ export async function runIngestion(sourceId: string): Promise<IngestionResult> {
         );
         scored_count = validScores.length;
       } catch (err: any) {
-        // Analysis insert failure is non-fatal — documents are already persisted
         console.error('[ingestion] Bulk analysis insert failed:', err.message);
         failed_count = validScores.length;
       }
     }
 
-    // ── 5. Finalize ingestion record ───────────────────────────────────────
+    // 7. Finalize
     await pool.query(
-      `UPDATE ingestions
-       SET status='completed', documents_count=$1, completed_at=NOW()
-       WHERE id=$2`,
+      `UPDATE ingestions SET status='completed', documents_count=$1, completed_at=NOW() WHERE id=$2`,
       [new_count, ingestionId]
     );
 
-    // ── 6. Evaluate alert rules against new data ───────────────────────────
     await evaluateAlerts(sourceId);
 
     console.log(
@@ -294,9 +274,7 @@ export async function runIngestion(sourceId: string): Promise<IngestionResult> {
 
   } catch (err: any) {
     await pool.query(
-      `UPDATE ingestions
-       SET status='failed', error_message=$1, completed_at=NOW()
-       WHERE id=$2`,
+      `UPDATE ingestions SET status='failed', error_message=$1, completed_at=NOW() WHERE id=$2`,
       [err.message, ingestionId]
     );
     throw err;
