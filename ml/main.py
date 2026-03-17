@@ -1,57 +1,54 @@
-"""CIVWATCH ML Service — FastAPI application entry point."""
-
+"""
+CIVWATCH ML Service — v0.3.0
+FastAPI inference service: sentiment analysis + volume anomaly detection.
+"""
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Dict
 import logging
 import os
 import time
+import numpy as np
 
-logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="CIVWATCH ML Service",
-    description="Sentiment analysis and NLP inference service for CIVWATCH.",
-    version="0.2.0",
+    description="Sentiment analysis and anomaly detection for CIVWATCH.",
+    version="0.3.0",
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("CORS_ORIGINS", "http://localhost:5173").split(","),
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=os.getenv("CORS_ORIGINS", "http://localhost:4000").split(","),
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
 
-# ── State ────────────────────────────────────────────────────────────────────
 _model_loaded: bool = False
 _startup_time: float = time.time()
 
 
-# ── Request / Response Models ────────────────────────────────────────────────
+# ── Models ─────────────────────────────────────────────────────────────────────
 
 class SentimentRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=10000)
 
-
 class SentimentResponse(BaseModel):
-    score:         float  # -1.0 (negative) → 1.0 (positive)
-    confidence:    float  # 0.0 → 1.0
-    label:         str    # 'positive' | 'neutral' | 'negative'
+    score:         float
+    confidence:    float
+    label:         str
     processing_ms: float
-
 
 class BatchItem(BaseModel):
     item_id: int
     title:   str = Field(default="")
     body:    str = Field(default="", max_length=2000)
 
-
 class BatchScoreRequest(BaseModel):
     items: List[BatchItem] = Field(..., min_length=1, max_length=500)
-
 
 class BatchScoreResult(BaseModel):
     item_id:    int
@@ -59,25 +56,40 @@ class BatchScoreResult(BaseModel):
     confidence: float
     label:      str
 
-
 class BatchScoreResponse(BaseModel):
     results:      List[BatchScoreResult]
     count:        int
     processing_ms: float
 
+class AnomalyRequest(BaseModel):
+    geo_cell:        str   = Field(..., description="Geographic cell ID (e.g., US-IA-019)")
+    category:        str   = Field(..., description="Event category (e.g., police_complaint)")
+    window_count:    int   = Field(..., ge=0, description="Current time window count")
+    baseline_counts: List[int] = Field(..., min_length=1, description="Historical counts")
+    avg_confidence:  float = Field(0.5, ge=0.0, le=1.0)
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+class AnomalyResponse(BaseModel):
+    anomaly_score: float = Field(..., ge=0.0, le=1.0)
+    is_anomalous:  bool
+    reason:        Dict[str, str]
+    z_score:       float
+    flags:         List[str]
 
-def _score_text(text: str) -> tuple[float, float, str]:
-    """Score a single text string. Returns (score, confidence, label).
-    TextBlob for MVP — swap for transformers pipeline in M2 by replacing
-    this function body. The HTTP interface above is stable and will not change.
+
+# ── Helpers ────────────────────────────────────────────────────────────────────
+
+def _score_text(text: str) -> tuple:
+    """Score a single text. Returns (score, confidence, label).
+    TextBlob for MVP — swap this function body for transformers in M2.
+    Both /analyze/sentiment and /analyze/batch share this function;
+    one swap upgrades both endpoints.
+    # M2: return CivicTransparencyPipeline.score(text)
     """
     try:
         from textblob import TextBlob
-        blob        = TextBlob(text)
-        raw_score   = float(blob.sentiment.polarity)      # -1.0 .. 1.0
-        confidence  = float(max(abs(raw_score), 0.05))    # never return 0
+        blob       = TextBlob(text)
+        raw_score  = float(blob.sentiment.polarity)
+        confidence = float(max(abs(raw_score), 0.05))
     except ImportError:
         raw_score  = 0.0
         confidence = 0.5
@@ -92,7 +104,7 @@ def _score_text(text: str) -> tuple[float, float, str]:
     return round(raw_score, 4), round(confidence, 4), label
 
 
-# ── Lifecycle ─────────────────────────────────────────────────────────────────
+# ── Lifecycle ──────────────────────────────────────────────────────────────────
 
 @app.on_event("startup")
 async def load_model() -> None:
@@ -101,13 +113,13 @@ async def load_model() -> None:
     try:
         from textblob import TextBlob  # noqa: F401
         _model_loaded = True
-        logger.info("Model loaded (TextBlob MVP). Swap _score_text() body for transformers in M2.")
+        logger.info("Model loaded (TextBlob MVP). Swap _score_text() for transformers in M2.")
     except ImportError:
         logger.warning("TextBlob not installed — stub fallback active.")
         _model_loaded = True
 
 
-# ── Ops Endpoints ─────────────────────────────────────────────────────────────
+# ── Ops ────────────────────────────────────────────────────────────────────────
 
 @app.get("/health", tags=["ops"])
 async def health() -> dict:
@@ -124,9 +136,8 @@ async def health() -> dict:
         "gpu_available":  gpu_available,
         "uptime_seconds": round(time.time() - _startup_time, 2),
         "python":         platform.python_version(),
-        "version":        "0.2.0",
+        "version":        "0.3.0",
     }
-
 
 @app.get("/ready", tags=["ops"])
 async def ready():
@@ -135,7 +146,7 @@ async def ready():
     return {"status": "ready"}
 
 
-# ── Inference Endpoints ───────────────────────────────────────────────────────
+# ── Inference ──────────────────────────────────────────────────────────────────
 
 @app.post("/analyze/sentiment", response_model=SentimentResponse, tags=["inference"])
 async def analyze_sentiment(req: SentimentRequest) -> SentimentResponse:
@@ -145,28 +156,20 @@ async def analyze_sentiment(req: SentimentRequest) -> SentimentResponse:
     start = time.perf_counter()
     score, confidence, label = _score_text(req.text)
     return SentimentResponse(
-        score=score,
-        confidence=confidence,
-        label=label,
+        score=score, confidence=confidence, label=label,
         processing_ms=round((time.perf_counter() - start) * 1000, 2),
     )
-
 
 @app.post("/analyze/batch", response_model=BatchScoreResponse, tags=["inference"])
 async def analyze_batch(req: BatchScoreRequest) -> BatchScoreResponse:
     """Score a batch of documents in a single call.
-
-    This is the primary endpoint called by ingestionWorker.ts.
-    Replaces N sequential calls to /analyze/sentiment with 1 call.
-    Guaranteed to return one result per input item — never drops items.
-    ML failure on any item produces a neutral score, never a 500.
+    Primary endpoint called by ingestionWorker.ts.
+    Guaranteed 1:1 input/output — never drops items. Per-item errors produce neutral score.
     """
     if not _model_loaded:
         raise HTTPException(status_code=503, detail="Model not ready")
-
     start   = time.perf_counter()
     results = []
-
     for item in req.items:
         try:
             text             = f"{item.title} {item.body}".strip()
@@ -174,29 +177,58 @@ async def analyze_batch(req: BatchScoreRequest) -> BatchScoreResponse:
         except Exception as e:
             logger.warning("Score failed for item_id=%d: %s", item.item_id, e)
             score, conf, lbl = 0.0, 0.0, "error"
-
-        results.append(BatchScoreResult(
-            item_id=item.item_id,
-            score=score,
-            confidence=conf,
-            label=lbl,
-        ))
-
+        results.append(BatchScoreResult(item_id=item.item_id, score=score, confidence=conf, label=lbl))
     processing_ms = round((time.perf_counter() - start) * 1000, 2)
     logger.info("Batch scored %d items in %.1fms", len(results), processing_ms)
+    return BatchScoreResponse(results=results, count=len(results), processing_ms=processing_ms)
 
-    return BatchScoreResponse(
-        results=results,
-        count=len(results),
-        processing_ms=processing_ms,
-    )
+@app.post("/score/anomaly", response_model=AnomalyResponse, tags=["inference"])
+async def score_anomaly(req: AnomalyRequest) -> AnomalyResponse:
+    """Detect volume anomalies in report clusters vs rolling baseline.
 
+    The load-bearing intelligence endpoint. Called by aggregate.ts after
+    every time-window rollup. Returns semantic flags the alert engine
+    matches against directly — no downstream translation needed.
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(
-        "main:app",
-        host=os.getenv("FASTAPI_HOST", "0.0.0.0"),
-        port=int(os.getenv("FASTAPI_PORT", 5000)),
-        reload=os.getenv("NODE_ENV") == "development",
+    Threshold: anomaly_score > 0.75 → is_anomalous = True
+    Flags:     volume_surge (z>2), extreme_volume_spike (z>3),
+               low_confidence_cluster (avg_confidence<0.3)
+
+    M2: replace body with CivicTransparencyPipeline.detect_anomalies(data)
+    """
+    if not _model_loaded:
+        raise HTTPException(status_code=503, detail="Model not ready")
+
+    start    = time.perf_counter()
+    baseline = np.array(req.baseline_counts)
+
+    if len(baseline) == 0 or baseline.std() == 0:
+        z     = 0.0
+        flags = []
+    else:
+        z     = float((req.window_count - baseline.mean()) / baseline.std())
+        flags = []
+        if z > 2.0: flags.append("volume_surge")
+        if z > 3.0: flags.append("extreme_volume_spike")
+        if req.avg_confidence < 0.3: flags.append("low_confidence_cluster")
+
+    anomaly_score = min(abs(z) / 4.0, 1.0)
+    is_anomalous  = anomaly_score > 0.75
+
+    reason = {
+        "human": f"{req.window_count / max(float(baseline.mean()), 1.0):.1f}x above "
+                 f"{len(baseline)}-period baseline (z={z:.2f})",
+        "code":  "volume_anomaly" if z > 2 else "normal",
+    }
+
+    ms = (time.perf_counter() - start) * 1000
+    logger.info("Anomaly: %s/%s z=%.2f score=%.3f flags=%s ms=%.1f",
+                req.geo_cell, req.category, z, anomaly_score, flags, ms)
+
+    return AnomalyResponse(
+        anomaly_score=round(anomaly_score, 4),
+        is_anomalous=is_anomalous,
+        reason=reason,
+        z_score=round(z, 4),
+        flags=flags,
     )
