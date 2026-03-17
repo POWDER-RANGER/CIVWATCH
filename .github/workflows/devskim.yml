@@ -19,7 +19,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-        uses: actions/checkout@v6
 
       - name: Run DevSkim scanner
         uses: microsoft/DevSkim-Action@bff32d3fc4b03f2e10a3c39db0909a71b2a29f06  # v1.0
@@ -28,6 +27,5 @@ jobs:
 
       - name: Upload DevSkim SARIF file
         uses: github/codeql-action/upload-sarif@c7d0eebf0efb81753d773b54ee46f4278db8ab5d  # v3.25.12
-        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: devskim-results.sarif
