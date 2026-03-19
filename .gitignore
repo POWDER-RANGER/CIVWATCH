@@ -8,3 +8,7 @@ __pycache__/
 coverage/
 .vscode/
 .idea/
+
+tsc
+/tsc
+*.tsbuildinfo
