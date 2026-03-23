@@ -1,165 +1,112 @@
-# CIVWATCH Implementation Roadmap
+# CIVWATCH — Implementation Roadmap
 
-**Status:** Pre-Alpha — Foundation partially complete  
-**Timeline:** 3 phases over ~10 weeks remaining  
-**Owner:** Curtis Farrar  
-**Last Updated:** March 14, 2026
+<div align="center">
 
----
+**Version:** `0.2.0-alpha` · **Phase:** Alpha — Early Feature Development  
+**Owner:** Curtis Farrar ([@POWDER-RANGER](https://github.com/POWDER-RANGER))  
+**Last Updated:** March 22, 2026
 
-## Where We Are Right Now
-
-| Milestone | Status | Notes |
-|-----------|--------|-------|
-| PR0 — Damage Control | ✅ Done | OBELISK refs removed, SECURITY.md fixed, credibility restored |
-| PR1 — Docker Green | ✅ Done | FastAPI ML live, `/api/health` live, healthchecks mostly aligned |
-| Phase 1 — DB + Tests | 🔴 In Progress | PostgreSQL/Redis not wired; tests are stubs |
-| Phase 2 — Dashboard | 🟡 Planned | Blocked on Phase 1 |
-| Phase 3 — Hardening | 🟡 Planned | Blocked on Phase 2 |
+</div>
 
 ---
 
-## Critical Path to MVP
+## 📍 Where We Are Right Now
 
 ```
-✅ PR0 — Damage Control (DONE)
-✅ PR1 — Docker Green (DONE)
+✅ PR0  — Damage Control         (DONE — OBELISK refs, SECURITY.md, credibility)
+✅ PR1  — Docker Green           (DONE — FastAPI live, healthchecks aligned)
+✅ PR2  — PostgreSQL Wiring      (DONE — pool live, routes wired, migrations applied)
+✅ PR3  — Real Test Suite        (DONE — Jest/pytest configured, ML unit tests added)
+✅ PR4  — Type Consistency       (DONE — TS fixes, rss-parser, scoreBatch alignment)
+✅ PR5  — Auth + MVP API Routes  (DONE — JWT/bcrypt, all routes confirmed live)
+✅ PR6  — Ingestion Pipeline     (DONE — batch ML scoring, rss-parser, adapter dispatch)
+✅ PR7  — Anomaly Scoring v2     (DONE — /score/anomaly z-score, volume flags, v0.3.0)
+✅ PR8  — Electron Shell         (DONE — IPC bridge, subprocess mgmt, NSIS maker)
+✅ PR9  — Docker Production      (DONE — all 3 Dockerfiles rewritten, ports aligned)
         ↓
-🔴 Phase 1: Foundation  ← CURRENT
-├─ PR2: Wire PostgreSQL
-├─ PR3: Real test suite (replace stubs)
-└─ PR4: Type consistency + Redis
+🚧 PHASE 2: Feature Completeness  ← CURRENT
+├─ PR10: React UI — charts, anomaly table, maps
+├─ PR11: WebSocket real-time layer
+├─ PR12: Redis caching layer
+├─ PR13: GraphQL resolvers
+└─ PR14: Integration tests + coverage push
         ↓
-   MVP Ready
-        ↓
-🟡 Phase 2: Dashboard
-├─ PR5-6: React components
-├─ PR7: WebSocket real-time
-└─ PR8: GraphQL resolvers
-        ↓
-🟡 Phase 3: Production
-├─ PR9: Security audit
-├─ PR10: Performance
-├─ PR11: Packaged releases
-└─ PR12: Final docs + CI/CD complete
+🟡 PHASE 3: Production Hardening
+├─ PR15: Security audit (OWASP A01–A05)
+├─ PR16: Rate limiting + request throttling
+├─ PR17: Performance optimization + load testing
+├─ PR18: 80%+ test coverage
+└─ PR19: Packaged releases + CI/CD complete
 ```
 
 ---
 
 ## Phase Summary
 
-| Phase | Focus | Est. Duration | PRs | Success Criteria |
-|-------|-------|---------------|-----|------------------|
-| **Phase 1** | DB, Tests, Types | 4–6 weeks | PR2–4 | PostgreSQL wired, Redis wired, >70% test coverage, no type errors |
-| **Phase 2** | Dashboard + Real-Time | 6–8 weeks | PR5–8 | React components live, WebSocket <500ms, GraphQL resolvers done |
-| **Phase 3** | Production Hardening | 2–3 weeks | PR9–12 | Security audit pass, packaged releases, CI/CD complete, 80%+ coverage |
+| Phase | Focus | Window | Status | Exit Criteria |
+|-------|-------|--------|--------|---------------|
+| **Phase 1** | Foundation | Feb–Mar 2026 | ✅ **Complete** | DB wired, auth live, CI real, Docker green |
+| **Phase 2** | Feature Completeness | Apr 4–20, 2026 | 🚧 **In Progress** | Dashboard live, WebSocket <500ms, GraphQL resolvers done |
+| **Phase 3** | Production Hardening | Apr 21–May 2, 2026 | 🟡 **Planned** | Security audit pass, 80%+ coverage, packaged releases |
 
 ---
 
-## Phase 1: Foundation — IN PROGRESS
+## ✅ Phase 1 — Foundation (COMPLETE)
 
-### PR2: PostgreSQL Wiring (Week 1–2)
-**Goal:** Real data persistence — no more env-var-only stubs  
-**Issue:** [#5](https://github.com/POWDER-RANGER/CIVWATCH/issues/5)
+All Phase 1 work is merged to `main`. No open blockers.
 
-**Tasks:**
-- [ ] `src/db/connection.ts` — pool management, connection validation
-- [ ] `src/db/queries/` — parameterized query layer
-- [ ] Schema migrations (first: `anomalies`, `data_points` tables)
-- [ ] Environment variable validation at startup
-- [ ] Wire backend routes to use DB layer
-- [ ] Integration test: insert → query → assert
+| Task | PR | Status |
+|------|----|--------|
+| Remove OBELISK refs, fix SECURITY.md | PR0 | ✅ Done |
+| FastAPI ML live, Docker healthchecks aligned | PR1 | ✅ Done |
+| PostgreSQL pool + migrations (`anomalies`, `data_points`, `documents_url_unique`) | PR2 | ✅ Done |
+| Jest/pytest configured, ML unit tests (`test_sentiment.py`) | PR3 | ✅ Done |
+| TS type fixes, `rss-parser` dep, `scoreBatch` index alignment | PR4 | ✅ Done |
+| `POST /api/auth/login` (bcrypt + JWT), `requireAuth` middleware | PR5 | ✅ Done |
+| Batch ML scoring (`/analyze/batch`), RSS adapter, bulk DB inserts | PR6 | ✅ Done |
+| `POST /score/anomaly` — z-score, volume flags, ML bumped to v0.3.0 | PR7 | ✅ Done |
+| Electron Forge shell — IPC bridge, subprocess mgmt, NSIS maker | PR8 | ✅ Done |
+| Production Dockerfiles (Node 20, Vite, Python 3.11 slim), ports aligned | PR9 | ✅ Done |
 
-```typescript
-// src/db/connection.ts
-import pg from 'pg';
-export const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-export async function query(text: string, params?: any[]) {
-  const client = await pool.connect();
-  try { return await client.query(text, params); }
-  finally { client.release(); }
-}
-```
+**Phase 1 exit criteria — all met:**
+- [x] All Docker services pass healthchecks
+- [x] PostgreSQL storing real data
+- [x] CI/CD runs real tests (not echo)
+- [x] Auth middleware live — bcrypt + JWT
+- [x] All MVP API routes confirmed live
+- [x] Zero critical TypeScript type errors
 
 ---
 
-### PR3: Real Test Suite (Week 2–3)
-**Goal:** Replace every stub with a real assertion — target 70%+ coverage  
-**Issue:** [#15](https://github.com/POWDER-RANGER/CIVWATCH/issues/15)
+## 🚧 Phase 2 — Feature Completeness (IN PROGRESS)
 
-**Current state:**
-```typescript
-// ❌ NOW
-expect(true).toBe(true); // TODO
-```
-**Target:**
-```typescript
-// ✅ GOAL
-import { analyzeDataPoints } from '../../src/analytics/dataAnalyzer';
-describe('DBSCAN Anomaly Detection', () => {
-  it('detects anomalies in time-series data', () => {
-    const data = [
-      { timestamp: 1000, value: 1.0 },
-      { timestamp: 2000, value: 1.02 },
-      { timestamp: 3000, value: 10.0 }, // anomaly
-    ];
-    const result = analyzeDataPoints(data);
-    expect(result.anomalies).toHaveLength(1);
-    expect(result.anomalies[0].timestamp).toBe(3000);
-  });
-});
-```
+**Target window:** Apr 4–20, 2026 · **Blockers:** None
 
-**Files to write:**
-- `tests/analytics/dataAnalyzer.test.ts` — real DBSCAN tests
-- `tests/analytics/fixtures/` — test data generators
-- `tests/api/` — backend endpoint tests
-- Wire Jest into GitHub Actions CI
-
----
-
-### PR4: Type Consistency + Redis (Week 2–3)
-**Goal:** Eliminate type mismatches; wire Redis cache layer  
-**Issues:** [#3](https://github.com/POWDER-RANGER/CIVWATCH/issues/3), [#5](https://github.com/POWDER-RANGER/CIVWATCH/issues/5)
-
-**Known issue:**
-```typescript
-// ❌ types.ts declares:
-timestamp: number; // Unix milliseconds
-// But dataAnalyzer.ts uses it as:
-const date = new Date(point.timestamp); // Expects Date object
-```
-
-**Tasks:**
-- [ ] Audit and harden `src/types.ts`
-- [ ] Update ML service Pydantic models to match
-- [ ] Add Zod runtime validation on all endpoints
-- [ ] Wire Redis client for anomaly caching
-- [ ] Add Redis healthcheck to Docker Compose
-
----
-
-## Phase 2: Dashboard + Real-Time — PLANNED
-
-**Blocked on:** Phase 1 complete
-
-### PR5–6: React Dashboard Components
-**Issues:** [#10](https://github.com/POWDER-RANGER/CIVWATCH/issues/10), [#11](https://github.com/POWDER-RANGER/CIVWATCH/issues/11)
+### PR10 — React Dashboard UI
+**Issues:** [#10](../../issues/10), [#11](../../issues/11)  
+**Goal:** Functional, data-connected dashboard with real anomaly visualizations
 
 ```
 frontend/src/components/
-├── Dashboard.tsx           ← Main grid layout
-├── AnomalyTimeline.tsx     ← recharts time-series
-├── ClusterVisualization.tsx← scatter plot
-├── AlertPanel.tsx          ← real-time notification feed
-└── DataTable.tsx           ← tabular anomaly view
+├── Dashboard.tsx               ← Main grid layout (scaffold exists)
+├── AnomalyTimeline.tsx         ← recharts/d3 time-series
+├── ClusterVisualization.tsx    ← scatter plot (DBSCAN output)
+├── AlertPanel.tsx              ← real-time notification feed
+├── DataTable.tsx               ← tabular anomaly view + filters
+└── MapView.tsx                 ← civic event geographic overlay
 ```
 
-### PR7: WebSocket Real-Time Layer
-**Issue:** [#12](https://github.com/POWDER-RANGER/CIVWATCH/issues/12)  
-**Target:** Anomaly broadcast to frontend within 500ms of detection
+- [ ] Wire `CivicTransparencyDashboard` to live API endpoints
+- [ ] Add recharts/d3 anomaly timeline chart
+- [ ] Build DBSCAN cluster scatter visualization
+- [ ] Integrate alert panel with `/api/alerts/recent`
+- [ ] Add dark mode theme support ([#13](../../issues/13))
+
+---
+
+### PR11 — WebSocket Real-Time Layer
+**Issue:** [#12](../../issues/12)  
+**Target:** Anomaly broadcast to frontend within **500ms** of detection
 
 ```typescript
 // backend/src/websocket.ts
@@ -169,99 +116,170 @@ wss.on('connection', (ws) => {
     if (type === 'subscribe_cluster') subscribeToCluster(ws, clusterId);
   });
 });
+
 async function broadcastAnomaly(anomaly: Anomaly) {
   const msg = JSON.stringify({ type: 'anomaly', data: anomaly });
-  wss.clients.forEach(c => { if (c.readyState === WebSocket.OPEN) c.send(msg); });
+  wss.clients.forEach(c => {
+    if (c.readyState === WebSocket.OPEN) c.send(msg);
+  });
 }
 ```
 
-### PR8: GraphQL Resolvers
-**Issue:** [#6](https://github.com/POWDER-RANGER/CIVWATCH/issues/6)
+- [ ] WebSocket server wired into Express app
+- [ ] Subscription model per cluster ID
+- [ ] Frontend `useAnomalyData` hook updated for WS stream
+- [ ] Reconnect logic with exponential backoff
+
+---
+
+### PR12 — Redis Caching Layer
+**Issue:** [#5](../../issues/5)  
+**Goal:** Wire declared Redis client into routes — hot query caching
+
+- [ ] Wire Redis client into alert routes
+- [ ] Cache `/api/analytics/overview` with 60s TTL
+- [ ] Cache hot anomaly queries
+- [ ] Redis healthcheck wired into Docker Compose
+- [ ] Cache invalidation on new ingestion run
+
+---
+
+### PR13 — GraphQL Resolvers
+**Issue:** [#6](../../issues/6)  
+**Goal:** Full query + subscription surface for dashboard consumption
 
 ```graphql
 type Query {
   anomalies(after: String, first: Int): AnomalyConnection!
   clusters(limit: Int): [Cluster!]!
   dataPoints(clusterId: ID!, limit: Int): [DataPoint!]!
+  sources: [Source!]!
 }
+
+type Mutation {
+  createAlert(input: AlertInput!): Alert!
+  triggerIngestion(sourceId: ID!): IngestionResult!
+}
+
 type Subscription {
   anomalyDetected: Anomaly!
   clusterUpdated(clusterId: ID!): Cluster!
 }
 ```
 
+- [ ] Implement all `Query` resolvers
+- [ ] Implement `Mutation` resolvers
+- [ ] Wire `Subscription` to WebSocket broadcast
+- [ ] Add DataLoader for N+1 query prevention
+
 ---
 
-## Phase 3: Production Hardening — PLANNED
+### PR14 — Integration Tests + Coverage Push
+**Issue:** [#15](../../issues/15), [#16](../../issues/16)  
+**Goal:** Cross-service test coverage, push from ~15% toward 50%+
 
-**Blocked on:** Phase 2 complete
+- [ ] Backend → ML service integration test (`POST /analyze/batch`)
+- [ ] Frontend → Backend API integration tests
+- [ ] DB transaction tests (insert → query → assert)
+- [ ] ML anomaly scoring regression tests
+- [ ] Wire Codecov gates into CI (fail PR if coverage drops)
+
+---
+
+**Phase 2 exit criteria:**
+- [ ] Dashboard renders live anomalies from DB
+- [ ] WebSocket updates arrive within 500ms
+- [ ] GraphQL queries return under 100ms p99
+- [ ] Redis caching live on hot routes
+- [ ] Test coverage at 50%+
+- [ ] Supports 100+ concurrent users
+
+---
+
+## 🟡 Phase 3 — Production Hardening (PLANNED)
+
+**Target window:** Apr 21 – May 2, 2026 · **Blocked on:** Phase 2 complete
 
 | Task | Issue | Notes |
 |------|-------|-------|
-| OWASP A01–A05 security audit | [#17](https://github.com/POWDER-RANGER/CIVWATCH/issues/17) | Before any public exposure |
-| Rate limiting + API key auth | [#7](https://github.com/POWDER-RANGER/CIVWATCH/issues/7) | All routes currently open |
-| Performance: load test with k6 | — | Target 1000 req/sec |
-| CI/CD with real test execution | [#2](https://github.com/POWDER-RANGER/CIVWATCH/issues/2) | Replace echo statements |
-| Code coverage tooling | [#16](https://github.com/POWDER-RANGER/CIVWATCH/issues/16) | Target 80%+ |
-| Packaged releases | — | Windows .exe, macOS .dmg, Linux .AppImage |
-| Deployment guide | [#18](https://github.com/POWDER-RANGER/CIVWATCH/issues/18) | Production ops runbook |
+| OWASP A01–A05 security audit | [#17](../../issues/17) | Before any public exposure |
+| Rate limiting + API key auth | [#7](../../issues/7) | All routes currently open |
+| Performance: load test with k6 | — | Target 1,000 req/sec |
+| CI/CD coverage gate | [#2](../../issues/2) | Fail PR if coverage < 80% |
+| Penetration testing | [#17](../../issues/17) | No High/Critical open before launch |
+| Packaged releases | — | Windows `.exe`, macOS `.dmg`, Linux `.AppImage` |
+| Electron auto-update flow | — | `updater.ts` live — needs signing + CI pipeline |
+| Model persistence | [#9](../../issues/9) | ML service doesn't serialize models yet |
+| TextBlob → Transformers (M2 ML) | [#8](../../issues/8) | NLP upgrade, interface unchanged |
+| E2E tests (Cypress/Playwright) | [#15](../../issues/15) | No user flow tests yet |
+| Documentation review | [#18](../../issues/18) | Ops runbook, deployment guide final pass |
 
----
-
-## Timeline
-
-```
-March 2026  → Phase 1: PostgreSQL, Redis, real tests, type fixes
-April 2026  → Phase 2: React dashboard, WebSocket, GraphQL
-May 2026    → Phase 3: Security audit, CI/CD, packaged releases
-```
-
----
-
-## Success Metrics
-
-### Phase 1 ✓
-- [ ] All Docker services pass healthchecks
-- [ ] PostgreSQL storing real anomaly data
-- [ ] Redis caching hot query results
-- [ ] 70%+ test coverage
-- [ ] Zero TypeScript type errors
-
-### Phase 2 ✓
-- [ ] Dashboard renders live anomalies from DB
-- [ ] WebSocket updates within 500ms
-- [ ] GraphQL queries under 100ms p99
-- [ ] Supports 100+ concurrent users
-
-### Phase 3 ✓
-- [ ] Security audit passes (no High/Critical findings open)
+**Phase 3 exit criteria:**
+- [ ] Security audit — no High/Critical findings open
 - [ ] API p99 response time < 100ms
-- [ ] Packaged binaries build and run on all three platforms
-- [ ] 80%+ code coverage
-- [ ] CI runs full test suite on every PR
+- [ ] 80%+ code coverage enforced in CI
+- [ ] Packaged binaries build and run on all 3 platforms
+- [ ] Electron auto-update signing pipeline complete
+- [ ] Rate limiting + throttling on all public routes
 
 ---
 
-## Risk Register
+## 🗓️ Timeline
+
+```
+Mar 2026  ✅ Phase 1 complete — DB, auth, CI, Docker, ingestion, anomaly v2, Electron shell
+Apr 1–3   🔧 Phase 2 prep — issue triage, PR branch setup
+Apr 4–20  🚧 Phase 2 — Dashboard UI, WebSocket, Redis, GraphQL, integration tests
+Apr 21    🟡 Phase 3 start — security audit, rate limiting, performance
+May 2     🎯 MVP target — packaged release, public demo instance
+```
+
+---
+
+## 📊 Project Metrics
+
+| Metric | Current | Phase 2 Target | MVP Target |
+|--------|---------|----------------|------------|
+| Backend LOC | ~400 | 1,200+ | 2,000+ |
+| ML Service LOC | ~234 | 600+ | 1,000+ |
+| Frontend LOC | ~250 | 1,500+ | 3,000+ |
+| Test files | 5+ | 15+ | 20+ |
+| Test cases | ~20 | 60+ | 100+ |
+| Code coverage | ~15% | 50%+ | 80%+ |
+| Security workflows | 6 | 6 | 8 |
+| API endpoints documented | 10+ | 18+ | 20+ |
+
+---
+
+## ⚠️ Risk Register
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|------------|--------|------------|
-| Scope creep | High | Schedule slip | Strict phase gates — no Phase 2 work until Phase 1 issues closed |
-| Type issues block progress | Medium | 1-week delay | PR4 addresses this before Phase 2 starts |
-| ML clustering too slow for real data | Medium | Performance issue | Benchmark `POST /detect` in PR3 |
-| DB migration failure | Low | Data loss | Backup strategy before any migration |
-| Security vulnerabilities discovered | Medium | Deployment delay | Phase 3 audit scheduled before any public release |
+| WebSocket performance under load | Medium | Latency > 500ms | Benchmark with k6 in PR11 |
+| GraphQL N+1 queries | High | Dashboard slowness | DataLoader required in PR13 |
+| Redis cache invalidation bugs | Medium | Stale anomaly data | Cache TTL + ingest-triggered invalidation |
+| Electron code signing complexity | Medium | Release delay | Address early in Phase 3 |
+| ML model drift on real civic data | Medium | False positives | Regression test suite in PR14 |
+| Test coverage gate blocks PRs | Low | Dev friction | Gate at 50% Phase 2, 80% Phase 3 only |
 
 ---
 
-## References
+## 📚 References
 
-- [STATUS.md](./STATUS.md) — live per-component truth table
-- [NEXT_PHASE.md](./NEXT_PHASE.md) — concrete this-week tasks
-- [PR0_DAMAGE_CONTROL.md](./PR0_DAMAGE_CONTROL.md) — ✅ completed
-- [PR1_DOCKER_GREEN.md](./PR1_DOCKER_GREEN.md) — ✅ completed
-- [CREDIBILITY_CHECKLIST.md](./CREDIBILITY_CHECKLIST.md) — repo health
+| File | Purpose |
+|------|---------|
+| [STATUS.md](./STATUS.md) | Live per-component truth table — updated Mar 22, 2026 |
+| [NEXT_PHASE.md](./NEXT_PHASE.md) | Concrete this-week tasks + debugging guide |
+| [CHANGELOG.md](./CHANGELOG.md) | Version history |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Contribution guidelines |
+| [SECURITY.md](./SECURITY.md) | Security practices + disclosure policy |
 
 ---
 
-**Questions?** Open an issue or ping Curtis.
+<div align="center">
+
+**Built by [Curtis Farrar](https://github.com/POWDER-RANGER)**  
+Independent Systems Engineer · AI Security Architect · Civic Monitoring  
+*"Make civic data as actionable as a security feed."*
+
+</div>
