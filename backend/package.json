@@ -18,7 +18,7 @@
     "dotenv": "^16.6.1",
     "express": "^4.19.2",
     "express-rate-limit": "^7.3.1",
-    "helmet": "^7.1.0",
+    "helmet": "^7.2.0",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.11.5",
     "rss-parser": "^3.13.0",
