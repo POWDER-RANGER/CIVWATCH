@@ -1,4 +1,4 @@
-# CIVWATCH — Civic Transparency Platform
+March 14, 2026  March 22, 2026# CIVWATCH — Civic Transparency Platform
 
 > 🔒 Maintenance Sprint — CIVWATCH is temporarily private while CI/CD, dependency hygiene, and quality gates are upgraded. Public access will return once the v0.4 pipeline is green.
 
