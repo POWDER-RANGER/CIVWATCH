@@ -45,7 +45,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-      start_period: 5s
+        start_period: 10s
 
   backend:
     build:
@@ -73,7 +73,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+        start_period: 45s
     deploy:
       resources:
         limits:
