@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -7,6 +7,7 @@ import { LoginPage }     from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { SourcesPage }   from './pages/SourcesPage';
 import { AlertsPage }    from './pages/AlertsPage';
+import { AnalyticsPage } from './pages/AnalyticsPage';
 
 function PrivateLayout() {
   const { user, loading } = useAuth();
@@ -18,10 +19,11 @@ function PrivateLayout() {
       <main className="main-content">
         <ErrorBoundary>
           <Routes>
-            <Route path="/"        element={<DashboardPage />} />
-            <Route path="/sources" element={<SourcesPage />}   />
-            <Route path="/alerts"  element={<AlertsPage />}    />
-            <Route path="*"        element={<Navigate to="/" replace />} />
+            <Route path="/"          element={<DashboardPage />} />
+            <Route path="/sources"   element={<SourcesPage />}   />
+            <Route path="/alerts"    element={<AlertsPage />}    />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="*"          element={<Navigate to="/" replace />} />
           </Routes>
         </ErrorBoundary>
       </main>
