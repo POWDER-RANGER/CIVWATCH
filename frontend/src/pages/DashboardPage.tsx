@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { analyticsApi } from '../api/client';
+import AdvancedAnalytics from '../components/AdvancedAnalytics';
 
 interface Overview {
   documentsTotal: number;
@@ -9,22 +10,31 @@ interface Overview {
 
 function sentimentBadge(score: number | null) {
   if (score === null) return <span className="badge badge-neutral">N/A</span>;
-  if (score > 0.1)  return <span className="badge badge-positive">Positive ({score.toFixed(3)})</span>;
-  if (score < -0.1) return <span className="badge badge-negative">Negative ({score.toFixed(3)})</span>;
+  if (score > 0.1)   return <span className="badge badge-positive">Positive ({score.toFixed(3)})</span>;
+  if (score < -0.1)  return <span className="badge badge-negative">Negative ({score.toFixed(3)})</span>;
   return <span className="badge badge-neutral">Neutral ({score.toFixed(3)})</span>;
 }
 
 export function DashboardPage() {
-  const [data, setData]       = useState<Overview | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [overview,  setOverview]  = useState<Overview | null>(null);
+  const [anomaly,   setAnomaly]   = useState<number | null>(null);
+  const [trend,     setTrend]     = useState<any[]>([]);
+  const [clusters,  setClusters]  = useState<any[]>([]);
+  const [loading,   setLoading]   = useState(true);
 
   useEffect(() => {
-    analyticsApi.overview()
-      .then((r) => setData(r.data))
-      .finally(() => setLoading(false));
+    Promise.allSettled([
+      analyticsApi.overview().then(r       => setOverview(r.data)),
+      analyticsApi.anomalyScore().then(r   => setAnomaly(r.data?.score ?? null)),
+      analyticsApi.trend(30).then(r        => setTrend(r.data?.points ?? [])),
+      analyticsApi.clusterSummary().then(r => setClusters(r.data?.clusters ?? [])),
+    ]).finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="spinner" />;
+
+  const threatColor = anomaly === null ? 'var(--muted)'
+    : anomaly > 0.75 ? '#e03030' : anomaly > 0.45 ? '#f0a020' : '#28a870';
 
   return (
     <div>
@@ -33,29 +43,45 @@ export function DashboardPage() {
       <div className="stats-grid">
         <div className="stat-card">
           <div className="label">Documents Ingested</div>
-          <div className="value">{data?.documentsTotal ?? 0}</div>
+          <div className="value">{overview?.documentsTotal ?? 0}</div>
         </div>
         <div className="stat-card">
           <div className="label">Avg Sentiment</div>
           <div className="value" style={{ fontSize: '1.2rem', paddingTop: '.5rem' }}>
-            {sentimentBadge(data?.avgSentimentScore ?? null)}
+            {sentimentBadge(overview?.avgSentimentScore ?? null)}
           </div>
         </div>
         <div className="stat-card">
-          <div className="label">Recent Alerts</div>
-          <div className="value">{data?.recentAlerts?.length ?? 0}</div>
+          <div className="label">Active Alerts</div>
+          <div className="value">{overview?.recentAlerts?.length ?? 0}</div>
+        </div>
+        <div className="stat-card">
+          <div className="label">Anomaly Score</div>
+          <div className="value" style={{ color: threatColor, fontFamily: 'monospace' }}>
+            {anomaly !== null ? anomaly.toFixed(3) : 'N/A'}
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="label">DBSCAN Clusters</div>
+          <div className="value">{clusters.length}</div>
+        </div>
+        <div className="stat-card">
+          <div className="label">Trend Points (30d)</div>
+          <div className="value">{trend.length}</div>
         </div>
       </div>
 
-      <div className="card">
+      <div style={{ marginTop: '1.5rem' }}>
+        <AdvancedAnalytics trend={trend} clusters={clusters} anomalyScore={anomaly} />
+      </div>
+
+      <div className="card" style={{ marginTop: '1.5rem' }}>
         <h3 style={{ marginBottom: '1rem', fontSize: '1rem' }}>Recent Alert Events</h3>
-        {data?.recentAlerts?.length ? (
+        {overview?.recentAlerts?.length ? (
           <table>
-            <thead><tr>
-              <th>Rule</th><th>Value</th><th>Triggered</th>
-            </tr></thead>
+            <thead><tr><th>Rule</th><th>Value</th><th>Triggered</th></tr></thead>
             <tbody>
-              {data.recentAlerts.map((a) => (
+              {overview.recentAlerts.map((a) => (
                 <tr key={a.id}>
                   <td>{a.rule_name}</td>
                   <td>{a.value.toFixed(4)}</td>
@@ -69,7 +95,7 @@ export function DashboardPage() {
         ) : (
           <div className="empty-state">
             <div style={{ fontSize: '2rem' }}>🔔</div>
-            <p>No alerts triggered yet. Add sources and configure alert rules.</p>
+            <p>No alerts triggered yet.</p>
           </div>
         )}
       </div>

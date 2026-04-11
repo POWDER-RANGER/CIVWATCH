@@ -1,11 +1,9 @@
-import axios, { AxiosError } from 'axios';
+﻿import axios, { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 
 const BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
-
 export const api = axios.create({ baseURL: BASE, timeout: 30000 });
 
-// Attach JWT on every request
 api.interceptors.request.use((cfg) => {
   const token = localStorage.getItem('cw_token');
   if (token) cfg.headers.Authorization = `Bearer ${token}`;
@@ -13,7 +11,6 @@ api.interceptors.request.use((cfg) => {
   return cfg;
 });
 
-// Retry once on 5xx; surface friendly errors
 let _retrying = false;
 api.interceptors.response.use(
   (r) => r,
@@ -33,23 +30,24 @@ api.interceptors.response.use(
 );
 
 export const authApi = {
-  login:  (email: string, password: string) => api.post('/auth/login', { email, password }),
-  me:     () => api.get('/auth/me'),
+  login: (email: string, password: string) => api.post('/auth/login', { email, password }),
+  me:    () => api.get('/auth/me'),
 };
-
 export const sourcesApi = {
-  list:   ()                                => api.get('/sources'),
-  create: (body: object)                   => api.post('/sources', body),
-  remove: (id: string)                     => api.delete(`/sources/${id}`),
-  run:    (id: string)                     => api.post(`/sources/${id}/run`),
+  list:   ()             => api.get('/sources'),
+  create: (body: object) => api.post('/sources', body),
+  remove: (id: string)   => api.delete(`/sources/${id}`),
+  run:    (id: string)   => api.post(`/sources/${id}/run`),
 };
-
 export const analyticsApi = {
-  overview: () => api.get('/analytics/overview'),
+  overview:       ()          => api.get('/analytics/overview'),
+  anomalyScore:   ()          => api.get('/score/anomaly'),
+  alertsRecent:   ()          => api.get('/alerts/recent'),
+  trend:          (days = 30) => api.get(`/analytics/trend?days=${days}`),
+  clusterSummary: ()          => api.get('/analytics/clusters'),
 };
-
 export const alertsApi = {
-  list:   ()           => api.get('/alerts'),
-  recent: ()           => api.get('/alerts/recent'),
-  create: (b: object)  => api.post('/alerts', b),
+  list:   ()          => api.get('/alerts'),
+  recent: ()          => api.get('/alerts/recent'),
+  create: (b: object) => api.post('/alerts', b),
 };
