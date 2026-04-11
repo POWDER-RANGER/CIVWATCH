@@ -1,4 +1,4 @@
-﻿import axios, { AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 
 const BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
@@ -50,4 +50,18 @@ export const alertsApi = {
   list:   ()          => api.get('/alerts'),
   recent: ()          => api.get('/alerts/recent'),
   create: (b: object) => api.post('/alerts', b),
+};
+export const ingestApi = {
+  submit: (body: {
+    source:    string;
+    content:   string;
+    metadata?: Record<string, unknown>;
+  }) => api.post('/ingest', body),
+};
+export const anomaliesApi = {
+  list:   (params?: { limit?: number; offset?: number; minScore?: number }) =>
+    api.get('/anomalies', { params }),
+  get:    (id: string) => api.get(`/anomalies/${id}`),
+  create: (body: { score: number; label: string; data: unknown }) =>
+    api.post('/anomalies', body),
 };
