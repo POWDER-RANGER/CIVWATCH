@@ -12,15 +12,13 @@ on:
         default: 'v1.0.0'
 
 jobs:
+
   # -----------------------------------------------------------------------
   # JOB 1: Build Windows .exe via Electron Forge (NSIS installer)
   # -----------------------------------------------------------------------
   build-windows:
     name: Build Windows Installer (.exe)
     runs-on: windows-latest
-    defaults:
-      run:
-        working-directory: civwatch-desktop
 
     steps:
       - name: Checkout
@@ -30,45 +28,43 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: civwatch-desktop/package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install desktop dependencies
+        working-directory: civwatch-desktop
+        run: npm install
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install
 
       - name: Build frontend (Vite)
         working-directory: frontend
-        run: |
-          npm ci
-          npm run build
+        run: npm run build
 
-      - name: Copy frontend dist into Electron app
+      - name: Copy frontend dist into Electron renderer
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path .\renderer\dist
-          Copy-Item -Recurse -Force ..\frontend\dist\* .\renderer\dist\
-
-      - name: Compile TypeScript
-        run: npx tsc --noEmit false --outDir dist
+          New-Item -ItemType Directory -Force -Path civwatch-desktop\renderer\dist | Out-Null
+          Copy-Item -Recurse -Force frontend\dist\* civwatch-desktop\renderer\dist\
 
       - name: Electron Forge Make (NSIS)
+        working-directory: civwatch-desktop
         run: npm run make
         env:
           NODE_ENV: production
-          npm_package_version: ${{ github.ref_name }}
 
-      - name: Upload Windows artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: civwatch-windows-exe
-          path: civwatch-desktop/out/make/squirrel.windows/**/*.exe
-          if-no-files-found: warn
-
-      - name: Upload NSIS installer artifact
+      - name: Upload NSIS installer
         uses: actions/upload-artifact@v4
         with:
           name: civwatch-windows-nsis
           path: civwatch-desktop/out/make/nsis/**/*.exe
+          if-no-files-found: warn
+
+      - name: Upload Squirrel exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: civwatch-windows-exe
+          path: civwatch-desktop/out/make/squirrel.windows/**/*.exe
           if-no-files-found: warn
 
   # -----------------------------------------------------------------------
@@ -96,10 +92,10 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install frontend deps & build
+      - name: Install frontend deps and build
         working-directory: frontend
         run: |
-          npm ci
+          npm install
           npm run build
 
       - name: Install Capacitor CLI
@@ -107,8 +103,14 @@ jobs:
 
       - name: Install android package deps
         working-directory: android
+        run: npm install
+
+      - name: Initialize Capacitor Android project if needed
+        working-directory: android
         run: |
-          npm ci
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
 
       - name: Capacitor sync
         working-directory: android
@@ -120,7 +122,7 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: civwatch-android-apk
@@ -128,12 +130,13 @@ jobs:
           if-no-files-found: warn
 
   # -----------------------------------------------------------------------
-  # JOB 3: Create GitHub Release and attach artifacts
+  # JOB 3: Create GitHub Release
   # -----------------------------------------------------------------------
   create-release:
     name: Create GitHub Release
     needs: [build-windows, build-android]
     runs-on: ubuntu-latest
+    if: always()
     permissions:
       contents: write
 
@@ -141,21 +144,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download Windows NSIS artifact
+      - name: Download Windows NSIS
         uses: actions/download-artifact@v4
         with:
           name: civwatch-windows-nsis
           path: release-artifacts/windows
         continue-on-error: true
 
-      - name: Download Windows Squirrel artifact
+      - name: Download Windows Squirrel
         uses: actions/download-artifact@v4
         with:
           name: civwatch-windows-exe
           path: release-artifacts/windows
         continue-on-error: true
 
-      - name: Download Android APK artifact
+      - name: Download Android APK
         uses: actions/download-artifact@v4
         with:
           name: civwatch-android-apk
@@ -163,7 +166,7 @@ jobs:
         continue-on-error: true
 
       - name: List artifacts
-        run: find release-artifacts -type f | sort
+        run: find release-artifacts -type f 2>/dev/null | sort || echo 'No artifacts found'
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -178,27 +181,27 @@ jobs:
             ### Downloads
             | Platform | File | Notes |
             |---|---|---|
-            | **Windows** | `CIVWATCH-Setup-*.exe` | NSIS installer, runs on Windows 10/11 x64 |
-            | **Android** | `app-debug.apk` | Debug APK, enable "Install from unknown sources" |
+            | **Windows** | `CIVWATCH-Setup-*.exe` | NSIS installer, Windows 10/11 x64 |
+            | **Android** | `app-debug.apk` | Enable "Install from unknown sources" |
 
-            ### What’s included
+            ### What's included
             - FastAPI ML scoring service (TF-IDF + DBSCAN anomaly detection)
-            - Backend ingestion workers for USASpending.gov + Congress.gov
+            - Backend ingestion workers (USASpending.gov + Congress.gov)
             - Electron desktop shell with auto-updater
             - React frontend dashboard
 
             ### Install (Windows)
             1. Download `CIVWATCH-Setup-*.exe`
-            2. Run the installer — creates Start Menu entry + Desktop shortcut
+            2. Run installer — creates Start Menu + Desktop shortcut
             3. App auto-updates on launch
 
             ### Install (Android)
             1. Download `app-debug.apk`
-            2. Enable **Settings → Security → Install unknown apps**
-            3. Open the APK file to install
+            2. Enable Settings → Security → Install unknown apps
+            3. Open the APK to install
           files: |
-            release-artifacts/windows/*.exe
-            release-artifacts/android/*.apk
+            release-artifacts/**/*.exe
+            release-artifacts/**/*.apk
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
