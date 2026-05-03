@@ -1,16 +1,18 @@
 name: OpenSSF Scorecard
+
 on:
-  # Run on branch protection changes, releases, and schedule
   branch_protection_rule:
   release:
     types: [published]
   schedule:
-    # Weekly on Saturdays at 00:00 UTC
     - cron: '0 0 * * 6'
   push:
     branches:
       - main
   workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"  # node24 guard — June 2 2026 deadline
 
 permissions: read-all
 
@@ -19,18 +21,13 @@ jobs:
     name: Scorecard analysis
     runs-on: ubuntu-latest
     permissions:
-      # Needed to upload the results to code-scanning dashboard
       security-events: write
-      # Needed to publish results and get a badge
       id-token: write
-      # Required to read repository content
       contents: read
-      # Required to read Actions workflows
       actions: read
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v5  # node24 runtime (was @v4 / node20)
         with:
           persist-credentials: false
 
@@ -39,19 +36,16 @@ jobs:
         with:
           results_file: results.sarif
           results_format: sarif
-          # Publish the results for public repos to enable the badge
           publish_results: true
 
-      # Upload the results as artifacts
       - name: Upload artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v5  # node24 runtime (was @v7 — skipping to current)
         with:
           name: SARIF file
           path: results.sarif
           retention-days: 5
 
-      # Upload the results to GitHub's code scanning dashboard
       - name: Upload to code-scanning
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v5  # node24 runtime (was @v4)
         with:
           sarif_file: results.sarif
