@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main, develop]
 
+# Force Node 24 runtime for all JavaScript actions.
+# Guards against marketplace actions that still declare node20 in their action.yml.
+# GitHub default switches to Node 24 on June 2, 2026.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
 
   # ── Backend ──────────────────────────────────────────────
@@ -16,12 +22,12 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5  # node24 runtime (was @v4 / node20)
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5  # node24 runtime (was @v4 / node20)
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
 
@@ -45,7 +51,7 @@ jobs:
           REDIS_URL: redis://localhost:6379
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5  # node24 runtime (was @v4 / node20)
         with:
           directory: backend/coverage
           flags: backend
@@ -59,10 +65,10 @@ jobs:
       run:
         working-directory: ml
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5  # node24 runtime (was @v4 / node20)
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6  # node24 runtime (was @v5 / node20)
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -85,7 +91,7 @@ jobs:
         run: python -c "from main import app; print('FastAPI app import: OK')"
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5  # node24 runtime (was @v4 / node20)
         with:
           directory: ml
           flags: ml
@@ -99,12 +105,12 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5  # node24 runtime (was @v4 / node20)
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5  # node24 runtime (was @v4 / node20)
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -132,7 +138,7 @@ jobs:
     name: Security Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5  # node24 runtime (was @v4 / node20)
 
       - name: Run Trivy vulnerability scan
         uses: aquasecurity/trivy-action@master
