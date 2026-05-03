@@ -44,10 +44,9 @@ app.add_middleware(
 )
 
 # ---------------------------------------------------------------------------
-# Model bootstrap — train on startup with civic-domain seed corpus
+# Model bootstrap
 # ---------------------------------------------------------------------------
 _CIVIC_CORPUS = [
-  # High-concern civic signals (label=1)
   "budget deficit emergency spending increase tax hike",
   "contract awarded no-bid sole source procurement override",
   "executive session closed meeting public excluded",
@@ -68,7 +67,6 @@ _CIVIC_CORPUS = [
   "federal grant misused clawback repayment required",
   "public comment period waived emergency declaration",
   "redistricting gerrymandering challenge filed court",
-  # Low-concern routine records (label=0)
   "regular meeting agenda approved minutes recorded",
   "annual budget adopted fiscal year appropriations",
   "road maintenance schedule pothole repair crew",
@@ -122,26 +120,19 @@ class _ScoringModel:
     text = f"{title} {body}".lower().strip()
     if not text:
       return {"score": 0.0, "confidence": 0.0, "label": "unscored"}
-
     vec = self.vectorizer.transform([text])
     proba = self.classifier.predict_proba(vec)[0]
-    concern_prob = float(proba[1])  # probability of class=1 (high concern)
-
-    # Boost score for explicit keyword hits
+    concern_prob = float(proba[1])
     keyword_hits = sum(1 for kw in _CONCERN_KEYWORDS if kw in text)
     boost = min(keyword_hits * 0.04, 0.25)
     raw_score = min(concern_prob + boost, 1.0)
-
-    # Confidence is distance from decision boundary
     confidence = float(abs(raw_score - 0.5) * 2)
-
     if raw_score >= 0.65:
       label = "high_concern"
     elif raw_score >= 0.40:
       label = "moderate_concern"
     else:
       label = "routine"
-
     return {
       "score": round(raw_score, 6),
       "confidence": round(confidence, 6),
@@ -159,9 +150,6 @@ async def startup_event():
   logger.info("[civwatch-ml] Service ready on port 5000")
 
 
-# ---------------------------------------------------------------------------
-# Pydantic schemas
-# ---------------------------------------------------------------------------
 class SingleItem(BaseModel):
   title: str = Field(default="", description="Document title")
   body: str = Field(default="", description="Document body (first 2000 chars)")
@@ -203,9 +191,6 @@ class AnomalyResponse(BaseModel):
   n_anomalies: int
 
 
-# ---------------------------------------------------------------------------
-# Routes
-# ---------------------------------------------------------------------------
 @app.get("/health")
 def health():
   return {
@@ -226,57 +211,31 @@ def predict(item: SingleItem):
 
 @app.post("/analyze/batch", response_model=BatchResponse)
 def analyze_batch(req: BatchRequest):
-  """
-  Batch scoring endpoint called by ingestionWorker.ts.
-  Accepts up to 200 items per call.
-  """
   if _model is None:
     raise HTTPException(status_code=503, detail="Model not ready")
   if len(req.items) > 200:
     raise HTTPException(status_code=400, detail="Max 200 items per batch")
-
   t0 = time.perf_counter()
   results: List[ScoreResult] = []
   for item in req.items:
     scored = _model.score(item.title, item.body[:2000])
     results.append(ScoreResult(item_id=item.item_id, **scored))
-
   elapsed = round((time.perf_counter() - t0) * 1000, 2)
   logger.info(f"[civwatch-ml] Batch scored {len(results)} items in {elapsed}ms")
-  return BatchResponse(
-    results=results,
-    processed=len(results),
-    elapsed_ms=elapsed,
-  )
+  return BatchResponse(results=results, processed=len(results), elapsed_ms=elapsed)
 
 
 @app.post("/anomalies/detect", response_model=AnomalyResponse)
 def detect_anomalies(req: AnomalyRequest):
-  """
-  DBSCAN anomaly detection on a vector of document scores.
-  Returns indices of anomalous documents (cluster label == -1).
-  """
   if len(req.scores) < 2:
-    return AnomalyResponse(
-      anomaly_indices=[],
-      cluster_labels=[],
-      n_clusters=0,
-      n_anomalies=0,
-    )
-
+    return AnomalyResponse(anomaly_indices=[], cluster_labels=[], n_clusters=0, n_anomalies=0)
   X = np.array(req.scores).reshape(-1, 1)
   X_scaled = StandardScaler().fit_transform(X)
   db = DBSCAN(eps=req.eps, min_samples=req.min_samples, metric="euclidean")
   labels = db.fit_predict(X_scaled)
-
   anomaly_indices = [int(i) for i, lbl in enumerate(labels) if lbl == -1]
   n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
-
-  logger.info(
-    f"[civwatch-ml] DBSCAN: {len(req.scores)} docs, "
-    f"{n_clusters} clusters, {len(anomaly_indices)} anomalies"
-  )
-
+  logger.info(f"[civwatch-ml] DBSCAN: {len(req.scores)} docs, {n_clusters} clusters, {len(anomaly_indices)} anomalies")
   return AnomalyResponse(
     anomaly_indices=anomaly_indices,
     cluster_labels=[int(l) for l in labels],
@@ -285,9 +244,6 @@ def detect_anomalies(req: AnomalyRequest):
   )
 
 
-# ---------------------------------------------------------------------------
-# Entrypoint
-# ---------------------------------------------------------------------------
 if __name__ == "__main__":
   port = int(os.environ.get("ML_PORT", 5000))
   uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
