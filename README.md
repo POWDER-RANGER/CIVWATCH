@@ -1,6 +1,8 @@
-````markdown
+
+<p align="center">
+
 ```
-██████╗██╗██╗   ██╗██╗    ██╗ █████╗ ████████╗ ██████╗██╗  ██╗
+ ██████╗██╗██╗   ██╗██╗    ██╗ █████╗ ████████╗ ██████╗██╗  ██╗
 ██╔════╝██║██║   ██║██║    ██║██╔══██╗╚══██╔══╝██╔════╝██║  ██║
 ██║     ██║╚██╗ ██╔╝██║ █╗ ██║███████║   ██║   ██║     ███████║
 ██║     ██║ ╚████╔╝ ██║███╗██║██╔══██║   ██║   ██║     ██╔══██║
@@ -8,277 +10,322 @@
  ╚═════╝╚═╝   ╚═╝    ╚══╝╚══╝ ╚═╝  ╚═╝   ╚═╝    ╚═════╝╚═╝  ╚═╝
 ```
 
-### **Next-Generation Civic Transparency Platform**
+</p>
 
-Turn fragmented public records into legible, queryable intelligence.
+<p align="center">
+  <strong>◈ CIVIC INTELLIGENCE. ANOMALY DETECTION. REAL-TIME TRUTH. ◈</strong><br/>
+  <sub>Transform fragmented public records into normalized, anomaly-aware, queryable intelligence.</sub>
+</p>
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Redis](https://img.shields.io/badge/Redis-FF4438?style=flat&logo=redis&logoColor=white)](https://redis.io/)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+<p align="center">
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white"/></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white"/></a>
+  <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white"/></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black"/></a>
+  <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white"/></a>
+  <a href="https://redis.io/"><img src="https://img.shields.io/badge/Redis-FF4438?style=for-the-badge&logo=redis&logoColor=white"/></a>
+  <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"/></a>
+</p>
 
-![Version](https://img.shields.io/github/package-json/v/POWDER-RANGER/CIVWATCH)
-![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
-![Issues](https://img.shields.io/github/issues/POWDER-RANGER/CIVWATCH)
-![PRs](https://img.shields.io/github/issues-pr/POWDER-RANGER/CIVWATCH)
-![Status](https://img.shields.io/badge/Status-Phase%202%20Active-orange)
+<p align="center">
+  <img src="https://img.shields.io/github/package-json/v/POWDER-RANGER/CIVWATCH?style=flat-square&color=00ff9f"/>
+  <img src="https://img.shields.io/badge/License-MIT-00ff9f?style=flat-square"/>
+  <img src="https://img.shields.io/github/issues/POWDER-RANGER/CIVWATCH?style=flat-square&color=ff4757"/>
+  <img src="https://img.shields.io/github/issues-pr/POWDER-RANGER/CIVWATCH?style=flat-square&color=ffa502"/>
+  <img src="https://img.shields.io/github/last-commit/POWDER-RANGER/CIVWATCH?style=flat-square&color=00d2ff"/>
+  <img src="https://img.shields.io/badge/Phase-2%20Active-orange?style=flat-square"/>
+  <img src="https://img.shields.io/badge/ML_Engine-LIVE-00ff9f?style=flat-square"/>
+</p>
 
-[**📊 Live Status**](STATUS.md) · [**🛣️ Roadmap**](IMPLEMENTATION_ROADMAP.md) · [**📋 Architecture**](docs/architecture.md) · [**🔒 Security**](SECURITY.md) · [**🐛 Issues**](https://github.com/POWDER-RANGER/CIVWATCH/issues)
-
----
-
-## 🧭 What Is CIVWATCH?
-
-CIVWATCH is a **full-stack civic intelligence platform** that transforms fragmented public records — agendas, minutes, budgets, contracts, votes — into normalized, anomaly-aware timelines. Designed for residents, journalists, and civic analysts who need more than PDFs.
-
-**Current state (May 18, 2026):** Phase 1 Foundation is **complete**. Phase 2 Feature Completeness is **active (overrun — Apr 4 window passed)**. The ML service runs live DBSCAN anomaly detection on `:5000`. The backend serves `/api/status` and `/api/health` on `:3000`. PostgreSQL is wired and storing data. JWT auth middleware is live. The React frontend nav route for the AnomalyDashboard is wired. Three critical Phase 2 gaps remain:
-
-- **Feature extraction type errors** in `dataAnalyzer.ts` blocking verified vector output (#3)
-- **DBSCAN execution path** — no scheduler/trigger wired from `anomaly_scores` (manual-call only)
-- **ML `/predict` endpoint** — missing schema + return binding to `GET /api/anomalies` (#9)
-
----
-
-## ⚡ System Status
-
-**Last verified:** May 18, 2026 → Full truth table in [**STATUS.md**](STATUS.md)
-
-| Component | Status |
-|-----------|--------|
-| 🟢 **Backend API** (`/status`, `/health`, `/alerts`, `/analytics`) | `LIVE` |
-| 🟢 **Auth middleware** (JWT `requireAuth`) | `DONE` |
-| 🟢 **ML Service** (FastAPI `:5000`) | `LIVE` |
-| 🟢 **ML — DBSCAN `/detect`** | `LIVE` — StandardScaler applied |
-| 🟢 **ML — Sentiment, Batch, Anomaly scoring v2** | `LIVE` |
-| 🟢 **PostgreSQL** | `WIRED` — pool, migrations, routes querying |
-| 🟢 **Docker Compose** | `DONE` — all healthchecks fixed |
-| 🟢 **CI/CD Pipeline** | `LIVE` — Jest/pytest + 6 security workflows |
-| 🟡 **`/api/anomalies`** | `PARTIAL` — registered, returns empty array |
-| 🟡 **`/api/ingest`** | `PARTIAL` — accepts POST, no storage/forwarding |
-| 🟡 **Feature extraction** | `BOTTLENECK` — `dataAnalyzer.ts` type errors (#3) |
-| 🟡 **Frontend dashboard** | `PARTIAL` — nav wired, no live data binding |
-| 🟡 **Redis cache** | `PLANNED` — client declared, not wired (#5) |
-| 🔴 **DBSCAN trigger** | `GAP` — no scheduler from `anomaly_scores` |
-| 🔴 **ML `/predict`** | `NOT STARTED` — no schema, no return binding (#9) |
-| 🔴 **WebSocket / Real-Time** | `NOT STARTED` (#12) |
-| 🔴 **Rate limiting** | `NOT STARTED` (#7) |
-
-> **Legend:** 🟢 Done & verified | 🟡 Partial / needs work | 🔴 Not started / blocked
+<p align="center">
+  <a href="STATUS.md">📡 Live Status</a> ·
+  <a href="IMPLEMENTATION_ROADMAP.md">🛣️ Roadmap</a> ·
+  <a href="docs/architecture.md">📐 Architecture</a> ·
+  <a href="SECURITY.md">🔒 Security</a> ·
+  <a href="https://github.com/POWDER-RANGER/CIVWATCH/issues">🐛 Issues</a>
+</p>
 
 ---
 
-## 🚀 Get Running in 5 Minutes
+## ◈ What Is CIVWATCH?
 
-**Prerequisites:** Docker & Docker Compose · Node.js 20+ · Python 3.10+
+CIVWATCH is a **full-stack civic intelligence platform** purpose-built to surface patterns in public records that institutions don't want surfaced. It ingests agendas, minutes, contracts, budgets, and vote records — then normalizes, scores, and visualizes anomalies in real time.
+
+Built for residents, journalists, investigators, and civic analysts who need **machine-grade clarity** on government data — not PDFs.
+
+> *"Make civic data as actionable as a security feed."*
+
+---
+
+## ◈ Architecture at a Glance
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        CIVWATCH STACK                           │
+├──────────────────┬──────────────────┬───────────────────────────┤
+│  React/Vite      │  Node/Express     │  Python FastAPI           │
+│  Dashboard :4000 │  API Server :3000 │  ML Engine :5000          │
+│  AnomalyUI       │  /alerts          │  DBSCAN /detect           │
+│  Charts (WIP)    │  /analytics       │  z-score /score/anomaly   │
+│  Auth Views      │  /anomalies       │  TextBlob → DistilBERT    │
+│                  │  /ingest          │  /analyze/sentiment       │
+├──────────────────┴──────────┬────────┴───────────────────────────┤
+│         PostgreSQL          │  Redis (cache layer — in progress) │
+│         Data Store          │  30s TTL on alert routes           │
+├─────────────────────────────┴────────────────────────────────────┤
+│  Docker Compose · CI/CD · 6 Security Workflows · Electron Shell  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+**Port map:** Frontend `:4000` → Backend API `:3000` → ML Engine `:5000` → PostgreSQL `:5432` → Redis `:6379`
+
+Full design → [**docs/architecture.md**](docs/architecture.md)
+
+---
+
+## ◈ System Status
+
+> **Last verified:** May 18, 2026 · Full per-component matrix → [**STATUS.md**](STATUS.md)
+
+| Component | State | Notes |
+|-----------|-------|-------|
+| 🟢 Backend API | `LIVE` | `/status` `/health` `/alerts` `/analytics` |
+| 🟢 JWT Auth Middleware | `LIVE` | `requireAuth` on all protected routes |
+| 🟢 ML Engine (FastAPI :5000) | `LIVE` | Health check passing |
+| 🟢 DBSCAN `/detect` | `LIVE` | StandardScaler applied, outliers → `-1` |
+| 🟢 Anomaly Scoring v2 | `LIVE` | z-score + threshold flags |
+| 🟢 Sentiment `/analyze/sentiment` | `LIVE` | TextBlob MVP |
+| 🟢 Batch Scoring `/analyze/batch` | `LIVE` | |
+| 🟢 PostgreSQL | `LIVE` | Pool, migrations, routes querying |
+| 🟢 Docker Compose | `LIVE` | All healthchecks resolved |
+| 🟢 CI/CD Pipeline | `LIVE` | Jest + pytest + 6 security workflows |
+| 🟢 Electron Shell | `LIVE` | IPC bridge complete |
+| 🟡 `/api/anomalies` | `PARTIAL` | Returns empty array — ML bind pending |
+| 🟡 `/api/ingest` | `PARTIAL` | Accepts POST — no storage/forwarding yet |
+| 🟡 `dataAnalyzer.ts` | `BOTTLENECK` | Type errors blocking vector output ([#3](https://github.com/POWDER-RANGER/CIVWATCH/issues/3)) |
+| 🟡 Frontend AnomalyDashboard | `PARTIAL` | Nav wired — no live data binding |
+| 🟡 Redis Cache | `WIRED` | Client declared — routes not hooked ([#5](https://github.com/POWDER-RANGER/CIVWATCH/issues/5)) |
+| 🔴 DBSCAN Scheduler | `GAP` | No trigger from `anomaly_scores` table |
+| 🔴 ML `/predict` Endpoint | `NOT STARTED` | Pydantic schema + `/api/anomalies` bind ([#9](https://github.com/POWDER-RANGER/CIVWATCH/issues/9)) |
+| 🔴 WebSocket / Real-Time | `NOT STARTED` | socket.io + pg LISTEN/NOTIFY ([#12](https://github.com/POWDER-RANGER/CIVWATCH/issues/12)) |
+| 🔴 Rate Limiting | `NOT STARTED` | ([#7](https://github.com/POWDER-RANGER/CIVWATCH/issues/7)) |
+
+> 🟢 Verified · 🟡 Partial / In Progress · 🔴 Not Started / Blocked
+
+---
+
+## ◈ Get Running in 5 Minutes
+
+**Requirements:** Docker + Docker Compose · Node.js 20+ · Python 3.10+
 
 ```bash
 # 1. Clone
 git clone https://github.com/POWDER-RANGER/CIVWATCH.git && cd CIVWATCH
 
-# 2. Configure
+# 2. Configure environment
 cp .env.example .env
-# Edit .env — set DB credentials, Redis URL, JWT secret
+# → Set: DB credentials · Redis URL · JWT secret
 
-# 3. Start everything
+# 3. Spin everything up
 docker-compose up
 # or: npm run docker:up
 
 # 4. Verify
-curl http://localhost:3000/api/status   # → {"status":"ok"}
-curl http://localhost:5000/health       # → {"status":"ok"}
+curl http://localhost:3000/api/status   # {"status":"ok"}
+curl http://localhost:5000/health       # {"status":"ok"}
 open http://localhost:4000              # React dashboard
 ```
 
 ### Local Dev (No Docker)
+
 ```bash
-npm run setup        # Install all dependencies
+npm run setup        # Install all deps across workspaces
 npm run dev          # All services concurrently
+
 # Or individually:
-npm run dev:backend  # Node.js API → :3000
-npm run dev:frontend # React UI → :4000
-npm run dev:ml       # FastAPI ML → :5000
+npm run dev:backend  # Node.js API        → :3000
+npm run dev:frontend # React/Vite UI      → :4000
+npm run dev:ml       # FastAPI ML engine  → :5000
 ```
 
-Pick a [good-first issue](https://github.com/POWDER-RANGER/CIVWATCH/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) and open a PR. Every PR needs a short `why` in the description.
+See [**SETUP.md**](SETUP.md) for full environment configuration, secrets management, and database initialization.
 
 ---
 
-## 🧠 ML Pipeline
+## ◈ ML Pipeline
 
-The anomaly detection engine runs independently on `:5000` and is the most production-ready component in the stack.
+The anomaly detection engine runs independently on `:5000` and is the most production-ready component in the stack. It processes raw civic data vectors and returns cluster labels — outliers flagged as `-1`.
 
 ```bash
-# POST civic data points for anomaly scoring
+# Submit civic data points for DBSCAN anomaly scoring
 curl -X POST http://localhost:5000/detect \
   -H "Content-Type: application/json" \
-  -d '{ "data": [[1.2, 0.5, 200000], [1.0, 0.4, 195000], [8.9, 7.1, 4500000]] }'
-# Response: DBSCAN cluster labels — outliers flagged as -1
+  -d '{"data": [[1.2, 0.5, 200000], [1.0, 0.4, 195000], [8.9, 7.1, 4500000]]}'
+# → {"labels": [0, 0, -1]}  ← last point flagged as anomaly
+
+# z-score + threshold anomaly scoring
+curl -X POST http://localhost:5000/score/anomaly \
+  -H "Content-Type: application/json" \
+  -d '{"values": [200000, 195000, 4500000]}'
+
+# Sentiment analysis on civic text
+curl -X POST http://localhost:5000/analyze/sentiment \
+  -H "Content-Type: application/json" \
+  -d '{"text": "The council approved the $4.5M no-bid contract unanimously."}'
 ```
 
-| Step | Status |
-|------|--------|
-| Data ingestion (`POST /detect`) | ✅ Live |
-| Normalization (`StandardScaler`) | ✅ Live |
-| Clustering (DBSCAN / scikit-learn) | ✅ Live |
-| Outlier flagging (Label `-1`) | ✅ Live |
-| Sentiment analysis (`/analyze/sentiment`) | ✅ Live — TextBlob MVP |
-| Batch scoring (`/analyze/batch`) | ✅ Live |
-| Anomaly scoring v2 (`/score/anomaly`) | ✅ Live — z-score + flags |
-| Transformers swap (DistilBERT NLP) | 🔴 Planned (#8) |
-| Model persistence | 🔴 Planned |
+| Step | Status | Detail |
+|------|--------|--------|
+| Data ingestion (`POST /detect`) | ✅ | Live |
+| Normalization | ✅ | `StandardScaler` applied |
+| Clustering | ✅ | DBSCAN via scikit-learn |
+| Outlier flagging | ✅ | Label `-1` = anomaly |
+| z-score scoring | ✅ | `POST /score/anomaly` |
+| Batch scoring | ✅ | `POST /analyze/batch` |
+| Sentiment analysis | ✅ | TextBlob MVP live |
+| `/predict` endpoint | 🔴 | Pydantic schema needed ([#9](https://github.com/POWDER-RANGER/CIVWATCH/issues/9)) |
+| DistilBERT NLP swap | 🔴 | Replaces TextBlob ([#8](https://github.com/POWDER-RANGER/CIVWATCH/issues/8)) |
+| Model persistence | 🔴 | Planned |
 
 ---
 
-## 🗂️ Repo Layout
+## ◈ Repo Layout
 
 ```
 CIVWATCH/
-├── 📁 backend/          Node.js/Express API (:3000)
-│   ├── /api/status      ✅ LIVE
-│   ├── /api/health      ✅ LIVE
-│   ├── /api/alerts      ✅ LIVE
-│   ├── /api/analytics   ✅ LIVE
-│   ├── /api/anomalies   ⚠️ PARTIAL (empty array)
-│   └── /api/ingest      ⚠️ PARTIAL (no processing)
-├── 📁 frontend/         React/Vite dashboard (:4000)
-│   └── AnomalyDashboard ⚠️ PARTIAL (no data binding)
-├── 📁 ml/               Python FastAPI ML engine (:5000)
-│   ├── POST /detect     ✅ DBSCAN live
+├── 📁 backend/            Node.js/Express API (:3000)
+│   ├── /api/status        ✅ LIVE
+│   ├── /api/health        ✅ LIVE
+│   ├── /api/alerts        ✅ LIVE
+│   ├── /api/analytics     ✅ LIVE
+│   ├── /api/anomalies     ⚠️  PARTIAL — empty array, ML bind needed
+│   └── /api/ingest        ⚠️  PARTIAL — no storage/forwarding
+├── 📁 frontend/           React/Vite dashboard (:4000)
+│   └── AnomalyDashboard   ⚠️  PARTIAL — nav wired, no data binding
+├── 📁 ml/                 Python FastAPI ML engine (:5000)
+│   ├── POST /detect        ✅ DBSCAN live
 │   ├── POST /score/anomaly ✅ z-score + flags
-│   └── POST /analyze/*  ✅ sentiment + batch
-├── 📁 src/analytics/    dataAnalyzer.ts ⚠️ Type errors (#3)
-├── 📁 civwatch-desktop/ Electron wrapper (Phase 1 complete)
-├── 📁 tests/            Jest + pytest, ~15% coverage
-├── 📁 docs/             Architecture, API spec, testing strategy
-├── 📁 .github/          6 security scanning workflows
-├── 🐳 docker-compose.yml
-└── ⚙️ .env.example
+│   └── POST /analyze/*     ✅ sentiment + batch
+├── 📁 src/analytics/      dataAnalyzer.ts ⚠️  type errors (#3)
+├── 📁 civwatch-desktop/   Electron wrapper — Phase 1 complete
+├── 📁 tests/              Jest + pytest (~15% coverage)
+├── 📁 docs/               Architecture · API spec · Testing strategy
+├── 📁 .github/            6 security scanning workflows
+├── 🐳  docker-compose.yml
+└── ⚙️  .env.example
 ```
 
 ---
 
-## 🛣️ Roadmap
+## ◈ Roadmap
 
-### Phase 1 — Foundation ✅ COMPLETE
+### Phase 1 — Foundation `✅ COMPLETE`
 
 | | |
 |-|-|
-| ✅ | Backend health/status/alerts/analytics APIs live |
+| ✅ | Backend health / status / alerts / analytics APIs |
 | ✅ | PostgreSQL pool + real migrations |
 | ✅ | ML FastAPI + DBSCAN + StandardScaler |
 | ✅ | JWT auth middleware |
-| ✅ | Docker Compose healthchecks fixed |
-| ✅ | CI/CD + 6 security workflows |
+| ✅ | Docker Compose — all healthchecks resolved |
+| ✅ | CI/CD + 6 security scanning workflows |
 | ✅ | Electron shell + IPC bridge |
 
-### Phase 2 — Feature Completeness 🚧 IN PROGRESS (Overrun — Active May 2026)
+### Phase 2 — Feature Completeness `🚧 ACTIVE`
 
-| |
-|-|
-| 🔴 **[CRITICAL]** Fix `dataAnalyzer.ts` type errors; verify real vector output (#3) |
-| 🔴 **[CRITICAL]** Wire DBSCAN trigger/scheduler from `anomaly_scores` table |
-| 🔴 **[CRITICAL]** ML `/predict` — add Pydantic schema + bind return to `/api/anomalies` (#9) |
-| 🟡 Complete `POST /api/ingest` — store, queue, forward to ML |
-| 🟡 Build React charts + anomaly visualization components (#10, #11) |
-| 🟡 WebSocket real-time layer (socket.io + pg LISTEN/NOTIFY) (#12) |
-| 🟡 Wire Redis caching into alert routes (30s TTL) (#5) |
-| 🟡 Swap TextBlob → DistilBERT for sentiment (#8) |
-| 🟡 Add composite indexes on `anomaly_scores` and `alerts` |
-| 🟡 Integration tests — backend-to-ML, frontend-to-backend (#15) |
+| Priority | Task | Issue |
+|----------|------|-------|
+| 🔴 CRITICAL | Fix `dataAnalyzer.ts` type errors — verify real vector output | [#3](https://github.com/POWDER-RANGER/CIVWATCH/issues/3) |
+| 🔴 CRITICAL | Wire DBSCAN scheduler/trigger from `anomaly_scores` table | — |
+| 🔴 CRITICAL | ML `/predict` — Pydantic schema + bind return to `/api/anomalies` | [#9](https://github.com/POWDER-RANGER/CIVWATCH/issues/9) |
+| 🟡 HIGH | Complete `POST /api/ingest` — store, queue, forward to ML | — |
+| 🟡 HIGH | React anomaly charts + visualization components | [#10](https://github.com/POWDER-RANGER/CIVWATCH/issues/10) [#11](https://github.com/POWDER-RANGER/CIVWATCH/issues/11) |
+| 🟡 HIGH | WebSocket real-time layer (socket.io + pg LISTEN/NOTIFY) | [#12](https://github.com/POWDER-RANGER/CIVWATCH/issues/12) |
+| 🟡 MED | Wire Redis into alert routes (30s TTL) | [#5](https://github.com/POWDER-RANGER/CIVWATCH/issues/5) |
+| 🟡 MED | Swap TextBlob → DistilBERT NLP | [#8](https://github.com/POWDER-RANGER/CIVWATCH/issues/8) |
+| 🟡 MED | Composite indexes on `anomaly_scores` + `alerts` tables | — |
+| 🟡 MED | Integration tests — backend-to-ML + frontend-to-backend | [#15](https://github.com/POWDER-RANGER/CIVWATCH/issues/15) |
 
-### Phase 3 — Production Hardening 🟡 PLANNED
+### Phase 3 — Production Hardening `🟡 PLANNED`
 
-| |
-|-|
-| 🟡 Security audit (OWASP A01–A05) (#17) |
-| 🟡 Rate limiting + request throttling (#7) |
-| 🟡 PostgreSQL query tuning + load testing |
-| 🟡 80%+ test coverage gate in CI (#16) |
-| 🟡 Packaged releases (.exe, .dmg, .AppImage) |
-| 🟡 Ops runbook + documentation review (#18) |
+| | |
+|-|-|
+| 🟡 | OWASP A01–A05 security audit ([#17](https://github.com/POWDER-RANGER/CIVWATCH/issues/17)) |
+| 🟡 | Rate limiting + request throttling ([#7](https://github.com/POWDER-RANGER/CIVWATCH/issues/7)) |
+| 🟡 | PostgreSQL query tuning + load testing |
+| 🟡 | 80%+ test coverage gate in CI ([#16](https://github.com/POWDER-RANGER/CIVWATCH/issues/16)) |
+| 🟡 | Packaged releases (.exe · .dmg · .AppImage) |
+| 🟡 | Ops runbook + documentation review ([#18](https://github.com/POWDER-RANGER/CIVWATCH/issues/18)) |
 
 ---
 
-## 🧪 Testing
+## ◈ Testing
 
-**Current coverage:** ~15% across Jest (Node/TS) + pytest (Python). Phase 2 target: 50%+. Production target: 80%+.
+**Current coverage:** ~15% · Phase 2 target: 50%+ · Production gate: 80%+
 
 ```bash
-npm test                           # Node/TypeScript suite
-pytest tests/ -v                   # Python ML service
-npm run test --workspaces && pytest tests/ -v  # Both
+npm test                                           # TypeScript/Node suite
+pytest tests/ -v                                   # Python ML service
+npm run test --workspaces && pytest tests/ -v      # Full suite
 ```
 
-See [**docs/testing.md**](docs/testing.md) for the full strategy.
+See [**docs/testing.md**](docs/testing.md) for strategy, coverage targets, and CI integration details.
 
 ---
 
-## 🤝 Contributing
+## ◈ Contributing
 
 | Task | Issue |
 |------|-------|
 | Fix TypeScript type errors in `dataAnalyzer.ts` | [#3](https://github.com/POWDER-RANGER/CIVWATCH/issues/3) |
-| Wire Redis client into alert routes | [#5](https://github.com/POWDER-RANGER/CIVWATCH/issues/5) |
-| Add GraphQL resolvers | [#6](https://github.com/POWDER-RANGER/CIVWATCH/issues/6) |
-| Build React anomaly visualization components | [#10](https://github.com/POWDER-RANGER/CIVWATCH/issues/10) |
-| WebSocket real-time layer | [#12](https://github.com/POWDER-RANGER/CIVWATCH/issues/12) |
-| Integration tests (backend-to-ML) | [#15](https://github.com/POWDER-RANGER/CIVWATCH/issues/15) |
+| Wire Redis into alert routes | [#5](https://github.com/POWDER-RANGER/CIVWATCH/issues/5) |
 | Rate limiting middleware | [#7](https://github.com/POWDER-RANGER/CIVWATCH/issues/7) |
+| Swap TextBlob → DistilBERT | [#8](https://github.com/POWDER-RANGER/CIVWATCH/issues/8) |
+| ML `/predict` endpoint | [#9](https://github.com/POWDER-RANGER/CIVWATCH/issues/9) |
+| React anomaly visualization components | [#10](https://github.com/POWDER-RANGER/CIVWATCH/issues/10) |
+| WebSocket real-time layer | [#12](https://github.com/POWDER-RANGER/CIVWATCH/issues/12) |
 | Dark mode theme support | [#13](https://github.com/POWDER-RANGER/CIVWATCH/issues/13) |
+| Integration tests (backend ↔ ML) | [#15](https://github.com/POWDER-RANGER/CIVWATCH/issues/15) |
 
-See [**CONTRIBUTING.md**](CONTRIBUTING.md) · Keep PRs small and focused. Every PR needs a short `why` in the description.
+See [**CONTRIBUTING.md**](CONTRIBUTING.md) · Keep PRs small and focused. Every PR needs a short `why` in the description. Pick a [good first issue](https://github.com/POWDER-RANGER/CIVWATCH/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) to get started.
 
 ---
 
-## 📚 Documentation
+## ◈ Documentation
 
 | File | Purpose |
 |------|---------|
-| [**STATUS.md**](STATUS.md) | Full per-component implementation matrix |
-| [**IMPLEMENTATION_ROADMAP.md**](IMPLEMENTATION_ROADMAP.md) | Phased PR plan (PR0 → PR19) |
-| [**NEXT_PHASE.md**](NEXT_PHASE.md) | This-week tasks + debugging guide |
-| [**docs/architecture.md**](docs/architecture.md) | System design, port map, data flow |
-| [**CHANGELOG.md**](CHANGELOG.md) | Version history |
-| [**SETUP.md**](SETUP.md) | Detailed local environment setup |
-| [**SECURITY.md**](SECURITY.md) | Security practices + threat model |
+| [STATUS.md](STATUS.md) | Full per-component implementation matrix |
+| [IMPLEMENTATION_ROADMAP.md](IMPLEMENTATION_ROADMAP.md) | Phased PR plan (PR0 → PR19) |
+| [NEXT_PHASE.md](NEXT_PHASE.md) | This-week tasks + debugging guide |
+| [docs/architecture.md](docs/architecture.md) | System design, port map, data flow |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
+| [SETUP.md](SETUP.md) | Detailed local environment setup |
+| [SECURITY.md](SECURITY.md) | Security practices + threat model |
 
 ---
 
-## 🔒 Security
+## ◈ Security
 
-Do **not** open public GitHub issues for security vulnerabilities. Report via [**GitHub Security Advisories**](https://github.com/POWDER-RANGER/CIVWATCH/security/advisories) only.
+Do **not** open public GitHub issues for security vulnerabilities. Report exclusively via [**GitHub Security Advisories**](https://github.com/POWDER-RANGER/CIVWATCH/security/advisories).
 
 Full policy → [**SECURITY.md**](SECURITY.md) · [**RESPONSIBLE_DISCLOSURE.md**](RESPONSIBLE_DISCLOSURE.md)
 
 ---
 
-## 📄 License
+## ◈ License
 
 MIT — see [**LICENSE**](LICENSE).
 
-**Built by [Curtis Farrar](https://github.com/POWDER-RANGER)**  
-Independent Systems Engineer · AI Security Architect · Civic Monitoring · Iowa, USA
+---
 
-> *"Make civic data as actionable as a security feed."*
+<p align="center">
+  <strong>Built by <a href="https://github.com/POWDER-RANGER">Curtis Farrar</a></strong><br/>
+  <sub>Independent Systems Engineer · AI Security Architect · Civic Monitoring · Iowa, USA</sub><br/><br/>
+  <a href="https://github.com/POWDER-RANGER">GitHub</a> ·
+  <a href="https://powder-ranger.github.io/">Portfolio</a>
+</p>
 
-[GitHub](https://github.com/POWDER-RANGER) · [Portfolio](https://powder-ranger.github.io/)
-
-> **This README reflects actual current state — not aspirations.** Full truth table → [**STATUS.md**](STATUS.md)
-````
-
-***
-
-## What Changed
-
-Here's a breakdown of every optimization applied: [github](https://github.com/POWDER-RANGER/CIVWATCH/edit/main/README.md)
-
-- **Dates corrected** — "April 11, 2026" → "May 18, 2026"; Phase 2 window marked `(Overrun — Active May 2026)` instead of the stale `Apr 4–20` window [github](https://github.com/POWDER-RANGER/CIVWATCH/edit/main/README.md)
-- **Shields.io badges added** — Live `issues` and `pulls` count badges now show contributor-facing momentum at the top
-- **Status table trimmed** — Reduced from 30 rows to 17 key rows; a direct link to `STATUS.md` replaces the full truth table, keeping the README scannable [github](https://github.com/POWDER-RANGER/CIVWATCH/edit/main/README.md)
-- **"Get Running in 5 Minutes" section** — Replaces the old multi-section Quick Start; clone → configure → up → verify is a single numbered flow that onboards contributors instantly [perplexity](https://www.perplexity.ai/search/c3a4f64d-b494-473f-8fa7-c6afd900b565)
-- **DistilBERT noted in ML table** — TextBlob swap target is now named specifically (`distilbert-base-uncased-finetuned-sst-2-english`) rather than just "transformers" [perplexity](https://www.perplexity.ai/search/c3a4f64d-b494-473f-8fa7-c6afd900b565)
-- **Composite index and Redis TTL** added to Phase 2 task list as concrete, actionable items
-- **WebSocket implementation note** added inline in Phase 2 — `socket.io + pg LISTEN/NOTIFY` so any contributor knows exactly what the approach is [perplexity](https://www.perplexity.ai/search/9313b044-430e-439e-a462-b0f7d20e695a)
+<p align="center">
+  <sub><em>This README reflects verified current state — not aspirations. Full truth table → <a href="STATUS.md">STATUS.md</a></em></sub>
+</p>
