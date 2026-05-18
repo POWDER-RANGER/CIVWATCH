@@ -20,22 +20,7 @@ const config: ForgeConfig = {
   rebuildConfig: {},
   makers: [
     {
-      // NSIS installer (.exe) — primary Windows target
-      name: 'electron-forge-maker-nsis',
-      config: {
-        name: 'CIVWATCH',
-        setupIcon: './build/icon.ico',
-        uninstallDisplayName: 'CIVWATCH',
-        createDesktopShortcut: true,
-        createStartMenuShortcut: true,
-        shortcutName: 'CIVWATCH',
-        // Installs to %PROGRAMFILES%\CIVWATCH by default
-        // Users can override during install
-        perMachine: false,
-      },
-    },
-    {
-      // Squirrel — for auto-update delta patching
+      // Squirrel — primary Windows .exe installer + auto-update delta patching
       name: '@electron-forge/maker-squirrel',
       config: {
         name: 'civwatch',
