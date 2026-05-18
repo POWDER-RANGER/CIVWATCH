@@ -21,7 +21,7 @@ const config: ForgeConfig = {
   makers: [
     {
       // NSIS installer (.exe) — primary Windows target
-      name: '@electron-forge/maker-nsis',
+      name: 'electron-forge-maker-nsis',
       config: {
         name: 'CIVWATCH',
         setupIcon: './build/icon.ico',
