@@ -1,10 +1,8 @@
 import type { ForgeConfig } from '@electron-forge/shared-types';
-import * as path from 'path';
 
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    icon: './build/icon',
     name: 'CIVWATCH',
     executableName: 'civwatch',
     appVersion: process.env.npm_package_version,
@@ -23,7 +21,7 @@ const config: ForgeConfig = {
       name: '@electron-forge/maker-squirrel',
       config: {
         name: 'civwatch',
-        setupIcon: './build/icon.ico',
+        // setupIcon: './build/icon.ico', // Phase 2: add icon
       },
     },
     {
