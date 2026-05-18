@@ -1,7 +1,7 @@
-fastapi==0.135.1
-uvicorn[standard]==0.42.0
-pydantic==2.12.5
-textblob==0.19.0
+fastapi==0.136.1
+uvicorn[standard]==0.47.0
+pydantic==2.13.4
+textblob==0.20.0
 httpx==0.28.1
 python-dotenv==1.2.2
 # Optional — uncomment for GPU/transformer model in M2:
