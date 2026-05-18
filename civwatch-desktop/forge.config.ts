@@ -6,7 +6,6 @@ const config: ForgeConfig = {
     name: 'CIVWATCH',
     executableName: 'civwatch',
     appVersion: process.env.npm_package_version,
-    extraResource: ['./renderer'],
     win32metadata: {
       CompanyName: 'POWDER-RANGER',
       FileDescription: 'CIVWATCH Civic Transparency Platform',
@@ -21,7 +20,6 @@ const config: ForgeConfig = {
       name: '@electron-forge/maker-squirrel',
       config: {
         name: 'civwatch',
-        // setupIcon: './build/icon.ico', // Phase 2: add icon
       },
     },
     {
