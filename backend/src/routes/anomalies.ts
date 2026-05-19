@@ -1,8 +1,10 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { db } from '../db';
+import { cacheGet, cacheSet } from '../db/redis';
 
-const ML_URL = process.env.ML_SERVICE_URL ?? 'http://localhost:5000';
-const router  = Router();
+const ML_URL      = process.env.ML_SERVICE_URL ?? 'http://localhost:5000';
+const ANOMALY_TTL = 30; // seconds
+const router      = Router();
 
 interface AnomalyEvent {
   id:           number;
@@ -26,12 +28,22 @@ interface MLPredictResult {
   flags:         string[];
 }
 
-// ── GET /api/anomalies ─────────────────────────────────────────────────────────
+// ── GET /api/anomalies ────────────────────────────────────────────────────────
 // Reads from anomaly_events (populated by /api/ingest → ML pipeline).
-// Falls back to a live ML /predict call on raw_events if the table is cold.
+// Cache key is source-aware so filtered + unfiltered results don't collide.
+// Cold-start fallback: if table is empty, scores recent raw_events via /predict.
 router.get('/api/anomalies', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { source, limit = '50' } = req.query;
+    const CACHE_KEY = source ? `anomalies:source:${source}` : 'anomalies:all';
+
+    // 1. Cache hit
+    const cached = await cacheGet<AnomalyEvent[]>(CACHE_KEY);
+    if (cached) {
+      return res.json(cached);
+    }
+
+    // 2. Cache miss — query DB
     const q = `
       SELECT id, timestamp, source, category, value,
              z_score AS "zScore", flags, is_anomalous
@@ -44,7 +56,8 @@ router.get('/api/anomalies', async (req: Request, res: Response, next: NextFunct
       ? await db.query<AnomalyEvent>(q, [source])
       : await db.query<AnomalyEvent>(q);
 
-    // Cold-start fallback — table empty, score recent raw_events via ML /predict
+    // 3. Cold-start fallback — table empty, score raw_events live via ML
+    //    Don't cache cold-start data; it will be replaced on first real ingest
     if (result.rows.length === 0) {
       const raw = await db.query(
         `SELECT timestamp, source, category, value
@@ -58,7 +71,7 @@ router.get('/api/anomalies', async (req: Request, res: Response, next: NextFunct
           signal:  AbortSignal.timeout(8000),
         });
         if (mlRes.ok) {
-          const mlData = await mlRes.json() as { results: MLPredictResult[] };
+          const mlData  = await mlRes.json() as { results: MLPredictResult[] };
           const anomalous = mlData.results.filter(r => r.is_anomalous);
           return res.json(anomalous);
         }
@@ -66,13 +79,15 @@ router.get('/api/anomalies', async (req: Request, res: Response, next: NextFunct
       return res.json([]);
     }
 
+    // 4. Populate cache for subsequent reads
+    await cacheSet(CACHE_KEY, result.rows, ANOMALY_TTL);
     res.json(result.rows);
   } catch (err) {
     next(err);
   }
 });
 
-// ── POST /api/anomalies ────────────────────────────────────────────────────────
+// ── POST /api/anomalies ───────────────────────────────────────────────────────
 // Direct insert — called by ingest pipeline after ML scoring confirms anomaly.
 router.post('/api/anomalies', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -89,9 +104,9 @@ router.post('/api/anomalies', async (req: Request, res: Response, next: NextFunc
                  z_score AS "zScore", flags, is_anomalous`,
       [
         timestamp, source, category, value,
-        z_score       ?? 0,
+        z_score      ?? 0,
         JSON.stringify(flags ?? []),
-        is_anomalous  ?? false,
+        is_anomalous ?? false,
       ]
     );
     res.status(201).json(inserted.rows[0]);
