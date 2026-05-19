@@ -1,25 +1,41 @@
 """
-CIVWATCH ML Service — v0.4.0
-FastAPI inference service: sentiment analysis, volume anomaly detection, batch predict.
+CIVWATCH ML Service — v0.5.0
+
+Thin FastAPI shell.  All ML logic lives in src/engine.py.
+Routes only: validate input with Pydantic, delegate to engine, serialise output.
+
+Backward-compatible contract (ingest.ts, aggregate.ts depend on these fields):
+  /predict        → anomaly_score, is_anomalous, z_score, flags   (unchanged)
+                    + composite_score, sentiment_score,
+                      sentiment_label, layers_used, insights       (new, additive)
+  /score/anomaly  → anomaly_score, is_anomalous, reason,
+                      z_score, flags                               (unchanged)
+  /analyze/*      → score, confidence, label, processing_ms       (unchanged)
 """
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
-from typing import List, Dict
+from __future__ import annotations
+
 import logging
 import os
 import time
+from typing import Any, Dict, List
+
 import numpy as np
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+
+from src.engine import engine
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+_startup_time = time.time()
+
 app = FastAPI(
     title="CIVWATCH ML Service",
-    description="Sentiment analysis and anomaly detection for CIVWATCH.",
-    version="0.4.0",
+    description="Unified civic anomaly intelligence — sentiment + DBSCAN + z-score + TF-IDF.",
+    version="0.5.0",
 )
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=os.getenv("CORS_ORIGINS", "http://localhost:4000").split(","),
@@ -27,11 +43,8 @@ app.add_middleware(
     allow_headers=["Content-Type"],
 )
 
-_model_loaded: bool = False
-_startup_time: float = time.time()
 
-
-# ── Pydantic Models ────────────────────────────────────────────────────────────
+# ── Pydantic schemas ──────────────────────────────────────────────────────────
 
 class SentimentRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=10000)
@@ -41,6 +54,7 @@ class SentimentResponse(BaseModel):
     confidence:    float
     label:         str
     processing_ms: float
+
 
 class BatchItem(BaseModel):
     item_id: int
@@ -61,181 +75,211 @@ class BatchScoreResponse(BaseModel):
     count:         int
     processing_ms: float
 
+
+class CivicRecord(BaseModel):
+    timestamp:  str   = Field(..., description="ISO-8601 timestamp")
+    source:     str   = Field(..., description="Data source identifier")
+    category:   str   = Field(..., description="Event category")
+    value:      float = Field(..., description="Numeric value to score")
+    text:       str   = Field(default="", description="Optional free text for NLP layers")
+
+class PredictRequest(BaseModel):
+    records: List[CivicRecord] = Field(..., min_length=1, max_length=500)
+
+class PredictResult(BaseModel):
+    # Existing fields — unchanged for backward compat
+    timestamp:     str
+    source:        str
+    category:      str
+    value:         float
+    anomaly_score: float
+    is_anomalous:  bool
+    z_score:       float
+    flags:         List[str]
+    # New fields — additive, ingest.ts can ignore safely
+    composite_score:  float
+    sentiment_score:  float
+    sentiment_label:  str
+    layers_used:      List[str]
+
+class PredictResponse(BaseModel):
+    results:        List[PredictResult]
+    count:          int
+    anomalous:      int
+    processing_ms:  float
+    layers_active:  List[str]
+    insights:       List[Dict[str, Any]]
+
+
 class AnomalyRequest(BaseModel):
-    geo_cell:        str       = Field(..., description="Geographic cell ID (e.g., US-IA-019)")
-    category:        str       = Field(..., description="Event category (e.g., police_complaint)")
-    window_count:    int       = Field(..., ge=0, description="Current time window count")
-    baseline_counts: List[int] = Field(..., min_length=1, description="Historical counts")
+    geo_cell:        str
+    category:        str
+    window_count:    int
+    baseline_counts: List[int] = Field(..., min_length=1)
     avg_confidence:  float     = Field(0.5, ge=0.0, le=1.0)
 
 class AnomalyResponse(BaseModel):
-    anomaly_score: float = Field(..., ge=0.0, le=1.0)
+    anomaly_score: float
     is_anomalous:  bool
     reason:        Dict[str, str]
     z_score:       float
     flags:         List[str]
 
-# ── /predict Pydantic schema (resolves issue #9) ───────────────────────────────
 
-class CivicRecord(BaseModel):
-    """Single civic record for anomaly prediction."""
-    timestamp:  str   = Field(..., description="ISO-8601 timestamp")
-    source:     str   = Field(..., description="Data source identifier")
-    category:   str   = Field(..., description="Event category")
-    value:      float = Field(..., description="Numeric value to score")
-
-class PredictRequest(BaseModel):
-    records: List[CivicRecord] = Field(
-        ..., min_length=1, max_length=500,
-        description="Batch of civic records to score for anomalies"
-    )
-
-class PredictResult(BaseModel):
-    timestamp:     str
-    source:        str
-    category:      str
-    value:         float
-    anomaly_score: float = Field(..., ge=0.0, le=1.0)
-    is_anomalous:  bool
-    z_score:       float
-    flags:         List[str]
-
-class PredictResponse(BaseModel):
-    results:       List[PredictResult]
-    count:         int
-    anomalous:     int
-    processing_ms: float
-
-
-# ── Helpers ────────────────────────────────────────────────────────────────────
-
-def _score_text(text: str) -> tuple:
-    """Score a single text. Returns (score, confidence, label).
-    TextBlob for MVP — swap this function body for transformers in Phase 3.
-    Both /analyze/sentiment and /analyze/batch share this function;
-    one swap upgrades both endpoints simultaneously.
-    # Phase 3: return CivicTransparencyPipeline.score(text)
-    """
-    try:
-        from textblob import TextBlob
-        blob       = TextBlob(text)
-        raw_score  = float(blob.sentiment.polarity)
-        confidence = float(max(abs(raw_score), 0.05))
-    except ImportError:
-        raw_score  = 0.0
-        confidence = 0.5
-
-    if raw_score > 0.1:
-        label = "positive"
-    elif raw_score < -0.1:
-        label = "negative"
-    else:
-        label = "neutral"
-
-    return round(raw_score, 4), round(confidence, 4), label
-
-
-# ── Lifecycle ──────────────────────────────────────────────────────────────────
+# ── Lifecycle ─────────────────────────────────────────────────────────────────
 
 @app.on_event("startup")
-async def load_model() -> None:
-    global _model_loaded
-    logger.info("Loading sentiment model...")
-    try:
-        from textblob import TextBlob  # noqa: F401
-        _model_loaded = True
-        logger.info("Model loaded (TextBlob MVP). Swap _score_text() for transformers in Phase 3.")
-    except ImportError:
-        logger.warning("TextBlob not installed — stub fallback active.")
-        _model_loaded = True
+async def startup() -> None:
+    engine.load()
 
 
-# ── Ops ────────────────────────────────────────────────────────────────────────
+# ── Ops ───────────────────────────────────────────────────────────────────────
 
 @app.get("/health", tags=["ops"])
 async def health() -> dict:
     import platform
-    gpu_available = False
+    gpu = False
     try:
         import torch
-        gpu_available = torch.cuda.is_available()
+        gpu = torch.cuda.is_available()
     except ImportError:
         pass
     return {
-        "status":         "ok",
-        "model_loaded":   _model_loaded,
-        "gpu_available":  gpu_available,
-        "uptime_seconds": round(time.time() - _startup_time, 2),
-        "python":         platform.python_version(),
-        "version":        "0.4.0",
+        "status":          "ok",
+        "model_loaded":    engine.is_loaded,
+        "model_backend":   engine.backend,
+        "device":          engine.device,
+        "gpu_available":   gpu,
+        "uptime_seconds":  round(time.time() - _startup_time, 2),
+        "python":          platform.python_version(),
+        "version":         "0.5.0",
     }
 
 @app.get("/ready", tags=["ops"])
 async def ready():
-    if not _model_loaded:
-        raise HTTPException(status_code=503, detail="Model not yet loaded")
+    if not engine.is_loaded:
+        raise HTTPException(503, "Engine not ready")
     return {"status": "ready"}
 
 
-# ── Inference ──────────────────────────────────────────────────────────────────
+# ── Inference ─────────────────────────────────────────────────────────────────
 
 @app.post("/analyze/sentiment", response_model=SentimentResponse, tags=["inference"])
 async def analyze_sentiment(req: SentimentRequest) -> SentimentResponse:
-    """Score a single text. Preserved for direct use and backward compatibility."""
-    if not _model_loaded:
-        raise HTTPException(status_code=503, detail="Model not ready")
-    start = time.perf_counter()
-    score, confidence, label = _score_text(req.text)
+    """Single-text sentiment.  Backward-compatible with all existing callers."""
+    if not engine.is_loaded:
+        raise HTTPException(503, "Engine not ready")
+    t0 = time.perf_counter()
+    score, conf, label = engine.score_text(req.text)
     return SentimentResponse(
-        score=score, confidence=confidence, label=label,
-        processing_ms=round((time.perf_counter() - start) * 1000, 2),
+        score=score, confidence=conf, label=label,
+        processing_ms=round((time.perf_counter() - t0) * 1000, 2),
     )
+
 
 @app.post("/analyze/batch", response_model=BatchScoreResponse, tags=["inference"])
 async def analyze_batch(req: BatchScoreRequest) -> BatchScoreResponse:
-    """Score a batch of documents in a single call.
-    Primary endpoint called by ingestionWorker.ts.
-    Guaranteed 1:1 input/output — never drops items. Per-item errors produce neutral score.
     """
-    if not _model_loaded:
-        raise HTTPException(status_code=503, detail="Model not ready")
-    start   = time.perf_counter()
-    results = []
-    for item in req.items:
-        try:
-            text             = f"{item.title} {item.body}".strip()
-            score, conf, lbl = _score_text(text) if text else (0.0, 0.0, "neutral")
-        except Exception as e:
-            logger.warning("Score failed for item_id=%d: %s", item.item_id, e)
-            score, conf, lbl = 0.0, 0.0, "error"
-        results.append(BatchScoreResult(item_id=item.item_id, score=score, confidence=conf, label=lbl))
-    processing_ms = round((time.perf_counter() - start) * 1000, 2)
-    logger.info("Batch scored %d items in %.1fms", len(results), processing_ms)
-    return BatchScoreResponse(results=results, count=len(results), processing_ms=processing_ms)
+    Batch sentiment — primary endpoint called by ingestionWorker.ts.
+    Delegates to engine.score_batch so DistilBERT runs as a single forward pass.
+    1:1 input/output guaranteed; per-item errors produce neutral score.
+    """
+    if not engine.is_loaded:
+        raise HTTPException(503, "Engine not ready")
+    t0 = time.perf_counter()
+    records = [
+        {
+            "timestamp": "",
+            "source":    str(item.item_id),
+            "category":  "",
+            "value":     0.0,
+            "text":      f"{item.title} {item.body}".strip(),
+        }
+        for item in req.items
+    ]
+    result  = engine.score_batch(records)
+    by_src  = {r.source: r for r in result.records}
+    results = [
+        BatchScoreResult(
+            item_id=item.item_id,
+            score=by_src[str(item.item_id)].sentiment_score
+                  if str(item.item_id) in by_src else 0.0,
+            confidence=by_src[str(item.item_id)].confidence
+                       if str(item.item_id) in by_src else 0.5,
+            label=by_src[str(item.item_id)].sentiment_label
+                  if str(item.item_id) in by_src else "neutral",
+        )
+        for item in req.items
+    ]
+    return BatchScoreResponse(
+        results=results, count=len(results),
+        processing_ms=round((time.perf_counter() - t0) * 1000, 2),
+    )
+
+
+@app.post("/predict", response_model=PredictResponse, tags=["inference"])
+async def predict(req: PredictRequest) -> PredictResponse:
+    """
+    Full composite inference — called by /api/ingest and /api/anomalies cold-start.
+    Returns all four layer outputs plus engine insights.
+    """
+    if not engine.is_loaded:
+        raise HTTPException(503, "Engine not ready")
+
+    records = [r.model_dump() for r in req.records]
+    result  = engine.score_batch(records)
+
+    out = [
+        PredictResult(
+            timestamp=r.timestamp,
+            source=r.source,
+            category=r.category,
+            value=r.value,
+            anomaly_score=r.anomaly_score,
+            is_anomalous=r.is_anomalous,
+            z_score=r.z_score,
+            flags=r.flags,
+            composite_score=r.composite_score,
+            sentiment_score=r.sentiment_score,
+            sentiment_label=r.sentiment_label,
+            layers_used=r.layers_used,
+        )
+        for r in result.records
+    ]
+
+    insights_raw = [
+        {
+            "insight_type":     i.insight_type,
+            "severity":         i.severity,
+            "affected_sources": i.affected_sources,
+            "description":      i.description,
+            "score_delta":      i.score_delta,
+            "detected_at":      i.detected_at,
+        }
+        for i in result.insights
+    ]
+
+    return PredictResponse(
+        results=out,
+        count=len(out),
+        anomalous=sum(1 for r in out if r.is_anomalous),
+        processing_ms=result.processing_ms,
+        layers_active=result.layers_active,
+        insights=insights_raw,
+    )
+
 
 @app.post("/score/anomaly", response_model=AnomalyResponse, tags=["inference"])
 async def score_anomaly(req: AnomalyRequest) -> AnomalyResponse:
-    """Detect volume anomalies in report clusters vs rolling baseline.
-
-    The load-bearing intelligence endpoint. Called by aggregate.ts after
-    every time-window rollup. Returns semantic flags the alert engine
-    matches against directly — no downstream translation needed.
-
-    Threshold: anomaly_score > 0.75 → is_anomalous = True
-    Flags:     volume_surge (z>2), extreme_volume_spike (z>3),
-               low_confidence_cluster (avg_confidence<0.3)
-
-    Phase 3: replace body with CivicTransparencyPipeline.detect_anomalies(data)
     """
-    if not _model_loaded:
-        raise HTTPException(status_code=503, detail="Model not ready")
+    Volume anomaly endpoint — preserved unchanged for aggregate.ts backward compat.
+    """
+    if not engine.is_loaded:
+        raise HTTPException(503, "Engine not ready")
 
-    start    = time.perf_counter()
-    baseline = np.array(req.baseline_counts)
-
+    baseline = np.array(req.baseline_counts, dtype=float)
     if len(baseline) == 0 or baseline.std() == 0:
-        z     = 0.0
-        flags = []
+        z, flags = 0.0, []
     else:
         z     = float((req.window_count - baseline.mean()) / baseline.std())
         flags = []
@@ -243,84 +287,47 @@ async def score_anomaly(req: AnomalyRequest) -> AnomalyResponse:
         if z > 3.0: flags.append("extreme_volume_spike")
         if req.avg_confidence < 0.3: flags.append("low_confidence_cluster")
 
-    anomaly_score = min(abs(z) / 4.0, 1.0)
-    is_anomalous  = anomaly_score > 0.75
-
-    reason = {
-        "human": f"{req.window_count / max(float(baseline.mean()), 1.0):.1f}x above "
-                 f"{len(baseline)}-period baseline (z={z:.2f})",
-        "code":  "volume_anomaly" if z > 2 else "normal",
-    }
-
-    ms = (time.perf_counter() - start) * 1000
-    logger.info("Anomaly: %s/%s z=%.2f score=%.3f flags=%s ms=%.1f",
-                req.geo_cell, req.category, z, anomaly_score, flags, ms)
-
+    anomaly_score = round(min(abs(z) / 4.0, 1.0), 4)
     return AnomalyResponse(
-        anomaly_score=round(anomaly_score, 4),
-        is_anomalous=is_anomalous,
-        reason=reason,
+        anomaly_score=anomaly_score,
+        is_anomalous=anomaly_score > 0.75,
+        reason={
+            "human": (
+                f"{req.window_count / max(float(baseline.mean()), 1.0):.1f}x above "
+                f"{len(baseline)}-period baseline (z={z:.2f})"
+            ),
+            "code": "volume_anomaly" if z > 2 else "normal",
+        },
         z_score=round(z, 4),
         flags=flags,
     )
 
 
-# ── /predict — ML→API bridge (resolves issue #9) ──────────────────────────────
-
-@app.post("/predict", response_model=PredictResponse, tags=["inference"])
-async def predict(req: PredictRequest) -> PredictResponse:
+@app.get("/insights", tags=["inference"])
+async def get_insights() -> dict:
     """
-    Batch anomaly prediction for civic records.
-
-    Called by /api/ingest (after DB persist) and /api/anomalies (cold-start fallback)
-    on the Node.js backend. Each record is z-scored against the full batch baseline —
-    outliers are flagged as anomalous and returned for storage in anomaly_events.
-
-    Threshold: anomaly_score > 0.75 → is_anomalous = True
-    Flags:     volume_surge (|z|>2), extreme_volume_spike (|z|>3)
+    Latest engine insights derived from the in-memory rolling history window.
+    Frontend polls this to populate the Insights panel introduced in Sprint C.
     """
-    if not _model_loaded:
-        raise HTTPException(status_code=503, detail="Model not ready")
+    if not engine.is_loaded:
+        raise HTTPException(503, "Engine not ready")
+    if not engine._history:
+        return {"insights": [], "history_size": 0, "backend": engine.backend}
 
-    start  = time.perf_counter()
-    values = np.array([r.value for r in req.records], dtype=float)
-
-    # z-score the full batch; single-record batches get z=0 (not anomalous by default)
-    if len(values) < 2 or values.std() == 0:
-        z_scores = np.zeros(len(values))
-    else:
-        z_scores = (values - values.mean()) / values.std()
-
-    results = []
-    for record, z in zip(req.records, z_scores):
-        z_f   = float(z)
-        flags = []
-        if abs(z_f) > 2.0: flags.append("volume_surge")
-        if abs(z_f) > 3.0: flags.append("extreme_volume_spike")
-
-        score        = min(abs(z_f) / 4.0, 1.0)
-        is_anomalous = score > 0.75
-
-        results.append(PredictResult(
-            timestamp=record.timestamp,
-            source=record.source,
-            category=record.category,
-            value=record.value,
-            anomaly_score=round(score, 4),
-            is_anomalous=is_anomalous,
-            z_score=round(z_f, 4),
-            flags=flags,
-        ))
-
-    ms              = round((time.perf_counter() - start) * 1000, 2)
-    anomalous_count = sum(1 for r in results if r.is_anomalous)
-
-    logger.info("Predict: %d records, %d anomalous in %.1fms",
-                len(results), anomalous_count, ms)
-
-    return PredictResponse(
-        results=results,
-        count=len(results),
-        anomalous=anomalous_count,
-        processing_ms=ms,
-    )
+    # Run insight generation over the most recent 100 history records
+    result = engine._generate_insights(engine._history[-100:])
+    return {
+        "insights": [
+            {
+                "insight_type":     i.insight_type,
+                "severity":         i.severity,
+                "affected_sources": i.affected_sources,
+                "description":      i.description,
+                "score_delta":      i.score_delta,
+                "detected_at":      i.detected_at,
+            }
+            for i in result
+        ],
+        "history_size": len(engine._history),
+        "backend":      engine.backend,
+    }
