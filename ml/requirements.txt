@@ -16,9 +16,9 @@ scikit-learn>=1.4.0
 
 # DistilBERT transformer stack
 # Tier 4 (FP32 CPU) and Tier 1-2 (CUDA/MPS) — comment out if disk space is a constraint
-transformers==4.39.3
-sentencepiece==0.2.0
-torch==2.2.2
+transformers==5.0.0rc3
+sentencepiece==0.2.1
+torch==2.8.0
 
 # Tier 3: ONNX quantised inference (best CPU throughput — optional but recommended)
 # Install with: pip install optimum[onnxruntime]==1.19.2
