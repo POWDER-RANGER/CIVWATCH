@@ -2,13 +2,14 @@ import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { io, Socket }       from 'socket.io-client';
 import { anomaliesApi }     from '../api/client';
 import IngestForm           from '../components/IngestForm';
+import { InsightsPanel }    from '../components/InsightsPanel';
 import { AnomalyTimelineChart }    from '../components/charts/AnomalyTimelineChart';
 import { ScoreDistributionChart }  from '../components/charts/ScoreDistributionChart';
 import { SourceBreakdownChart }    from '../components/charts/SourceBreakdownChart';
 import { buildChartModel }         from '../components/charts/chartModel';
 import type { Anomaly }            from '../components/charts/chartModel';
 
-// ── Normalize field names: handles both legacy API shape and new ML pipeline shape
+// ── Normalise field names: handles legacy API shape + new ML pipeline shape
 const normalize = (a: Anomaly): Anomaly => ({
   ...a,
   label:     a.label     ?? `${a.source ?? 'unknown'} / ${a.category ?? 'event'}`,
@@ -19,16 +20,29 @@ const normalize = (a: Anomaly): Anomaly => ({
 const scoreColor = (s: number) =>
   s >= 0.85 ? '#ef4444' : s >= 0.60 ? '#f59e0b' : '#22c55e';
 
-const SOCKET_URL  = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:3000';
+const ML_LAYER_COLORS: Record<string, string> = {
+  'distilbert-cuda':    '#6366f1',
+  'distilbert-mps':     '#6366f1',
+  'distilbert-onnx':    '#6366f1',
+  'distilbert-fp32-cpu':'#6366f1',
+  'textblob':           '#94a3b8',
+  'zscore':             '#22c55e',
+  'dbscan':             '#f59e0b',
+  'tfidf':              '#38bdf8',
+};
+
+const SOCKET_URL    = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:3000';
 const MAX_DISPLAYED = 200;
 
 export default function AnomalyDashboard() {
-  const [anomalies,    setAnomalies]    = useState<Anomaly[]>([]);
-  const [loading,      setLoading]      = useState(true);
-  const [minScore,     setMinScore]     = useState(0.0);
+  const [anomalies,      setAnomalies]      = useState<Anomaly[]>([]);
+  const [loading,        setLoading]        = useState(true);
+  const [minScore,       setMinScore]       = useState(0.0);
   const [selectedSource, setSelectedSource] = useState<string | null>(null);
-  const [liveCount,    setLiveCount]    = useState(0);
-  const [socketStatus, setSocketStatus] = useState<'connecting' | 'live' | 'degraded'>('connecting');
+  const [liveCount,      setLiveCount]      = useState(0);
+  const [socketStatus,   setSocketStatus]   = useState<'connecting' | 'live' | 'degraded'>('connecting');
+  // Incrementing this forces InsightsPanel to re-fetch immediately
+  const [insightsTick,   setInsightsTick]   = useState(0);
   const socketRef = useRef<Socket | null>(null);
 
   // ── Initial REST load
@@ -42,25 +56,27 @@ export default function AnomalyDashboard() {
 
   useEffect(() => { load(); }, [load]);
 
-  // ── WebSocket subscription — real-time push via pg LISTEN/NOTIFY → socket.io
+  // ── WebSocket — real-time push via pg LISTEN/NOTIFY → socket.io
   useEffect(() => {
     const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
     socketRef.current = socket;
 
-    socket.on('connect',       ()              => setSocketStatus('live'));
-    socket.on('disconnect',    ()              => setSocketStatus('connecting'));
-    socket.on('connect_error', ()              => setSocketStatus('degraded'));
+    socket.on('connect',       () => setSocketStatus('live'));
+    socket.on('disconnect',    () => setSocketStatus('connecting'));
+    socket.on('connect_error', () => setSocketStatus('degraded'));
 
     socket.on('new_anomaly', (raw: Anomaly) => {
       const a = normalize(raw);
       setAnomalies(prev => [a, ...prev].slice(0, MAX_DISPLAYED));
       setLiveCount(n => n + 1);
+      // Every 10th live push, nudge the insights panel
+      setInsightsTick(t => (t + 1) % 10 === 0 ? t + 1 : t);
     });
 
     return () => { socket.disconnect(); };
   }, []);
 
-  // ── Derived: apply both score + source filters
+  // ── Derived: score + source filters
   const filtered = useMemo(() =>
     anomalies.filter(a => {
       const score  = a.score ?? 0;
@@ -70,15 +86,16 @@ export default function AnomalyDashboard() {
     [anomalies, minScore, selectedSource]
   );
 
-  // ── Single shared chart model — one O(n) pass, all charts consume this
+  // ── Single shared chart model — one O(n) pass
   const chartModel = useMemo(() => buildChartModel(filtered, 5), [filtered]);
-
   const { totals } = chartModel;
 
   const socketBadgeStyle: React.CSSProperties = {
     marginLeft: '0.65rem', fontSize: '0.6rem', padding: '2px 8px',
     borderRadius: '9999px', fontWeight: 700, verticalAlign: 'middle',
-    background: socketStatus === 'live' ? '#16a34a' : socketStatus === 'degraded' ? '#b45309' : '#475569',
+    background:
+      socketStatus === 'live'     ? '#16a34a' :
+      socketStatus === 'degraded' ? '#b45309' : '#475569',
     color: '#fff',
   };
 
@@ -86,7 +103,10 @@ export default function AnomalyDashboard() {
     <div className="main-content">
 
       {/* ── Page header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem',
+      }}>
         <h2 className="page-title" style={{ margin: 0 }}>
           Anomaly Dashboard
           <span style={socketBadgeStyle}>
@@ -134,7 +154,9 @@ export default function AnomalyDashboard() {
         </div>
         <div className="stat-card">
           <div className="label">Critical (0.85+)</div>
-          <div className="value" style={{ color: totals.critical > 0 ? '#ef4444' : '#e2e8f0' }}>{totals.critical}</div>
+          <div className="value" style={{ color: totals.critical > 0 ? '#ef4444' : '#e2e8f0' }}>
+            {totals.critical}
+          </div>
         </div>
         <div className="stat-card">
           <div className="label">Time buckets</div>
@@ -182,6 +204,9 @@ export default function AnomalyDashboard() {
         </div>
       </div>
 
+      {/* ── Engine Insights — polls /ml/insights, refreshes on live bursts */}
+      <InsightsPanel refreshToken={insightsTick} />
+
       {/* ── Anomaly list + ingest form */}
       <div className="two-col" style={{ marginTop: '1.5rem' }}>
         <div className="panel">
@@ -193,18 +218,58 @@ export default function AnomalyDashboard() {
             <div className="empty-state">No anomalies above threshold</div>
           )}
           {!loading && filtered.map((a, i) => (
-            <div key={`${a.id}-${i}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.55rem 0', borderBottom: '1px solid #2d3148' }}>
-              <div style={{ fontSize: '0.88rem', color: '#e2e8f0', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {a.label}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0, marginLeft: '1rem' }}>
-                {a.flags && a.flags.length > 0 && (
-                  <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{a.flags.join(' · ')}</span>
+            <div
+              key={`${a.id}-${i}`}
+              style={{
+                display: 'flex', alignItems: 'flex-start',
+                justifyContent: 'space-between',
+                padding: '0.6rem 0', borderBottom: '1px solid #2d3148',
+                gap: '0.75rem',
+              }}
+            >
+              {/* Left: label + ML layer pills */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.88rem', color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {a.label}
+                </div>
+                {/* layers_used from /predict response — shows which ML layers fired */}
+                {Array.isArray((a as any).layers_used) && (a as any).layers_used.length > 0 && (
+                  <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.2rem', flexWrap: 'wrap' }}>
+                    {(a as any).layers_used.map((l: string) => (
+                      <span
+                        key={l}
+                        style={{
+                          fontSize: '0.6rem', padding: '1px 6px', borderRadius: '9999px',
+                          background: '#0f172a',
+                          border: `1px solid ${ML_LAYER_COLORS[l] ?? '#334155'}`,
+                          color: ML_LAYER_COLORS[l] ?? '#94a3b8',
+                        }}
+                      >
+                        {l}
+                      </span>
+                    ))}
+                  </div>
                 )}
+                {/* flags row */}
+                {a.flags && a.flags.length > 0 && (
+                  <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: '0.15rem' }}>
+                    {a.flags.join(' · ')}
+                  </div>
+                )}
+              </div>
+
+              {/* Right: scores + timestamp */}
+              <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.15rem' }}>
                 <span style={{ fontWeight: 700, fontSize: '0.88rem', color: scoreColor(a.score ?? 0), fontVariantNumeric: 'tabular-nums' }}>
                   {(a.score ?? 0).toFixed(3)}
                 </span>
-                <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                {/* sentiment_score from new ML contract — shown if present */}
+                {typeof (a as any).sentiment_score === 'number' && (
+                  <span style={{ fontSize: '0.7rem', color: '#64748b', fontVariantNumeric: 'tabular-nums' }}>
+                    sent {((a as any).sentiment_score as number).toFixed(3)}
+                  </span>
+                )}
+                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
                   {new Date(a.createdAt!).toLocaleTimeString()}
                 </span>
               </div>

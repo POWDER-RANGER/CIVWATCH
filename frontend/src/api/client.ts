@@ -1,8 +1,11 @@
 import axios, { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 
-const BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
+const BASE     = import.meta.env.VITE_API_BASE_URL ?? '/api';
+const ML_BASE  = import.meta.env.VITE_ML_BASE_URL  ?? '/ml';
+
 export const api = axios.create({ baseURL: BASE, timeout: 30000 });
+export const ml  = axios.create({ baseURL: ML_BASE, timeout: 15000 });
 
 api.interceptors.request.use((cfg) => {
   const token = localStorage.getItem('cw_token');
@@ -64,4 +67,13 @@ export const anomaliesApi = {
   get:    (id: string) => api.get(`/anomalies/${id}`),
   create: (body: { score: number; label: string; data: unknown }) =>
     api.post('/anomalies', body),
+};
+
+/** ML service — talks directly to the FastAPI engine on VITE_ML_BASE_URL */
+export const mlApi = {
+  health:   ()                              => ml.get('/health'),
+  insights: ()                              => ml.get('/insights'),
+  predict:  (records: object[])             => ml.post('/predict', { records }),
+  sentiment:(text: string)                  => ml.post('/analyze/sentiment', { text }),
+  batch:    (items: object[])               => ml.post('/analyze/batch', { items }),
 };
