@@ -1,6 +1,6 @@
 """
-CIVWATCH ML Service — v0.3.0
-FastAPI inference service: sentiment analysis + volume anomaly detection.
+CIVWATCH ML Service — v0.4.0
+FastAPI inference service: sentiment analysis, volume anomaly detection, batch predict.
 """
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="CIVWATCH ML Service",
     description="Sentiment analysis and anomaly detection for CIVWATCH.",
-    version="0.3.0",
+    version="0.4.0",
 )
 
 app.add_middleware(
@@ -31,7 +31,7 @@ _model_loaded: bool = False
 _startup_time: float = time.time()
 
 
-# ── Models ─────────────────────────────────────────────────────────────────────
+# ── Pydantic Models ────────────────────────────────────────────────────────────
 
 class SentimentRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=10000)
@@ -57,16 +57,16 @@ class BatchScoreResult(BaseModel):
     label:      str
 
 class BatchScoreResponse(BaseModel):
-    results:      List[BatchScoreResult]
-    count:        int
+    results:       List[BatchScoreResult]
+    count:         int
     processing_ms: float
 
 class AnomalyRequest(BaseModel):
-    geo_cell:        str   = Field(..., description="Geographic cell ID (e.g., US-IA-019)")
-    category:        str   = Field(..., description="Event category (e.g., police_complaint)")
-    window_count:    int   = Field(..., ge=0, description="Current time window count")
+    geo_cell:        str       = Field(..., description="Geographic cell ID (e.g., US-IA-019)")
+    category:        str       = Field(..., description="Event category (e.g., police_complaint)")
+    window_count:    int       = Field(..., ge=0, description="Current time window count")
     baseline_counts: List[int] = Field(..., min_length=1, description="Historical counts")
-    avg_confidence:  float = Field(0.5, ge=0.0, le=1.0)
+    avg_confidence:  float     = Field(0.5, ge=0.0, le=1.0)
 
 class AnomalyResponse(BaseModel):
     anomaly_score: float = Field(..., ge=0.0, le=1.0)
@@ -75,15 +75,46 @@ class AnomalyResponse(BaseModel):
     z_score:       float
     flags:         List[str]
 
+# ── /predict Pydantic schema (resolves issue #9) ───────────────────────────────
+
+class CivicRecord(BaseModel):
+    """Single civic record for anomaly prediction."""
+    timestamp:  str   = Field(..., description="ISO-8601 timestamp")
+    source:     str   = Field(..., description="Data source identifier")
+    category:   str   = Field(..., description="Event category")
+    value:      float = Field(..., description="Numeric value to score")
+
+class PredictRequest(BaseModel):
+    records: List[CivicRecord] = Field(
+        ..., min_length=1, max_length=500,
+        description="Batch of civic records to score for anomalies"
+    )
+
+class PredictResult(BaseModel):
+    timestamp:     str
+    source:        str
+    category:      str
+    value:         float
+    anomaly_score: float = Field(..., ge=0.0, le=1.0)
+    is_anomalous:  bool
+    z_score:       float
+    flags:         List[str]
+
+class PredictResponse(BaseModel):
+    results:       List[PredictResult]
+    count:         int
+    anomalous:     int
+    processing_ms: float
+
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
 def _score_text(text: str) -> tuple:
     """Score a single text. Returns (score, confidence, label).
-    TextBlob for MVP — swap this function body for transformers in M2.
+    TextBlob for MVP — swap this function body for transformers in Phase 3.
     Both /analyze/sentiment and /analyze/batch share this function;
-    one swap upgrades both endpoints.
-    # M2: return CivicTransparencyPipeline.score(text)
+    one swap upgrades both endpoints simultaneously.
+    # Phase 3: return CivicTransparencyPipeline.score(text)
     """
     try:
         from textblob import TextBlob
@@ -113,7 +144,7 @@ async def load_model() -> None:
     try:
         from textblob import TextBlob  # noqa: F401
         _model_loaded = True
-        logger.info("Model loaded (TextBlob MVP). Swap _score_text() for transformers in M2.")
+        logger.info("Model loaded (TextBlob MVP). Swap _score_text() for transformers in Phase 3.")
     except ImportError:
         logger.warning("TextBlob not installed — stub fallback active.")
         _model_loaded = True
@@ -136,7 +167,7 @@ async def health() -> dict:
         "gpu_available":  gpu_available,
         "uptime_seconds": round(time.time() - _startup_time, 2),
         "python":         platform.python_version(),
-        "version":        "0.3.0",
+        "version":        "0.4.0",
     }
 
 @app.get("/ready", tags=["ops"])
@@ -194,7 +225,7 @@ async def score_anomaly(req: AnomalyRequest) -> AnomalyResponse:
     Flags:     volume_surge (z>2), extreme_volume_spike (z>3),
                low_confidence_cluster (avg_confidence<0.3)
 
-    M2: replace body with CivicTransparencyPipeline.detect_anomalies(data)
+    Phase 3: replace body with CivicTransparencyPipeline.detect_anomalies(data)
     """
     if not _model_loaded:
         raise HTTPException(status_code=503, detail="Model not ready")
@@ -231,4 +262,65 @@ async def score_anomaly(req: AnomalyRequest) -> AnomalyResponse:
         reason=reason,
         z_score=round(z, 4),
         flags=flags,
+    )
+
+
+# ── /predict — ML→API bridge (resolves issue #9) ──────────────────────────────
+
+@app.post("/predict", response_model=PredictResponse, tags=["inference"])
+async def predict(req: PredictRequest) -> PredictResponse:
+    """
+    Batch anomaly prediction for civic records.
+
+    Called by /api/ingest (after DB persist) and /api/anomalies (cold-start fallback)
+    on the Node.js backend. Each record is z-scored against the full batch baseline —
+    outliers are flagged as anomalous and returned for storage in anomaly_events.
+
+    Threshold: anomaly_score > 0.75 → is_anomalous = True
+    Flags:     volume_surge (|z|>2), extreme_volume_spike (|z|>3)
+    """
+    if not _model_loaded:
+        raise HTTPException(status_code=503, detail="Model not ready")
+
+    start  = time.perf_counter()
+    values = np.array([r.value for r in req.records], dtype=float)
+
+    # z-score the full batch; single-record batches get z=0 (not anomalous by default)
+    if len(values) < 2 or values.std() == 0:
+        z_scores = np.zeros(len(values))
+    else:
+        z_scores = (values - values.mean()) / values.std()
+
+    results = []
+    for record, z in zip(req.records, z_scores):
+        z_f   = float(z)
+        flags = []
+        if abs(z_f) > 2.0: flags.append("volume_surge")
+        if abs(z_f) > 3.0: flags.append("extreme_volume_spike")
+
+        score        = min(abs(z_f) / 4.0, 1.0)
+        is_anomalous = score > 0.75
+
+        results.append(PredictResult(
+            timestamp=record.timestamp,
+            source=record.source,
+            category=record.category,
+            value=record.value,
+            anomaly_score=round(score, 4),
+            is_anomalous=is_anomalous,
+            z_score=round(z_f, 4),
+            flags=flags,
+        ))
+
+    ms              = round((time.perf_counter() - start) * 1000, 2)
+    anomalous_count = sum(1 for r in results if r.is_anomalous)
+
+    logger.info("Predict: %d records, %d anomalous in %.1fms",
+                len(results), anomalous_count, ms)
+
+    return PredictResponse(
+        results=results,
+        count=len(results),
+        anomalous=anomalous_count,
+        processing_ms=ms,
     )
