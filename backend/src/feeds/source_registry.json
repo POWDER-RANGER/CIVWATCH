@@ -1,0 +1,112 @@
+[
+  {
+    "id": "iowa_dot_511",
+    "type": "dot_camera",
+    "label": "Iowa DOT 511 Traffic Cameras",
+    "url": "https://api.511iowa.org/api/cameras",
+    "embed_base": null,
+    "geo_field": "location",
+    "rate_limit_ms": 30000,
+    "enabled": true,
+    "tags": ["traffic", "iowa", "dot", "public_infrastructure"]
+  },
+  {
+    "id": "ny_511_cameras",
+    "type": "dot_camera",
+    "label": "New York 511 Traffic Cameras",
+    "url": "https://511ny.org/api/getcameras?format=json",
+    "embed_base": null,
+    "geo_field": "Latitude,Longitude",
+    "rate_limit_ms": 60000,
+    "enabled": true,
+    "tags": ["traffic", "new_york", "dot", "public_infrastructure"]
+  },
+  {
+    "id": "wsdot_cameras",
+    "type": "dot_camera",
+    "label": "Washington State DOT Traffic Cameras",
+    "url": "https://www.wsdot.wa.gov/Traffic/api/Cameras/CameraAPI.ashx?AccessCode=public&Action=GetCameras",
+    "embed_base": null,
+    "geo_field": "CameraLocation",
+    "rate_limit_ms": 60000,
+    "enabled": true,
+    "tags": ["traffic", "washington", "dot", "public_infrastructure"]
+  },
+  {
+    "id": "mn_dot_cameras",
+    "type": "dot_camera",
+    "label": "Minnesota DOT Traffic Cameras",
+    "url": "https://511mn.org/api/getcameras?format=json",
+    "embed_base": null,
+    "geo_field": "Latitude,Longitude",
+    "rate_limit_ms": 60000,
+    "enabled": true,
+    "tags": ["traffic", "minnesota", "dot", "public_infrastructure"]
+  },
+  {
+    "id": "co_cotrip_cameras",
+    "type": "dot_camera",
+    "label": "Colorado CDOT COTrip Cameras",
+    "url": "https://cotrip.org/device/getDevices.do?type=Camera",
+    "embed_base": null,
+    "geo_field": "deviceLocation",
+    "rate_limit_ms": 60000,
+    "enabled": true,
+    "tags": ["traffic", "colorado", "dot", "public_infrastructure"]
+  },
+  {
+    "id": "earthcam_times_square",
+    "type": "yt_live",
+    "label": "EarthCam Times Square Live",
+    "url": "https://www.youtube.com/embed/KKMhTBEWuq0?autoplay=1&mute=1",
+    "embed_base": "https://www.youtube.com/embed/",
+    "geo": { "lat": 40.7580, "lng": -73.9855 },
+    "rate_limit_ms": 0,
+    "enabled": true,
+    "tags": ["live", "public_space", "new_york", "youtube"]
+  },
+  {
+    "id": "earthcam_chicago_riverwalk",
+    "type": "yt_live",
+    "label": "EarthCam Chicago Riverwalk Live",
+    "url": "https://www.youtube.com/embed/5eTCZ9LXZMQ?autoplay=1&mute=1",
+    "embed_base": "https://www.youtube.com/embed/",
+    "geo": { "lat": 41.8868, "lng": -87.6270 },
+    "rate_limit_ms": 0,
+    "enabled": true,
+    "tags": ["live", "public_space", "chicago", "youtube"]
+  },
+  {
+    "id": "earthcam_dc_mall",
+    "type": "yt_live",
+    "label": "National Mall Washington DC Live",
+    "url": "https://www.youtube.com/embed/GHAqBSvepH8?autoplay=1&mute=1",
+    "embed_base": "https://www.youtube.com/embed/",
+    "geo": { "lat": 38.8895, "lng": -77.0353 },
+    "rate_limit_ms": 0,
+    "enabled": true,
+    "tags": ["live", "public_space", "washington_dc", "youtube"]
+  },
+  {
+    "id": "webcamtaxi_niagara",
+    "type": "webcam_embed",
+    "label": "Niagara Falls Public Webcam",
+    "url": "https://www.webcamtaxi.com/en/canada/ontario/niagara-falls.html",
+    "snapshot_url": "https://icons.wxug.com/webcams/camshots/1/niagarafalls.jpg",
+    "geo": { "lat": 43.0962, "lng": -79.0377 },
+    "rate_limit_ms": 30000,
+    "enabled": true,
+    "tags": ["public_space", "nature", "canada", "webcam"]
+  },
+  {
+    "id": "dot_open_511_feed",
+    "type": "dot_camera",
+    "label": "511 National Open Data Feed",
+    "url": "https://511.org/open-data/cameras",
+    "embed_base": null,
+    "geo_field": "location",
+    "rate_limit_ms": 120000,
+    "enabled": true,
+    "tags": ["traffic", "national", "511", "public_infrastructure"]
+  }
+]

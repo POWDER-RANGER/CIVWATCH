@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 permissions:
   contents: read
   security-events: write
@@ -15,17 +18,17 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@v5  # node24 runtime (was @v4 / node20)
 
       - name: Run PSScriptAnalyzer
-        uses: microsoft/psscriptanalyzer-action@6b2948b1944407914a58661c49941824d149734f  # v1.1
+        uses: microsoft/psscriptanalyzer-action@v1.1
         with:
-          path: .\
+          path: .\\
           recurse: true
           output: results.sarif
           settings: CodeFormatting
 
       - name: Upload PSScriptAnalyzer results
-        uses: github/codeql-action/upload-sarif@c793b717bc78562f491db7b0e93a3a178b099162  # v4.32.5
+        uses: github/codeql-action/upload-sarif@v5  # node24 runtime (was @v4)
         with:
           sarif_file: results.sarif
