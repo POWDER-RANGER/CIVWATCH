@@ -15,6 +15,7 @@ permissions:
 
 jobs:
   psscriptanalyzer:
+    if: false  # Disabled: no .ps1 files in codebase. Re-enable when PowerShell modules are added.
     runs-on: windows-latest
     steps:
       - name: Checkout repository
