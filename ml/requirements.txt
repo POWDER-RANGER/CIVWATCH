@@ -1,14 +1,14 @@
 # CIVWATCH ML Service — v0.5.0 dependencies
 
 # Core API
-fastapi==0.135.1
-uvicorn[standard]==0.42.0
-pydantic==2.12.5
+fastapi==0.136.3
+uvicorn[standard]==0.48.0
+pydantic==2.13.4
 httpx==0.28.1
 python-dotenv==1.2.2
 
 # NLP fallback (always installed — used when torch is unavailable)
-textblob==0.19.0
+textblob==0.20.0
 
 # ML layers — required for DBSCAN + TF-IDF composite scoring
 numpy>=1.26.0
@@ -17,8 +17,8 @@ scikit-learn>=1.4.0
 # DistilBERT transformer stack
 # Tier 4 (FP32 CPU) and Tier 1-2 (CUDA/MPS) — comment out if disk space is a constraint
 transformers==4.39.3
-sentencepiece==0.2.0
-torch==2.2.2
+sentencepiece==0.2.1
+torch==2.12.0
 
 # Tier 3: ONNX quantised inference (best CPU throughput — optional but recommended)
 # Install with: pip install optimum[onnxruntime]==1.19.2
