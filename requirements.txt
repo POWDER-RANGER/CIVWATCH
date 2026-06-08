@@ -9,7 +9,7 @@ pandas>=2.0.0
 
 # Natural Language Processing
 nltk>=3.8.1
-spacy>=3.6.0
+spacy>=3.8.14
 sentence-transformers>=2.2.0
 
 # Computer Vision (for video/image analysis)
