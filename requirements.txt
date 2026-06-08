@@ -13,7 +13,7 @@ spacy>=3.6.0
 sentence-transformers>=2.2.0
 
 # Computer Vision (for video/image analysis)
-opencv-python>=4.8.0
+opencv-python>=4.13.0.92
 Pillow>=10.0.0
 
 # Data Processing & Analysis
