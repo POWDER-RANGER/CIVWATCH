@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { db } from '../db';
 import { cacheDel } from '../db/redis';
 
-const ML_URL = process.env.ML_SERVICE_URL ?? 'http://localhost:5000';
+const ML_URL = process.env.ML_SERVICE_URL ?? 'http://localhost:8000';
 const router  = Router();
 
 interface MLPredictResult {
@@ -12,9 +12,9 @@ interface MLPredictResult {
   anomaly_score: number;
 }
 
-// ── POST /api/ingest ───────────────────────────────────────────────────────────
-// Full pipeline: validate → persist raw_events → forward to ML /predict
-// → write confirmed anomalies to anomaly_events → bust Redis cache
+// ── POST /api/ingest ──────────────────────────────────────────────────────────
+// Full pipeline: validate → persist civic_records → forward to ML service
+// → write confirmed anomalies to anomaly_scores → bust Redis cache
 router.post('/api/ingest', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { source, category, value, metadata } = req.body;
@@ -25,64 +25,65 @@ router.post('/api/ingest', async (req: Request, res: Response, next: NextFunctio
         error: 'Missing required fields: source, category, value',
       });
     }
-    if (typeof value !== 'number') {
-      return res.status(400).json({ error: 'value must be a number' });
+    if (typeof value !== 'number' || !isFinite(value)) {
+      return res.status(400).json({ error: 'value must be a finite number' });
     }
 
     const timestamp = new Date().toISOString();
 
-    // 2. Persist raw event to PostgreSQL
-    await db.query(
-      `INSERT INTO raw_events (timestamp, source, category, value, metadata)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [timestamp, source, category, value, JSON.stringify(metadata ?? {})]
+    // 2. Persist to civic_records (matches 002_civic_records.sql migration)
+    const { rows: inserted } = await db.query<{ id: number }>(
+      `INSERT INTO civic_records (source, category, value, metadata, recorded_at)
+       VALUES ($1, $2, $3, $4, NOW())
+       RETURNING id`,
+      [source, category, value, JSON.stringify(metadata ?? {})],
     );
+    const recordId = inserted[0].id;
 
-    // 3. Forward to ML /predict for anomaly scoring (non-fatal if ML is down)
+    // 3. Forward to ML microservice for anomaly scoring
     let mlResult: MLPredictResult | null = null;
     try {
       const mlRes = await fetch(`${ML_URL}/predict`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ records: [{ timestamp, source, category, value }] }),
-        signal:  AbortSignal.timeout(5000),
+        body:    JSON.stringify({ source, category, value, timestamp }),
+        signal:  AbortSignal.timeout(5_000),
       });
-      if (mlRes.ok) {
-        const mlData = await mlRes.json() as { results: MLPredictResult[] };
-        mlResult = mlData.results[0] ?? null;
-      } else {
-        console.warn('[ingest] ML /predict returned status', mlRes.status);
-      }
-    } catch (mlErr) {
-      // Non-fatal — record is persisted regardless of ML availability
-      console.warn('[ingest] ML service unavailable:', (mlErr as Error).message);
+      if (mlRes.ok) mlResult = (await mlRes.json()) as MLPredictResult;
+    } catch {
+      // ML service unavailable — degrade gracefully, record still saved
     }
 
-    // 4. If anomalous → write to anomaly_events + bust cache
+    // 4. If anomalous, write to anomaly_scores
     if (mlResult?.is_anomalous) {
       await db.query(
-        `INSERT INTO anomaly_events (timestamp, source, category, value, z_score, flags, is_anomalous)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        `INSERT INTO anomaly_scores
+           (civic_record_id, z_score, anomaly_score, flags, detected_at)
+         VALUES ($1, $2, $3, $4, NOW())
+         ON CONFLICT DO NOTHING`,
         [
-          timestamp, source, category, value,
+          recordId,
           mlResult.z_score,
+          mlResult.anomaly_score,
           JSON.stringify(mlResult.flags),
-          true,
-        ]
+        ],
       );
-      await cacheDel('anomalies:latest');
     }
 
-    // 5. Return full scoring result to caller
-    res.json({
+    // 5. Bust Redis caches for analytics + anomaly list endpoints
+    await Promise.allSettled([
+      cacheDel('analytics:summary'),
+      cacheDel(`analytics:source:${source}`),
+      cacheDel('anomalies:recent'),
+    ]);
+
+    return res.status(201).json({
+      id:        recordId,
       timestamp,
       source,
       category,
       value,
-      anomaly_score: mlResult?.anomaly_score ?? null,
-      is_anomalous:  mlResult?.is_anomalous  ?? null,
-      z_score:       mlResult?.z_score        ?? null,
-      flags:         mlResult?.flags          ?? [],
+      anomaly:   mlResult ?? null,
     });
   } catch (err) {
     next(err);
