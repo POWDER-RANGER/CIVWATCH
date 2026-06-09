@@ -1,97 +1,134 @@
 import { Router, Request, Response } from 'express';
-import { sanitize } from './sanitize';
+import { sanitize }                   from './sanitize';
 import { aggregate, getHeatmap, getTrends, getSummary } from './aggregate';
-import { RawInput } from './schema';
+import { RawInput }                    from './schema';
+import { db }                          from '../db';
 
-const router = Router();
+const ML_URL = process.env.ML_SERVICE_URL ?? 'http://localhost:8000';
+const router  = Router();
 
-// Metrics counters
+// ─── In-process metrics (reset on restart) ───────────────────────────────────
 let metrics = {
-  ingested: 0,
-  rejected: 0,
+  ingested:  0,
+  rejected:  0,
+  ml_errors: 0,
   rejection_reasons: {
-    raw_coordinates: 0,
+    raw_coordinates:   0,
     invalid_timestamp: 0,
-    invalid_geocell: 0,
-    invalid_category: 0,
-    schema_fail: 0,
+    invalid_geocell:   0,
+    invalid_category:  0,
+    schema_fail:       0,
   },
 };
 
+// ─── Helper: call ML service and write anomaly_score ─────────────────────────
+async function scoreRecord(civicRecordId: number, record: RawInput): Promise<void> {
+  try {
+    const mlRes = await fetch(`${ML_URL}/predict`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        source:   record.source,
+        category: record.category,
+        value:    record.value,
+        geocell:  record.geocell,
+      }),
+    });
+
+    if (!mlRes.ok) {
+      metrics.ml_errors++;
+      return;
+    }
+
+    const { z_score, flags } = (await mlRes.json()) as { z_score: number; flags?: string[] };
+    const is_anomalous = Math.abs(z_score) > 2.5;
+
+    await db.query(`
+      INSERT INTO anomaly_scores (civic_record_id, z_score, is_anomalous, flags)
+      VALUES ($1, $2, $3, $4)
+      ON CONFLICT (civic_record_id)
+        DO UPDATE SET z_score = $2, is_anomalous = $3, flags = $4, created_at = NOW()
+    `, [civicRecordId, z_score, is_anomalous, JSON.stringify(flags ?? [])]);
+  } catch {
+    metrics.ml_errors++;
+  }
+}
+
 /**
- * POST /reports
- * Ingestion endpoint — only accepts sanitized, schema-valid reports.
- * Rejects raw coordinates, malformed timestamps, invalid categories.
+ * POST /pipeline/reports
+ * Ingestion endpoint – sanitizes, writes to civic_records, triggers ML scoring.
  */
-router.post('/reports', (req: Request, res: Response) => {
+router.post('/reports', async (req: Request, res: Response) => {
   const raw = req.body as RawInput;
 
-  // Track raw coord rejection separately for metrics
-  if (raw.lat !== undefined || raw.lon !== undefined) {
+  const result = sanitize(raw);
+  if (!result.valid) {
     metrics.rejected++;
-    metrics.rejection_reasons.raw_coordinates++;
-    return res.status(400).json({
-      error: {
-        code: 'RAW_COORDINATES_REJECTED',
-        message: 'Raw lat/lon not accepted. Submit geo_cell hash only.',
-      },
-    });
+    const reason = result.reason as keyof typeof metrics.rejection_reasons;
+    if (reason in metrics.rejection_reasons) metrics.rejection_reasons[reason]++;
+    return res.status(422).json({ error: 'Rejected', reason: result.reason });
   }
 
-  const report = sanitize(raw);
+  const clean = result.data!;
 
-  if (!report) {
-    metrics.rejected++;
-    return res.status(400).json({
-      error: {
-        code: 'SANITIZATION_FAILED',
-        message: 'Report failed validation. Check timestamp window, geo_cell format, and category.',
-      },
-    });
-  }
+  // Persist to civic_records
+  const { rows } = await db.query(`
+    INSERT INTO civic_records (source, category, value, geocell, recorded_at, raw_text, metadata)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    RETURNING id
+  `, [
+    clean.source,
+    clean.category,
+    clean.value,
+    clean.geocell ?? null,
+    clean.timestamp ? new Date(clean.timestamp) : new Date(),
+    JSON.stringify(raw),
+    JSON.stringify(clean.metadata ?? {}),
+  ]);
 
-  aggregate(report);
   metrics.ingested++;
+  const civicRecordId: number = rows[0].id;
 
-  return res.status(202).json({ status: 'accepted' });
+  // Fire-and-forget ML scoring (non-blocking)
+  scoreRecord(civicRecordId, clean).catch(() => {});
+
+  return res.status(201).json({ id: civicRecordId, status: 'accepted' });
 });
 
-/**
- * GET /heatmap
- * Returns aggregated counts by geo_cell + time window.
- * NEVER returns individual submissions.
- */
-router.get('/heatmap', (_req: Request, res: Response) => {
-  return res.json(getHeatmap());
+// ─── GET /pipeline/aggregate ──────────────────────────────────────────────────
+router.get('/aggregate', async (req: Request, res: Response) => {
+  const source   = req.query.source   as string | undefined;
+  const category = req.query.category as string | undefined;
+  const since    = req.query.since    as string | undefined;
+  const result   = await aggregate({ source, category, since });
+  return res.json(result);
 });
 
-/**
- * GET /trends
- * Returns time-series totals. Statistical only.
- */
-router.get('/trends', (_req: Request, res: Response) => {
-  return res.json(getTrends());
+// ─── GET /pipeline/heatmap ────────────────────────────────────────────────────
+router.get('/heatmap', async (req: Request, res: Response) => {
+  const source   = req.query.source   as string | undefined;
+  const category = req.query.category as string | undefined;
+  const result   = await getHeatmap({ source, category });
+  return res.json(result);
 });
 
-/**
- * GET /summary
- * Top-level aggregate stats.
- */
-router.get('/summary', (_req: Request, res: Response) => {
-  return res.json(getSummary());
+// ─── GET /pipeline/trends ─────────────────────────────────────────────────────
+router.get('/trends', async (req: Request, res: Response) => {
+  const source   = req.query.source   as string | undefined;
+  const category = req.query.category as string | undefined;
+  const result   = await getTrends({ source, category });
+  return res.json(result);
 });
 
-/**
- * GET /metrics
- * Operational metrics — ingestion rate, rejection rate, bucket density.
- */
+// ─── GET /pipeline/summary ────────────────────────────────────────────────────
+router.get('/summary', async (_req: Request, res: Response) => {
+  const result = await getSummary();
+  return res.json(result);
+});
+
+// ─── GET /pipeline/metrics ────────────────────────────────────────────────────
 router.get('/metrics', (_req: Request, res: Response) => {
-  const total = metrics.ingested + metrics.rejected;
-  return res.json({
-    ...metrics,
-    rejection_rate: total > 0 ? metrics.rejected / total : 0,
-    acceptance_rate: total > 0 ? metrics.ingested / total : 0,
-  });
+  return res.json(metrics);
 });
 
 export default router;
