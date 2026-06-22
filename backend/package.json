@@ -20,7 +20,7 @@
     "express-rate-limit": "^7.5.1",
     "helmet": "^7.2.0",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.20.0",
+    "pg": "^8.22.0",
     "rss-parser": "^3.13.0",
     "zod": "^3.25.76"
   },
