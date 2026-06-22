@@ -42,7 +42,7 @@ aiofiles>=25.1.0
 # Authentication & Security
 pyjwt>=2.13.0
 bcrypt>=4.0.1
-cryptography>=48.0.0
+cryptography>=49.0.0
 python-jose>=3.3.0
 
 # Testing
