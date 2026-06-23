@@ -1,44 +1,87 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authApi } from '../api/client';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { api } from '../api/client';
 
-interface User { userId: string; email: string; role: string; }
-interface AuthCtx {
+interface User {
+  id: string;
+  email: string;
+  role: string;
+}
+
+interface AuthContextType {
   user: User | null;
-  token: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
   loading: boolean;
+  error: string;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, role: string) => Promise<void>;
+  logout: () => void;
 }
 
-const Ctx = createContext<AuthCtx>({} as AuthCtx);
-export const useAuth = () => useContext(Ctx);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: true,
+  error: '',
+  login: async () => {},
+  register: async () => {},
+  logout: () => {},
+});
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser]   = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('cw_token'));
+export const useAuthContext = () => useContext(AuthContext);
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
+  // Check for existing session on mount
   useEffect(() => {
-    if (!token) { setLoading(false); return; }
-    authApi.me()
-      .then((r) => setUser(r.data.user))
-      .catch(() => { setToken(null); localStorage.removeItem('cw_token'); })
-      .finally(() => setLoading(false));
-  }, [token]);
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      api.get('/auth/me')
+        .then((res) => setUser(res.data))
+        .catch(() => localStorage.removeItem('accessToken'))
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, []);
 
-  async function login(email: string, password: string) {
-    const r = await authApi.login(email, password);
-    const t = r.data.token;
-    localStorage.setItem('cw_token', t);
-    setToken(t);
-    setUser(r.data.user);
-  }
+  const login = useCallback(async (email: string, password: string) => {
+    setError('');
+    try {
+      const res = await api.post('/auth/login', { email, password });
+      const { accessToken, refreshToken, user } = res.data;
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+      setUser(user);
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Login failed');
+      throw err;
+    }
+  }, []);
 
-  function logout() {
-    localStorage.removeItem('cw_token');
-    setToken(null); setUser(null);
-    window.location.href = '/login';
-  }
+  const register = useCallback(async (email: string, password: string, role: string) => {
+    setError('');
+    try {
+      const res = await api.post('/auth/register', { email, password, role });
+      const { accessToken, refreshToken, user } = res.data;
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+      setUser(user);
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Registration failed');
+      throw err;
+    }
+  }, []);
 
-  return <Ctx.Provider value={{ user, token, login, logout, loading }}>{children}</Ctx.Provider>;
-}
+  const logout = useCallback(() => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    setUser(null);
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ user, loading, error, login, register, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
