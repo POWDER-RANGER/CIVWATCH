@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 
 const BASE     = import.meta.env.VITE_API_BASE_URL ?? '/api';
-const ML_BASE  = import.meta.env.VITE_ML_BASE_URL  ?? '/ml';
+const ML_BASE  = import.meta.env.VITE_ML_BASE_URL  ?? 'http://localhost:5000';
 
 export const api = axios.create({ baseURL: BASE, timeout: 30000 });
 export const ml  = axios.create({ baseURL: ML_BASE, timeout: 15000 });
@@ -26,54 +26,71 @@ api.interceptors.response.use(
       localStorage.removeItem('cw_token');
       window.location.href = '/login';
     }
-    const msg = err.response?.data?.error?.message ?? 'Network error';
+    const msg = err.response?.data?.error?.message ?? err.response?.data?.error ?? 'Network error';
     toast.error(msg);
     return Promise.reject(err);
   }
 );
 
+// ── Auth ──────────────────────────────────────────────────────────────────────
 export const authApi = {
-  login: (email: string, password: string) => api.post('/auth/login', { email, password }),
+  login: (email: string, password: string) =>
+    api.post('/auth/login', { email, password }),
+  register: (email: string, password: string, name?: string) =>
+    api.post('/auth/register', { email, password, name }),
   me:    () => api.get('/auth/me'),
 };
+
+// ── Sources ───────────────────────────────────────────────────────────────────
 export const sourcesApi = {
   list:   ()             => api.get('/sources'),
   create: (body: object) => api.post('/sources', body),
   remove: (id: string)   => api.delete(`/sources/${id}`),
   run:    (id: string)   => api.post(`/sources/${id}/run`),
 };
+
+// ── Analytics ─────────────────────────────────────────────────────────────────
+// All routes require auth and return user-scoped data
 export const analyticsApi = {
-  overview:       ()          => api.get('/analytics/overview'),
-  anomalyScore:   ()          => api.get('/score/anomaly'),
-  alertsRecent:   ()          => api.get('/alerts/recent'),
-  trend:          (days = 30) => api.get(`/analytics/trend?days=${days}`),
-  clusterSummary: ()          => api.get('/analytics/clusters'),
+  overview: ()          => api.get('/analytics/overview'),
+  trends:   (days = 30) => api.get(`/analytics/trends?days=${days}`),
+  heatmap:  ()          => api.get('/analytics/heatmap'),
+  sources:  ()          => api.get('/analytics/sources'),
 };
+
+// ── Alerts ────────────────────────────────────────────────────────────────────
 export const alertsApi = {
   list:   ()          => api.get('/alerts'),
   recent: ()          => api.get('/alerts/recent'),
   create: (b: object) => api.post('/alerts', b),
 };
+
+// ── Ingest ────────────────────────────────────────────────────────────────────
 export const ingestApi = {
   submit: (body: {
     source:    string;
-    content:   string;
+    category:  string;
+    value:     number;
     metadata?: Record<string, unknown>;
   }) => api.post('/ingest', body),
 };
+
+// ── Anomalies ─────────────────────────────────────────────────────────────────
 export const anomaliesApi = {
-  list:   (params?: { limit?: number; offset?: number; minScore?: number }) =>
+  list:   (params?: { limit?: number; offset?: number; source?: string; since?: string }) =>
     api.get('/anomalies', { params }),
+  stats:  () => api.get('/anomalies/stats'),
   get:    (id: string) => api.get(`/anomalies/${id}`),
-  create: (body: { score: number; label: string; data: unknown }) =>
-    api.post('/anomalies', body),
+  score:  (body: { civic_record_id: number; z_score: number; flags?: string[] }) =>
+    api.post('/anomalies/score', body),
 };
 
-/** ML service — talks directly to the FastAPI engine on VITE_ML_BASE_URL */
+// ── ML Service (FastAPI) ──────────────────────────────────────────────────────
 export const mlApi = {
-  health:   ()                              => ml.get('/health'),
-  insights: ()                              => ml.get('/insights'),
-  predict:  (records: object[])             => ml.post('/predict', { records }),
-  sentiment:(text: string)                  => ml.post('/analyze/sentiment', { text }),
-  batch:    (items: object[])               => ml.post('/analyze/batch', { items }),
+  health:    ()                  => ml.get('/health'),
+  ready:     ()                  => ml.get('/ready'),
+  insights:  ()                  => ml.get('/insights'),
+  predict:   (records: object[]) => ml.post('/predict', { records }),
+  sentiment: (text: string)      => ml.post('/analyze/sentiment', { text }),
+  batch:     (items: object[])   => ml.post('/analyze/batch', { items }),
 };
