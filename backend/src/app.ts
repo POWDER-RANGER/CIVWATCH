@@ -14,6 +14,9 @@ import analyticsRouter from './routes/analytics';
 import alertsRouter    from './routes/alerts';
 import pipelineRouter  from './pipeline/routes';
 
+import anomaliesRouter from './routes/anomalies';
+import ingestRouter   from './routes/ingest';
+
 const app = express();
 
 // ── Security middleware
@@ -47,6 +50,10 @@ app.use('/api/alerts', alertsRouter);
 
 // Pipeline routes (ingestion, heatmap, trends, summary)
 app.use('/', pipelineRouter);
+
+// Newly wired anomaly and ingest routes
+app.use('/api/anomalies', anomaliesRouter);
+app.use('/api/ingest', ingestRouter);
 
 // ── Metrics endpoint (latency stats + pipeline metrics)
 app.get('/api/metrics', (_req, res) => {
