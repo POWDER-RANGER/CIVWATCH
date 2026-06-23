@@ -15,7 +15,8 @@ interface MLPredictResult {
 // ── POST /api/ingest ──────────────────────────────────────────────────────────
 // Full pipeline: validate → persist civic_records → forward to ML service
 // → write confirmed anomalies to anomaly_scores → bust Redis cache
-router.post('/api/ingest', async (req: Request, res: Response, next: NextFunction) => {
+// NOTE: This router is mounted at /api/ingest in app.ts, so '/' here = '/api/ingest'
+router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { source, category, value, metadata } = req.body;
 
@@ -46,10 +47,13 @@ router.post('/api/ingest', async (req: Request, res: Response, next: NextFunctio
       const mlRes = await fetch(`${ML_URL}/predict`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ source, category, value, timestamp }),
+        body:    JSON.stringify({ records: [{ source, category, value, text: metadata?.text ?? '' }] }),
         signal:  AbortSignal.timeout(5_000),
       });
-      if (mlRes.ok) mlResult = (await mlRes.json()) as MLPredictResult;
+      if (mlRes.ok) {
+        const mlData = await mlRes.json() as { results?: MLPredictResult[] };
+        mlResult = mlData.results?.[0] ?? null;
+      }
     } catch {
       // ML service unavailable — degrade gracefully, record still saved
     }
@@ -58,7 +62,7 @@ router.post('/api/ingest', async (req: Request, res: Response, next: NextFunctio
     if (mlResult?.is_anomalous) {
       await db.query(
         `INSERT INTO anomaly_scores
-           (civic_record_id, z_score, anomaly_score, flags, detected_at)
+           (civic_record_id, z_score, anomaly_score, flags, created_at)
          VALUES ($1, $2, $3, $4, NOW())
          ON CONFLICT DO NOTHING`,
         [
