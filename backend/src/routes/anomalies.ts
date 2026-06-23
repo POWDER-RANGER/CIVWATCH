@@ -1,12 +1,14 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { db } from '../db';
+import { pool } from '../db';
 import { cacheGet, cacheSet } from '../db/redis';
 
 const ANOMALY_TTL = 60; // seconds
 const router      = Router();
 
-// ─── GET /api/anomalies ───────────────────────────────────────────────────────
+// ─── GET /api/anomalies ──────────────────────────────────────────────────────
 // Returns paginated anomaly_scores joined with civic_records for full context.
+// Uses the actual schema: anomaly_scores(record_id, score, label, method, data)
+// joined with civic_records(id, source, content, metadata, created_at)
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const limit  = Math.min(parseInt(req.query.limit  as string) || 50, 200);
@@ -18,22 +20,23 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     const cached   = await cacheGet(cacheKey);
     if (cached) return res.json(cached);
 
+    // Build query matching actual schema
     let query = `
       SELECT
-        a.id,
-        a.civic_record_id,
-        a.z_score,
-        a.is_anomalous,
-        a.flags,
+        a.id::text          AS id,
+        a.record_id::text   AS civic_record_id,
+        a.score             AS anomaly_score,
+        a.label,
+        a.method,
+        a.data              AS flags,
         a.created_at        AS detected_at,
-        c.recorded_at,
+        c.created_at        AS recorded_at,
         c.source,
-        c.category,
-        c.value,
-        c.raw_text
+        c.content           AS raw_text,
+        c.metadata
       FROM anomaly_scores a
-      JOIN civic_records  c ON c.id = a.civic_record_id
-      WHERE a.is_anomalous = true
+      JOIN civic_records c ON c.id = a.record_id
+      WHERE 1=1
     `;
     const params: (string | number)[] = [];
 
@@ -49,17 +52,25 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     query += ` ORDER BY a.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
     params.push(limit, offset);
 
-    const { rows } = await db.query(query, params);
+    const { rows } = await pool.query(query, params);
 
-    const countQuery = `
+    // Count query
+    let countQuery = `
       SELECT COUNT(*) AS total
       FROM anomaly_scores a
-      JOIN civic_records  c ON c.id = a.civic_record_id
-      WHERE a.is_anomalous = true
-      ${source ? `AND c.source = '${source}'` : ''}
-      ${since  ? `AND a.created_at >= '${since}'::timestamptz` : ''}
+      JOIN civic_records c ON c.id = a.record_id
+      WHERE 1=1
     `;
-    const { rows: countRows } = await db.query(countQuery);
+    const countParams: (string | number)[] = [];
+    if (source) {
+      countParams.push(source);
+      countQuery += ` AND c.source = $${countParams.length}`;
+    }
+    if (since) {
+      countParams.push(since);
+      countQuery += ` AND a.created_at >= $${countParams.length}::timestamptz`;
+    }
+    const { rows: countRows } = await pool.query(countQuery, countParams);
 
     const payload = {
       total:     parseInt(countRows[0].total),
@@ -76,25 +87,23 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // ─── GET /api/anomalies/stats ─────────────────────────────────────────────────
-// Aggregate statistics across anomaly_scores + civic_records.
 router.get('/stats', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const cacheKey = 'anomalies:stats';
     const cached   = await cacheGet(cacheKey);
     if (cached) return res.json(cached);
 
-    const { rows } = await db.query(`
+    const { rows } = await pool.query(`
       SELECT
-        COUNT(*)                                           AS total_anomalies,
-        COUNT(DISTINCT c.source)                           AS affected_sources,
-        AVG(a.z_score)                                     AS avg_z_score,
-        MAX(a.z_score)                                     AS max_z_score,
-        MIN(a.created_at)                                  AS earliest,
-        MAX(a.created_at)                                  AS latest,
+        COUNT(*)                              AS total_anomalies,
+        COUNT(DISTINCT c.source)              AS affected_sources,
+        AVG(a.score)                          AS avg_score,
+        MAX(a.score)                          AS max_score,
+        MIN(a.created_at)                     AS earliest,
+        MAX(a.created_at)                     AS latest,
         COUNT(*) FILTER (WHERE a.created_at >= NOW() - INTERVAL '24 hours') AS last_24h
       FROM anomaly_scores a
-      JOIN civic_records  c ON c.id = a.civic_record_id
-      WHERE a.is_anomalous = true
+      JOIN civic_records c ON c.id = a.record_id
     `);
 
     const stats = rows[0];
@@ -106,24 +115,26 @@ router.get('/stats', async (_req: Request, res: Response, next: NextFunction) =>
 });
 
 // ─── GET /api/anomalies/:id ───────────────────────────────────────────────────
-// Single anomaly detail with full civic_record context.
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: 'Invalid id' });
+    const { id } = req.params;
 
-    const { rows } = await db.query(`
+    const { rows } = await pool.query(`
       SELECT
-        a.*,
-        c.recorded_at,
+        a.id::text          AS id,
+        a.record_id::text   AS civic_record_id,
+        a.score             AS anomaly_score,
+        a.label,
+        a.method,
+        a.data              AS flags,
+        a.created_at        AS detected_at,
+        c.created_at        AS recorded_at,
         c.source,
-        c.category,
-        c.value,
-        c.raw_text,
+        c.content           AS raw_text,
         c.metadata
       FROM anomaly_scores a
-      JOIN civic_records  c ON c.id = a.civic_record_id
-      WHERE a.id = $1
+      JOIN civic_records c ON c.id = a.record_id
+      WHERE a.id = $1::uuid
     `, [id]);
 
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
@@ -134,32 +145,26 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // ─── POST /api/anomalies/score ────────────────────────────────────────────────
-// Accepts a civic_record_id + pre-computed z_score from the ML pipeline
-// and writes it into anomaly_scores.
+// Accepts a civic_record_id + score and writes it into anomaly_scores
 router.post('/score', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { civic_record_id, z_score, flags } = req.body as {
-      civic_record_id: number;
-      z_score:         number;
-      flags?:          string[];
-    };
+    const { civic_record_id, score, label = 'anomalous', method = 'manual', flags } = req.body;
 
-    if (!civic_record_id || z_score === undefined) {
-      return res.status(400).json({ error: 'civic_record_id and z_score are required' });
+    if (!civic_record_id || score === undefined) {
+      return res.status(400).json({ error: 'civic_record_id and score are required' });
+    }
+    if (typeof score !== 'number' || score < 0 || score > 1) {
+      return res.status(400).json({ error: 'score must be a number between 0 and 1' });
     }
 
-    const is_anomalous = Math.abs(z_score) > 2.5;
-    const flagsArr     = flags ?? [];
-
-    const { rows } = await db.query(`
-      INSERT INTO anomaly_scores (civic_record_id, z_score, is_anomalous, flags)
-      VALUES ($1, $2, $3, $4)
-      ON CONFLICT (civic_record_id)
-        DO UPDATE SET z_score = $2, is_anomalous = $3, flags = $4, created_at = NOW()
+    const { rows } = await pool.query(`
+      INSERT INTO anomaly_scores (record_id, score, label, method, data)
+      VALUES ($1::uuid, $2, $3, $4, $5)
+      ON CONFLICT (id) DO NOTHING
       RETURNING *
-    `, [civic_record_id, z_score, is_anomalous, JSON.stringify(flagsArr)]);
+    `, [civic_record_id, score, label, method, JSON.stringify(flags ?? {})]);
 
-    return res.status(201).json(rows[0]);
+    return res.status(201).json(rows[0] ?? { message: 'Score recorded' });
   } catch (err) {
     next(err);
   }
