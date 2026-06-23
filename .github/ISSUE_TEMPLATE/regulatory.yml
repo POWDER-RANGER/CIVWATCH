@@ -1,0 +1,62 @@
+name: Government Data / Regulatory
+description: Issues related to government data sources, compliance, or civic data standards
+title: '[GOV] '
+labels: ['government-data', 'compliance']
+body:
+  - type: dropdown
+    id: data_source
+    attributes:
+      label: Government Data Source
+      options:
+        - FEC OpenFEC API
+        - Census Bureau API
+        - Open311
+        - SEC EDGAR
+        - MuckRock FOIA
+        - State/Local API
+        - Custom Civic Portal
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the data source issue, compliance requirement, or integration request.
+    validations:
+      required: true
+
+  - type: textarea
+    id: api_details
+    attributes:
+      label: API/Standard Details
+      description: Provide endpoint URLs, documentation links, or standard references.
+      placeholder: |
+        - API Documentation: https://api.open.fec.gov/developers/
+        - Rate limits: 1,000 requests/hour
+        - Authentication: API key required
+        - Data format: JSON
+
+  - type: textarea
+    id: compliance
+    attributes:
+      label: Compliance Context
+      description: If this relates to a regulatory requirement, describe it here.
+      placeholder: |
+        This relates to FOIA response tracking requirements under Iowa Code Chapter 22...
+
+  - type: textarea
+    id: implementation_notes
+    attributes:
+      label: Implementation Notes
+      description: Any technical considerations for integration.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have verified this data source is publicly accessible
+        - label: I have reviewed the terms of service
+        - label: I have checked for existing data source integrations

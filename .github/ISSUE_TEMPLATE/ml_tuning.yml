@@ -1,0 +1,155 @@
+name: ML Tuning Request
+description: Request tuning or report issues with anomaly detection and ML models
+title: '[ML] '
+labels: ['ml', 'tuning']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form to request ML model tuning, report anomaly detection issues, or suggest algorithm improvements.
+        
+        For general bugs, use the Bug Report template. For security issues, see [SECURITY.md](../../SECURITY.md).
+
+  - type: dropdown
+    id: algorithm
+    attributes:
+      label: Algorithm/Component
+      description: Which ML component is affected?
+      options:
+        - DBSCAN (clustering)
+        - Isolation Forest
+        - Z-Score / Statistical
+        - Sentiment Analysis
+        - Named Entity Recognition (NER)
+        - Topic Classification
+        - Ensemble Voting
+        - Feature Engineering
+        - Model Registry (MLflow)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: domain
+    attributes:
+      label: Data Domain
+      description: What type of civic data is being analyzed?
+      options:
+        - Campaign Finance
+        - Meeting Minutes
+        - Contract Awards
+        - FOIA Requests
+        - 311 Service Requests
+        - Multi-domain
+        - Not domain-specific
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Current Behavior
+      description: Describe what the model is currently doing. Include specific examples if possible.
+      placeholder: 'The DBSCAN detector is flagging 40% of normal city council meeting minutes as anomalies...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: Describe what you expect the model to do.
+      placeholder: 'Expected false positive rate below 10% for meeting minutes...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: metrics
+    attributes:
+      label: Current Metrics
+      description: If available, provide current performance metrics.
+      placeholder: |
+        - Detection Rate: 0.85
+        - False Positive Rate: 0.35
+        - Precision: 0.72
+        - Silhouette Score: 0.18
+        - Dataset size: 5,000 documents
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Current Configuration
+      description: Paste your current anomaly detection configuration.
+      render: json
+      placeholder: |
+        {
+          "dbscan": {
+            "eps": 0.5,
+            "min_samples": 5,
+            "metric": "euclidean"
+          },
+          "isolation_forest": {
+            "contamination": 0.05,
+            "n_estimators": 200
+          }
+        }
+
+  - type: textarea
+    id: feature_vector
+    attributes:
+      label: Feature Vector Description
+      description: Describe the features being used (dimensions, types, scaling method).
+      placeholder: |
+        - 47 numerical features (scaled with RobustScaler)
+        - 500 TF-IDF text features
+        - Temporal features: hour, day_of_week, month
+        - Scaling: RobustScaler with (25, 75) quantile range
+
+  - type: checkboxes
+    id: experiments
+    attributes:
+      label: Experiments Already Tried
+      description: Check any tuning experiments you've already attempted.
+      options:
+        - label: Adjusted eps using k-distance graph
+        - label: Changed min_samples
+        - label: Tried different distance metrics
+        - label: Modified feature scaling
+        - label: Adjusted Isolation Forest contamination
+        - label: Changed ensemble weights
+        - label: Performed feature selection/reduction
+        - label: Tried different algorithm combination
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction Steps
+      description: How can we reproduce this issue? Include sample data if possible.
+      placeholder: |
+        1. Load dataset of 5,000 city council meeting minutes
+        2. Configure DBSCAN with eps=0.5, min_samples=5
+        3. Run anomaly detection pipeline
+        4. Observe 35% false positive rate
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution
+      description: If you have ideas for improving the model, describe them here.
+      placeholder: Consider reducing eps to 0.3 and increasing min_samples to 8 for meeting minutes...
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have reviewed the [ML_TUNING.md](../../ML_TUNING.md) guide
+        - label: I have checked existing issues for similar tuning requests
+        - label: I have provided sufficient configuration details for reproduction
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other information that might help with tuning.
+      placeholder: Attach k-distance plots, silhouette analysis, or other diagnostic outputs here.

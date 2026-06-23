@@ -1,0 +1,119 @@
+name: Security Report
+description: Report a security vulnerability or security-related issue
+title: '[SECURITY] '
+labels: ['security']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Security Issue Report
+        
+        **IMPORTANT**: If you are reporting a vulnerability that could be exploited, please use [GitHub Security Advisories](https://github.com/POWDER-RANGER/CIVWATCH/security/advisories/new) instead of this public form.
+        
+        This public form is appropriate for:
+        - Security hardening suggestions
+        - Dependency vulnerability reports (non-exploitable)
+        - Security documentation improvements
+        - Security control enhancement requests
+        
+        For private vulnerability disclosure, see [SECURITY.md](../../SECURITY.md).
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this security concern?
+      options:
+        - Critical (immediate attention required)
+        - High (should be addressed within 72 hours)
+        - Medium (should be addressed within 2 weeks)
+        - Low (best practice improvement)
+        - Informational (documentation/hardening)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What type of security issue is this?
+      options:
+        - Authentication/Authorization
+        - Data Exposure
+        - Injection (SQL/Command/XSS)
+        - Cryptographic Weakness
+        - Dependency Vulnerability
+        - Configuration Issue
+        - Denial of Service
+        - Privilege Escalation
+        - Audit/Logging Gap
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the security issue in detail.
+      placeholder: |
+        The current implementation of JWT verification does not validate the 'aud' claim, 
+        which could allow tokens issued for other services to be accepted...
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: What is the potential impact if this issue is exploited?
+      placeholder: |
+        An attacker could use a token issued for a different service to authenticate 
+        to CIVWATCH if they have valid credentials for that other service.
+
+  - type: textarea
+    id: affected_components
+    attributes:
+      label: Affected Components
+      description: Which parts of the system are affected?
+      placeholder: |
+        - Backend authentication middleware (`src/middleware/auth.ts`)
+        - JWT verification logic
+        - All protected API endpoints
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce (if applicable)
+      description: For non-sensitive issues, provide reproduction steps.
+      placeholder: |
+        1. Obtain a JWT token from a different service with the same signing key
+        2. Send request to `GET /api/monitors` with this token
+        3. Observe successful authentication
+
+  - type: textarea
+    id: remediation
+    attributes:
+      label: Suggested Remediation
+      description: If you have suggestions for fixing this issue, describe them.
+      placeholder: Add audience validation to the JWT verification middleware...
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Link to relevant standards, CVEs, or documentation.
+      placeholder: |
+        - OWASP JWT Security Cheat Sheet
+        - RFC 8725 - JSON Web Token Best Current Practices
+        - CVE-2024-XXXXX (if applicable)
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: This is NOT an exploitable vulnerability (use Security Advisories for those)
+        - label: I have reviewed the [THREAT_MODEL.md](../../THREAT_MODEL.md)
+        - label: I have checked for existing security issues
+        - label: I am not disclosing any sensitive exploitation details publicly
