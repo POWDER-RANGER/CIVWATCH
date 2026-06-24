@@ -1,0 +1,97 @@
+/* Navigation link styles */
+.nav-link {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.15s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.nav-link:hover {
+  color: var(--amber);
+}
+
+.nav-link.active {
+  color: var(--amber);
+}
+
+.nav-cta {
+  padding: 6px 16px;
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  background: none;
+  cursor: pointer;
+}
+
+.nav-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--amber);
+  transform: translateX(-101%);
+  transition: transform 0.2s;
+  z-index: 0;
+}
+
+.nav-cta:hover::before {
+  transform: translateX(0);
+}
+
+.nav-cta:hover {
+  color: var(--bg);
+}
+
+.nav-cta span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Mobile toggle */
+.nav-mobile-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-left: auto;
+}
+
+/* Desktop links container */
+.nav-desktop {
+  display: flex;
+}
+
+@media (max-width: 860px) {
+  .nav-desktop {
+    display: none !important;
+  }
+  
+  .nav-mobile-toggle {
+    display: block;
+  }
+}
+
+@media (min-width: 861px) {
+  .nav-mobile-menu {
+    display: none !important;
+  }
+}
+
+/* Hover bar effect for data cards */
+.hover-bar-trigger:hover .hover-bar {
+  transform: scaleX(1) !important;
+}
