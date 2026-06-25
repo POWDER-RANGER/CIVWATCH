@@ -1,14 +1,21 @@
-# CIVWATCH — Adversarial Civic Infrastructure
+<!-- ══════════════════════════════════════════ CIVWATCH HEADER -->
+<div align="center">
 
-> **Not civic tech. Civic armor.**
-> 
-> Production-grade transparency infrastructure monitoring political finance, lobbying influence, voting records, campaign promises, body camera accountability, and governmental overreach — built to withstand attacks from the powerful actors it exposes.
+[![Header](https://capsule-render.vercel.app/api?type=waving&color=0:0D1117,35:0D2818,70:1B5E20,100:00C853&height=300&section=header&text=CIVWATCH&fontSize=80&fontColor=00FF88&animation=fadeIn&fontAlignY=42&desc=Adversarial+Civic+Infrastructure+%E2%80%94+Not+Civic+Tech.+Civic+Armor.&descColor=69F0AE&descSize=18&descAlignY=64)](https://github.com/POWDER-RANGER/CIVWATCH)
 
-[![Status](https://img.shields.io/badge/Status-PRODUCTION-00FF88?style=flat&labelColor=0D1117)]()
-[![Threat Level](https://img.shields.io/badge/Threat_Level-HIGH-critical?style=flat&labelColor=0D1117)]()
-[![Anti-SLAPP Ready](https://img.shields.io/badge/Anti--SLAPP-Ready-blue?style=flat&labelColor=0D1117)]()
-[![Warrant Canary](https://img.shields.io/badge/Warrant_Canary-Active-success?style=flat&labelColor=0D1117)]()
-[![License](https://img.shields.io/badge/License-MIT-00FF88?style=flat&labelColor=0D1117)]()
+<br>
+
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=700&size=18&duration=2600&pause=700&color=00FF88&center=true&vCenter=true&width=900&lines=MONITORING+POLITICAL+FINANCE+%E2%80%94+EXPOSING+LOBBYING+INFLUENCE;TRACKING+CAMPAIGN+PROMISES+%E2%80%94+BWC+ACCOUNTABILITY;BUILT+TO+WITHSTAND+ATTACKS+FROM+ACTORS+IT+EXPOSES;Anti-SLAPP+Ready+%E2%80%94+Cryptographic+Verification+%E2%80%94+Warrant+Canary+Active)](https://github.com/POWDER-RANGER/CIVWATCH)
+
+<br>
+
+![](https://img.shields.io/badge/STATUS-PRODUCTION-00FF88?style=for-the-badge&labelColor=0D1117)
+![](https://img.shields.io/badge/THREAT_LEVEL-HIGH-FF6D00?style=for-the-badge&labelColor=0D1117)
+![](https://img.shields.io/badge/ANTI--SLAPP-READY-2979FF?style=for-the-badge&labelColor=0D1117)
+![](https://img.shields.io/badge/WARRANT_CANARY-ACTIVE-00E676?style=for-the-badge&labelColor=0D1117)
+![](https://img.shields.io/badge/LICENSE-MIT+ODbL-00FF88?style=for-the-badge&labelColor=0D1117)
+
+</div>
 
 ---
 
@@ -44,55 +51,54 @@ CIVWATCH is an open-source adversarial infrastructure platform that:
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    CIVWATCH ADVERSARIAL INFRASTRUCTURE              │
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │                    LEGAL FORTRESS                            │   │
-│  │  ├── LEGAL_REVIEW.md — First Amendment, FOIA, anti-SLAPP   │   │
-│  │  ├── ETHICS_CHARTER.md — Non-partisan pledge, data ethics  │   │
-│  │  ├── PRIVACY_IMPACT_ASSESSMENT.md — NIST Privacy Framework │   │
-│  │  ├── SLAPP_RESPONSE_PLAYBOOK.md — 48-hour defense protocol │   │
-│  │  └── TRANSPARENCY_REPORT.md — Quarterly public reporting   │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                              │                                      │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │              ADVERSARIAL SECURITY LAYER                      │   │
-│  │  ├── OBELISK_AUDIT_CHAIN.md — Immutable hash-chain audit   │   │
-│  │  ├── ADVERSARIAL_SECURITY.md — Threat model, mitigations   │   │
-│  │  ├── WARRANT_CANARY.md — Cryptographic warrant canary      │   │
-│  │  ├── Multi-agent consensus — No unilateral modifications   │   │
-│  │  └── Multi-region deployment — DDoS resilience             │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                              │                                      │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │                 DATA INGESTION LAYER                         │   │
-│  │  ├── FEC API Adapter — Campaign finance (api.open.fec.gov) │   │
-│  │  ├── Lobbying Adapter — Senate LD-2, House Clerk           │   │
-│  │  ├── FARA Adapter — Foreign agent registrations             │   │
-│  │  ├── Congress.gov Adapter — Bills, votes, members           │   │
-│  │  ├── STOCK Act Adapter — Congressional stock trades         │   │
-│  │  └── BWC FOIA Pipeline — 18,000+ department policies        │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                              │                                      │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │                  MONITORING MODULES                          │   │
-│  │  ├── Campaign Promise Tracker — Extract, monitor, score     │   │
-│  │  ├── Body Camera Monitor — Policy DB, compliance scoring    │   │
-│  │  ├── Anomaly Detection — ML-powered pattern detection       │   │
-│  │  ├── Revolving Door Tracker — Lobbyist-to-official pipeline │   │
-│  │  └── Foreign Influence Monitor — FARA + lobbying overlap    │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                              │                                      │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │                    PUBLIC INTERFACE                          │   │
-│  │  ├── REST API — Rate-limited, authenticated access          │   │
-│  │  ├── Dashboard — Interactive visualizations                 │   │
-│  │  ├── Data Exports — CSV, JSON, bulk downloads               │   │
-│  │  └── Research Portal — Academic/journalist tools            │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+╔═══════════════════════════════════════════════════════════════════════╗
+║                    CIVWATCH ADVERSARIAL INFRASTRUCTURE               ║
+║                                                                      ║
+║  ┌──────────────────────────────────────────────────────────────┐   ║
+║  │                    LEGAL FORTRESS                             │   ║
+║  │  ├── LEGAL_REVIEW.md — First Amendment, FOIA, anti-SLAPP    │   ║
+║  │  ├── ETHICS_CHARTER.md — Non-partisan pledge, data ethics   │   ║
+║  │  ├── PRIVACY_IMPACT_ASSESSMENT.md — NIST Privacy Framework  │   ║
+║  │  ├── SLAPP_RESPONSE_PLAYBOOK.md — 48-hour defense protocol  │   ║
+║  │  └── TRANSPARENCY_REPORT.md — Quarterly public reporting    │   ║
+║  └──────────────────────────────────────────────────────────────┘   ║
+║                              │                                       ║
+║  ┌──────────────────────────────────────────────────────────────┐   ║
+║  │              ADVERSARIAL SECURITY LAYER                       │   ║
+║  │  ├── OBELISK_AUDIT_CHAIN.md — Immutable hash-chain audit    │   ║
+║  │  ├── ADVERSARIAL_SECURITY.md — Threat model, mitigations    │   ║
+║  │  ├── WARRANT_CANARY.md — Cryptographic warrant canary       │   ║
+║  │  ├── Multi-agent consensus — No unilateral modifications    │   ║
+║  │  └── Multi-region deployment — DDoS resilience              │   ║
+║  └──────────────────────────────────────────────────────────────┘   ║
+║                              │                                       ║
+║  ┌──────────────────────────────────────────────────────────────┐   ║
+║  │                 DATA INGESTION LAYER                          │   ║
+║  │  ├── FEC API Adapter — Campaign finance (api.open.fec.gov)  │   ║
+║  │  ├── Lobbying Adapter — Senate LD-2, House Clerk            │   ║
+║  │  ├── FARA Adapter — Foreign agent registrations              │   ║
+║  │  ├── Congress.gov Adapter — Bills, votes, members            │   ║
+║  │  ├── STOCK Act Adapter — Congressional stock trades          │   ║
+║  │  └── BWC FOIA Pipeline — 18,000+ department policies         │   ║
+║  └──────────────────────────────────────────────────────────────┘   ║
+║                              │                                       ║
+║  ┌──────────────────────────────────────────────────────────────┐   ║
+║  │                  MONITORING MODULES                           │   ║
+║  │  ├── Campaign Promise Tracker — Extract, monitor, score      │   ║
+║  │  ├── Body Camera Monitor — Policy DB, compliance scoring     │   ║
+║  │  ├── Anomaly Detection — ML-powered pattern detection        │   ║
+║  │  ├── Revolving Door Tracker — Lobbyist-to-official pipeline  │   ║
+║  │  └── Foreign Influence Monitor — FARA + lobbying overlap     │   ║
+║  └──────────────────────────────────────────────────────────────┘   ║
+║                              │                                       ║
+║  ┌──────────────────────────────────────────────────────────────┐   ║
+║  │                    PUBLIC INTERFACE                            │   ║
+║  │  ├── REST API — Rate-limited, authenticated access           │   ║
+║  │  ├── Dashboard — Interactive visualizations                  │   ║
+║  │  ├── Data Exports — CSV, JSON, bulk downloads                │   ║
+║  │  └── Research Portal — Academic/journalist tools             │   ║
+║  └──────────────────────────────────────────────────────────────┘   ║
+╚═══════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
@@ -135,67 +141,6 @@ docker-compose -f docker-compose-civwatch.yml up -d
 
 ---
 
-## 📋 Documentation Index
-
-### Legal & Ethics Framework
-| Document | Purpose |
-|----------|---------|
-| [`docs/legal/LEGAL_REVIEW.md`](docs/legal/LEGAL_REVIEW.md) | First Amendment protections, FOIA compliance, anti-SLAPP preparedness |
-| [`docs/legal/ETHICS_CHARTER.md`](docs/legal/ETHICS_CHARTER.md) | Non-partisan pledge, data handling, redaction policies |
-| [`docs/legal/PRIVACY_IMPACT_ASSESSMENT.md`](docs/legal/PRIVACY_IMPACT_ASSESSMENT.md) | NIST Privacy Framework, donor data protection, geolocation scrubbing |
-| [`docs/legal/SLAPP_RESPONSE_PLAYBOOK.md`](docs/legal/SLAPP_RESPONSE_PLAYBOOK.md) | 48-hour legal defense protocol |
-| [`docs/legal/TRANSPARENCY_REPORT.md`](docs/legal/TRANSPARENCY_REPORT.md) | Quarterly transparency reporting template |
-
-### Security & Audit
-| Document | Purpose |
-|----------|---------|
-| [`docs/security/OBELISK_AUDIT_CHAIN.md`](docs/security/OBELISK_AUDIT_CHAIN.md) | Immutable hash-chain audit trail with Merkle verification |
-| [`docs/security/ADVERSARIAL_SECURITY.md`](docs/security/ADVERSARIAL_SECURITY.md) | Adversarial threat model, defense layers, incident response |
-| [`docs/security/WARRANT_CANARY.md`](docs/security/WARRANT_CANARY.md) | Cryptographic warrant canary with GPG signing |
-| [`SECURITY.md`](SECURITY.md) | Vulnerability disclosure policy |
-| [`THREAT_MODEL.md`](THREAT_MODEL.md) | STRIDE analysis and risk register |
-
-### Data Sources & Ingestion
-| Document | Purpose |
-|----------|---------|
-| [`docs/data-sources/FEC_INGESTION_SPEC.md`](docs/data-sources/FEC_INGESTION_SPEC.md) | FEC campaign finance data ingestion with anomaly detection |
-| [`docs/data-sources/LOBBYING_INGESTION_SPEC.md`](docs/data-sources/LOBBYING_INGESTION_SPEC.md) | Senate/House lobbying disclosure ingestion |
-
-### Monitoring Modules
-| Document | Purpose |
-|----------|---------|
-| [`docs/campaign-promises/PROMISE_TRACKER_SCHEMA.md`](docs/campaign-promises/PROMISE_TRACKER_SCHEMA.md) | Promise database schema, scoring system, API specification |
-| [`docs/body-camera/BODY_CAMERA_MONITORING_MODULE.md`](docs/body-camera/BODY_CAMERA_MONITORING_MODULE.md) | BWC policy tracker, compliance scoring, FOIA automation |
-
-### Architecture & Operations
-| Document | Purpose |
-|----------|---------|
-| [`ARCHITECTURE.md`](ARCHITECTURE.md) | C4 model architecture, component diagrams |
-| [`API.md`](API.md) | Full REST API documentation |
-| [`DEPLOYMENT.md`](DEPLOYMENT.md) | Infrastructure setup and hardening |
-| [`DATA_LINEAGE.md`](DATA_LINEAGE.md) | Data provenance tracking |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Developer onboarding and contribution guidelines |
-
----
-
-## 🛡️ Security Features
-
-| Feature | Implementation | Status |
-|---------|---------------|--------|
-| **OBELISK Hash-Chain Audit** | Every data modification SHA-256 hashed, Merkle-tree verified, chained immutably | Specified |
-| **Multi-Agent Consensus** | No single person/agent can unilaterally modify data (2-of-3 or 3-of-5) | Specified |
-| **Warrant Canary** | Monthly GPG-signed declarations; absence indicates compromise | Specified |
-| **Differential Privacy** | ε=1.0 Laplace noise on aggregate donor queries | Specified |
-| **Geolocation Scrubbing** | Automatic aggregation thresholds; no precise addresses for small donors | Specified |
-| **Anti-SLAPP Ready** | California jurisdiction; pre-retained EFF/FAC counsel; 48-hour response | Specified |
-| **No Third-Party Tracking** | Self-hosted analytics only; zero third-party cookies/scripts | Implemented |
-| **Minimal Data Retention** | 90-day logs; user data deleted on request | In Progress |
-| **DDoS Protection** | Cloudflare Enterprise + AWS Shield Advanced | Planned |
-| **Multi-Region Deployment** | Active-active across 3+ regions | Planned |
-| **Air-Gapped Backups** | Weekly encrypted snapshots to offline storage | Planned |
-
----
-
 ## 📊 Data Coverage
 
 | Data Source | Records | Freshness | Status |
@@ -210,47 +155,92 @@ docker-compose -f docker-compose-civwatch.yml up -d
 
 ---
 
-## 🔗 Cross-Repo Ecosystem
+## 🛡️ Security Features
 
-| Repository | Integration | Function |
-|-----------|-------------|----------|
-| **[OBELISK](https://github.com/POWDER-RANGER/OBLISK)** | Agent governance | Multi-agent consensus for data modifications |
-| **[CharlesAI](https://github.com/POWDER-RANGER/CharlesAI)** | Deployment automation | Infrastructure monitoring and deployment |
-| **Contextual Memory UI** | Research context | Investigative journalist cross-session research |
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| **OBELISK Hash-Chain Audit** | SHA-256 hashed, Merkle-tree verified, chained immutably | ✅ Specified |
+| **Multi-Agent Consensus** | 2-of-3 or 3-of-5 — no unilateral modifications | ✅ Specified |
+| **Warrant Canary** | Monthly GPG-signed declarations | ✅ Specified |
+| **Differential Privacy** | ε=1.0 Laplace noise on aggregate queries | ✅ Specified |
+| **Anti-SLAPP Ready** | CA jurisdiction; pre-retained EFF/FAC counsel | ✅ Specified |
+| **No Third-Party Tracking** | Self-hosted analytics only | ✅ Implemented |
 
 ---
 
-## 🤝 Legal Defense Network
+## 📈 GitHub Stats
 
-| Organization | Role | Status |
-|-------------|------|--------|
-| **Electronic Frontier Foundation (EFF)** | Digital rights litigation | Partnership in progress |
-| **First Amendment Coalition** | Press freedom / anti-SLAPP | Partnership in progress |
-| **Protect Democracy** | Anti-authoritarian litigation | Partnership in progress |
-| **Reporters Committee for Freedom of the Press** | FOIA + press freedom | Partnership in progress |
+<div align="center">
+
+![CIVWATCH Stats](https://github-readme-stats.vercel.app/api?username=POWDER-RANGER&repo=CIVWATCH&show_icons=true&theme=merko&hide_border=true)
+
+</div>
+
+---
+
+## 🔗 POWDER-RANGER Ecosystem
+
+### 🌐 Live .io Pages
+| Project | Link | Description |
+|---------|------|-------------|
+| **Main Portfolio** | [powder-ranger.github.io](https://powder-ranger.github.io) | Master portfolio with all 46 repos |
+| **CIVWATCH** | [powder-ranger.github.io/CIVWATCH](https://powder-ranger.github.io/CIVWATCH) | Civic transparency platform demo |
+| **OBLISK** | [powder-ranger.github.io/OBLISK](https://powder-ranger.github.io/OBLISK) | Multi-agent AI orchestration |
+| **AI Nexus** | [powder-ranger.github.io/ai-nexus](https://powder-ranger.github.io/ai-nexus) | Browser-based AI platform |
+| **Dollar Gravity** | [powder-ranger.github.io/dollar-gravity-framework](https://powder-ranger.github.io/dollar-gravity-framework) | USD gravity visualization |
+
+### 🔧 Core Repositories
+| Repository | Language | Purpose |
+|-----------|----------|---------|
+| **[CIVWATCH](https://github.com/POWDER-RANGER/CIVWATCH)** | TypeScript | Civic transparency platform (this repo) |
+| **[OBLISK](https://github.com/POWDER-RANGER/OBLISK)** | Python | Multi-agent AI with encrypted vaults |
+| **[RED-AGENT-GOV](https://github.com/POWDER-RANGER/RED-AGENT-GOV)** | Python | Governance-enforced agent engine |
+| **[CharlesAI](https://github.com/POWDER-RANGER/CharlesAI)** | PowerShell | COMET Agent with memory & orchestration |
+| **[OBELISK-Enterprise](https://github.com/POWDER-RANGER/OBELISK-Enterprise)** | Python | $2.5M AI Governance Platform |
+| **[NSO Kryptonite](https://github.com/POWDER-RANGER/nso-kryptonite-platform)** | TypeScript | Adversarial defense command center |
+| **[AI Nexus](https://github.com/POWDER-RANGER/ai-nexus)** | JavaScript | Browser-based complete AI platform |
+| **[Guiding Light AI](https://github.com/POWDER-RANGER/guiding-light-ai)** | Rust | Values-to-policies CLI tool |
+| **[Dollar Gravity](https://github.com/POWDER-RANGER/dollar-gravity-framework)** | JavaScript | USD-centric finance-security dashboard |
+| **[Dojin D](https://github.com/POWDER-RANGER/dojin-d)** | TypeScript | ECS combat simulation engine |
+| **[Contextual Memory UI](https://github.com/POWDER-RANGER/contextual-memory-ui)** | JavaScript | AI memory infrastructure platform |
+| **[OBELISK-Desktop-AI](https://github.com/POWDER-RANGER/OBELISK-Desktop-AI)** | PowerShell | Desktop AI orchestrator |
+| **[POWDER-RANGER Bot](https://github.com/POWDER-RANGER/powder-ranger-bot)** | Python | Autonomous GTA V + MGS5 agent |
+| **[CIVWATCH Cell Titan](https://github.com/POWDER-RANGER/civwatch-cell-titan)** | Shell | RF observability platform |
+| **[CIVWATCH v3](https://github.com/POWDER-RANGER/civwatch-v3)** | HTML | Unified RF observability |
+
+### 🎮 Creative & Research
+| Repository | Language | Purpose |
+|-----------|----------|---------|
+| **[RainGod Comfy Studio](https://github.com/POWDER-RANGER/RainGod-Comfy-Studio)** | Python | AI music workflow studio |
+| **[Systems Architecture Portfolio](https://github.com/POWDER-RANGER/systems-architecture-portfolio)** | Markdown | Master systems architecture docs |
+
+---
+
+## 🤝 Connect
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Curtis_Farrar-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/curtis-farrar-g6b)
+[![GitHub](https://img.shields.io/badge/GitHub-POWDER--RANGER-181717?style=flat&logo=github)](https://github.com/POWDER-RANGER)
+[![Portfolio](https://img.shields.io/badge/Portfolio-powder--ranger.github.io-00FF88?style=flat&logo=githubpages)](https://powder-ranger.github.io)
+[![ORCID](https://img.shields.io/badge/ORCID-0009--0008--9273--2458-A6CE39?style=flat&logo=orcid)](https://orcid.org/0009-0008-9273-2458)
 
 ---
 
 ## ⚖️ Ethics & Non-Partisanship
 
-CIVWATCH is strictly non-partisan. Our [Ethics Charter](docs/legal/ETHICS_CHARTER.md) mandates:
-
-- Equal scrutiny applied to all political actors regardless of party
-- No coordination with political campaigns
-- No acceptance of funding from political campaigns, parties, or Super PACs
-- Transparent methodology published for all algorithms
-- Annual third-party audit for algorithmic fairness
+CIVWATCH is strictly non-partisan. Our [Ethics Charter](docs/legal/ETHICS_CHARTER.md) mandates equal scrutiny for all political actors, no coordination with campaigns, no funding from political campaigns or PACs, transparent methodology, and annual third-party audit for algorithmic fairness.
 
 ---
 
 ## 📄 License
 
-MIT License — See [LICENSE](LICENSE) for details.
-
-All CIVWATCH civic data is licensed under **Open Database License (ODbL) 1.0**.
+MIT License — See [LICENSE](LICENSE) for details. All CIVWATCH civic data is licensed under **Open Database License (ODbL) 1.0**.
 
 ---
 
 **Built with ⚡, 🔒, and an unwavering commitment to civic accountability.**
 
-[🗽 CIVWATCH](https://github.com/POWDER-RANGER/CIVWATCH) | [🏛️ OBLISK](https://github.com/POWDER-RANGER/OBLISK) | [🤖 CharlesAI](https://github.com/POWDER-RANGER/CharlesAI)
+<div align="center">
+
+[![Footer](https://capsule-render.vercel.app/api?type=waving&color=0:00C853,35:1B5E20,70:0D2818,100:0D1117&height=150&section=footer)](https://github.com/POWDER-RANGER/CIVWATCH)
+
+</div>
