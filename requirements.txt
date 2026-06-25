@@ -1,7 +1,7 @@
 # CIVWATCH Python/ML Dependencies
 # Core ML/AI Framework
 tensorflow>=2.21.0
-torch>=2.12.0
+torch>=2.12.1
 transformers>=5.12.0
 scikit-learn>=1.3.0
 numpy>=1.24.0
