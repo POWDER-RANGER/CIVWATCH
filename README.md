@@ -159,20 +159,22 @@ docker-compose -f docker-compose-civwatch.yml up -d
 
 | Feature | Implementation | Status |
 |---------|---------------|--------|
-| **OBELISK Hash-Chain Audit** | SHA-256 hashed, Merkle-tree verified, chained immutably | ✅ Specified |
-| **Multi-Agent Consensus** | 2-of-3 or 3-of-5 — no unilateral modifications | ✅ Specified |
-| **Warrant Canary** | Monthly GPG-signed declarations | ✅ Specified |
-| **Differential Privacy** | ε=1.0 Laplace noise on aggregate queries | ✅ Specified |
-| **Anti-SLAPP Ready** | CA jurisdiction; pre-retained EFF/FAC counsel | ✅ Specified |
-| **No Third-Party Tracking** | Self-hosted analytics only | ✅ Implemented |
+| **OBELISK Hash-Chain Audit** | SHA-256 hashed, Merkle-tree verified, chained immutably | Specified |
+| **Multi-Agent Consensus** | 2-of-3 or 3-of-5 — no unilateral modifications | Specified |
+| **Warrant Canary** | Monthly GPG-signed declarations | Specified |
+| **Differential Privacy** | ε=1.0 Laplace noise on aggregate queries | Specified |
+| **Anti-SLAPP Ready** | CA jurisdiction; pre-retained EFF/FAC counsel | Specified |
+| **No Third-Party Tracking** | Self-hosted analytics only | Implemented |
 
 ---
 
-## 📈 GitHub Stats
+## 📈 Activity
 
 <div align="center">
 
-![CIVWATCH Stats](https://github-readme-stats.vercel.app/api?username=POWDER-RANGER&repo=CIVWATCH&show_icons=true&theme=merko&hide_border=true)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/POWDER-RANGER/CIVWATCH?style=for-the-badge&labelColor=0D1117&color=00FF88)
+![GitHub last commit](https://img.shields.io/github/last-commit/POWDER-RANGER/CIVWATCH?style=for-the-badge&labelColor=0D1117&color=00FF88)
+![GitHub repo size](https://img.shields.io/github/repo-size/POWDER-RANGER/CIVWATCH?style=for-the-badge&labelColor=0D1117&color=00FF88)
 
 </div>
 
@@ -208,17 +210,11 @@ docker-compose -f docker-compose-civwatch.yml up -d
 | **[CIVWATCH Cell Titan](https://github.com/POWDER-RANGER/civwatch-cell-titan)** | Shell | RF observability platform |
 | **[CIVWATCH v3](https://github.com/POWDER-RANGER/civwatch-v3)** | HTML | Unified RF observability |
 
-### 🎮 Creative & Research
-| Repository | Language | Purpose |
-|-----------|----------|---------|
-| **[RainGod Comfy Studio](https://github.com/POWDER-RANGER/RainGod-Comfy-Studio)** | Python | AI music workflow studio |
-| **[Systems Architecture Portfolio](https://github.com/POWDER-RANGER/systems-architecture-portfolio)** | Markdown | Master systems architecture docs |
-
 ---
 
 ## 🤝 Connect
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Curtis_Farrar-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/curtis-farrar-g6b)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Curtis_Farrar-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/curtis-farrar-20aa3525b)
 [![GitHub](https://img.shields.io/badge/GitHub-POWDER--RANGER-181717?style=flat&logo=github)](https://github.com/POWDER-RANGER)
 [![Portfolio](https://img.shields.io/badge/Portfolio-powder--ranger.github.io-00FF88?style=flat&logo=githubpages)](https://powder-ranger.github.io)
 [![ORCID](https://img.shields.io/badge/ORCID-0009--0008--9273--2458-A6CE39?style=flat&logo=orcid)](https://orcid.org/0009-0008-9273-2458)
