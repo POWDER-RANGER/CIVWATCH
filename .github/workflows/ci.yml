@@ -6,21 +6,36 @@ on:
   pull_request:
     branches: [main, develop]
 
-# Concurrency control to prevent overlapping runs
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# Force Node 24 runtime for all JavaScript actions.
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
-
-  # ── Backend ──────────────────────────────────────────────
   backend:
     name: Backend (Node.js)
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: civwatch_test
+          POSTGRES_USER: civwatch
+          POSTGRES_PASSWORD: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     defaults:
       run:
         working-directory: backend
@@ -57,7 +72,6 @@ jobs:
           directory: backend/coverage
           flags: backend
 
-  # ── ML Service ───────────────────────────────────────────
   ml:
     name: ML Service (Python)
     runs-on: ubuntu-latest
@@ -95,7 +109,6 @@ jobs:
           directory: ml
           flags: ml
 
-  # ── Frontend ─────────────────────────────────────────────
   frontend:
     name: Frontend (Vite/React)
     runs-on: ubuntu-latest
@@ -127,7 +140,6 @@ jobs:
       - name: Run tests
         run: npm test -- --passWithNoTests
 
-  # ── Security Scan ────────────────────────────────────────
   security:
     name: Security Scan
     runs-on: ubuntu-latest
