@@ -16,6 +16,11 @@ declare global {
   }
 }
 
+/**
+ * Verify JWT token with explicit algorithm whitelist.
+ * Prevents algorithm confusion attacks (CVE-2015-9235 / A07:2021).
+ * REF: NIST 800-53 IA-2, IA-5
+ */
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) {
@@ -23,7 +28,11 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
   }
   const token = header.slice(7);
   try {
-    req.user = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+    // Explicit algorithm prevents RS256->HS256 substitution attacks
+    req.user = jwt.verify(token, env.JWT_SECRET, {
+      algorithms: ['HS256'],
+      clockTolerance: 30, // 30s leeway for clock skew
+    }) as JwtPayload;
     next();
   } catch {
     res.status(401).json({ error: { code: 'TOKEN_EXPIRED', message: 'Invalid or expired token' } });
