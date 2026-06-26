@@ -2,24 +2,25 @@ name: OSV Dependency Scanner
 
 on:
   push:
-    branches: [main]
+    branches: [ "main" ]
   pull_request:
-    branches: [main]
+    branches: [ "main" ]
   schedule:
-    - cron: '30 12 * * 1'
-
-permissions:
-  actions: read
-  contents: read
-  security-events: write
+    - cron: '0 0 * * *'
 
 jobs:
-  scan-pr:
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.3.3
-
-  scan-scheduled:
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.3.3
-    with:
-      # Skip failure on no dependencies found for scheduled scans
-      # or add scan-args if needed
-      fail-on-vuln: true
+  osv-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google/osv-scanner-action@v2
+        with:
+          scan-args: |-
+            --config .osv-scanner.toml
+          upload-sarif: true
+      - name: PR Scan
+        if: github.event_name == 'pull_request'
+        uses: google/osv-scanner-action@v2
+        with:
+          scan-args: |
+            --config .osv-scanner.toml
