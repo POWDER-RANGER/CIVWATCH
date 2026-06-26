@@ -1,14 +1,57 @@
+# Dependencies
 node_modules/
 dist/
 build/
+
+# Environment variables — NEVER commit .env files
 .env
+.env.local
+.env.*.local
+!.env.example
+
+# Logs
 *.log
+logs/
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+
+# Coverage
 coverage/
+.nyc_output/
+
+# IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
-tsc
-/tsc
+# TypeScript
 *.tsbuildinfo
+tsc/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Docker volumes
+data/postgres/
+data/redis/
+
+# Secrets (defense in depth)
+*.pem
+*.key
+secrets/
+
+# Generated
+public/sitemap.xml
