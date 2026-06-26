@@ -2,47 +2,31 @@ name: Semgrep SAST Scan
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
-  schedule:
-    - cron: '0 3 * * 1'
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"  # node24 guard — June 2 2026 deadline
-
-permissions:
-  contents: read
-  security-events: write
+    branches: [ main ]
 
 jobs:
   semgrep:
+    name: Scan
     runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5  # node24 runtime (was @v4 / node20)
-
-      - name: Set up Python
-        uses: actions/setup-python@v6  # node24 runtime — already current
-        with:
-          python-version: '3.11'
-
-      - name: Install Semgrep
-        run: pip install semgrep
+      - uses: actions/checkout@v4
 
       - name: Run Semgrep
         run: |
-          semgrep scan \\
-            --config p/security-audit \\
-            --config p/secrets \\
-            --config p/owasp-top-ten \\
-            --config p/python \\
-            --sarif \\
-            --output semgrep.sarif \\
+          semgrep scan \
+            --config p/security-audit \
+            --config p/secrets \
+            --config p/owasp-top-ten \
+            --config p/python \
+            --sarif \
+            --output semgrep.sarif \
             --error || true
 
-      - name: Upload Semgrep SARIF results
-        uses: github/codeql-action/upload-sarif@v4  # node24 runtime (was @v3)
-        if: always()
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: semgrep.sarif
