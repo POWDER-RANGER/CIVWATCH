@@ -22,10 +22,10 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v5  # node24 runtime (was @v4 / node20)
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5  # node24 runtime (was @v4 / node20)
+        uses: actions/setup-node@v5
         with:
           node-version: '24'
           cache: 'npm'
@@ -36,11 +36,9 @@ jobs:
 
       - name: Type check
         run: npx tsc --noEmit
-        continue-on-error: true
 
       - name: Lint
         run: npm run lint
-        continue-on-error: true
 
       - name: Run tests
         run: npm test -- --coverage --passWithNoTests
@@ -51,11 +49,10 @@ jobs:
           REDIS_URL: redis://localhost:6379
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v5  # node24 runtime (was @v4 / node20)
+        uses: codecov/codecov-action@v5
         with:
           directory: backend/coverage
           flags: backend
-        continue-on-error: true
 
   # ── ML Service ───────────────────────────────────────────
   ml:
@@ -65,10 +62,10 @@ jobs:
       run:
         working-directory: ml
     steps:
-      - uses: actions/checkout@v5  # node24 runtime (was @v4 / node20)
+      - uses: actions/checkout@v5
 
       - name: Setup Python
-        uses: actions/setup-python@v6  # node24 runtime (was @v5 / node20)
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -80,22 +77,20 @@ jobs:
       - name: Lint
         run: |
           pip install flake8 black
-          black --check . || true
-          flake8 . --max-line-length=120 --exclude=__pycache__ || true
+          black --check .
+          flake8 . --max-line-length=120 --exclude=__pycache__
 
       - name: Run tests
         run: pytest --cov=. --cov-report=xml --passWithNoTests -v
-        continue-on-error: true
 
       - name: Validate FastAPI app starts
         run: python -c "from main import app; print('FastAPI app import: OK')"
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v5  # node24 runtime (was @v4 / node20)
+        uses: codecov/codecov-action@v5
         with:
           directory: ml
           flags: ml
-        continue-on-error: true
 
   # ── Frontend ─────────────────────────────────────────────
   frontend:
@@ -105,10 +100,10 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v5  # node24 runtime (was @v4 / node20)
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5  # node24 runtime (was @v4 / node20)
+        uses: actions/setup-node@v5
         with:
           node-version: '24'
           cache: 'npm'
@@ -119,31 +114,28 @@ jobs:
 
       - name: Type check
         run: npx tsc --noEmit
-        continue-on-error: true
 
       - name: Lint
         run: npm run lint
-        continue-on-error: true
 
       - name: Build
         run: npm run build
-        continue-on-error: true
 
       - name: Run tests
         run: npm test -- --passWithNoTests
-        continue-on-error: true
 
   # ── Security Scan ────────────────────────────────────────
   security:
     name: Security Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5  # node24 runtime (was @v4 / node20)
+      - uses: actions/checkout@v5
 
       - name: Run Trivy vulnerability scan
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
           scan-ref: '.'
-          severity: 'CRITICAL,HIGH'
-          exit-code: '0'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+          ignore-unfixed: true
