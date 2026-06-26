@@ -6,9 +6,12 @@ on:
   pull_request:
     branches: [main, develop]
 
+# Concurrency control to prevent overlapping runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 # Force Node 24 runtime for all JavaScript actions.
-# Guards against marketplace actions that still declare node20 in their action.yml.
-# GitHub default switches to Node 24 on June 2, 2026.
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
@@ -139,3 +142,9 @@ jobs:
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
           ignore-unfixed: true
+
+      - name: Run Bandit Python security scan
+        if: always()
+        run: |
+          pip install bandit
+          bandit -r . -ll --severity-level high
