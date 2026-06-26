@@ -1,9 +1,28 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { pool } from '../db';
 import { cacheGet, cacheSet } from '../db/redis';
+import { requireAuth, requireRole } from '../middleware/auth';
 
 const ANOMALY_TTL = 60; // seconds
 const router      = Router();
+
+// ── Input validation helpers ─────────────────────────────────────────────────
+function sanitizeLimit(val: unknown): number {
+  const n = parseInt(val as string, 10);
+  if (isNaN(n) || n < 1) return 1;
+  if (n > 200) return 200;
+  return n;
+}
+
+function sanitizeOffset(val: unknown): number {
+  const n = parseInt(val as string, 10);
+  if (isNaN(n) || n < 0) return 0;
+  return n;
+}
+
+function isValidISODate(val: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$/.test(val);
+}
 
 // ─── GET /api/anomalies ──────────────────────────────────────────────────────
 // Returns paginated anomaly_scores joined with civic_records for full context.
@@ -11,10 +30,15 @@ const router      = Router();
 // joined with civic_records(id, source, content, metadata, created_at)
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const limit  = Math.min(parseInt(req.query.limit  as string) || 50, 200);
-    const offset = parseInt(req.query.offset as string) || 0;
+    const limit  = sanitizeLimit(req.query.limit);
+    const offset = sanitizeOffset(req.query.offset);
     const source = req.query.source as string | undefined;
     const since  = req.query.since  as string | undefined;
+
+    // Validate since parameter format to prevent SQL injection via type casting
+    if (since && !isValidISODate(since)) {
+      return res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'since must be an ISO-8601 date' } });
+    }
 
     const cacheKey = `anomalies:${limit}:${offset}:${source ?? ''}:${since ?? ''}`;
     const cached   = await cacheGet(cacheKey);
@@ -119,6 +143,11 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
 
+    // Validate UUID format to prevent SQL injection via type casting
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      return res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid UUID format' } });
+    }
+
     const { rows } = await pool.query(`
       SELECT
         a.id::text          AS id,
@@ -145,8 +174,9 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // ─── POST /api/anomalies/score ────────────────────────────────────────────────
-// Accepts a civic_record_id + score and writes it into anomaly_scores
-router.post('/score', async (req: Request, res: Response, next: NextFunction) => {
+// Protected: only authenticated users can write anomaly scores
+// REF: NIST 800-53 AC-3 (Access Enforcement), AC-6 (Least Privilege)
+router.post('/score', requireAuth, requireRole('admin', 'analyst'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { civic_record_id, score, label = 'anomalous', method = 'manual', flags } = req.body;
 
@@ -155,6 +185,10 @@ router.post('/score', async (req: Request, res: Response, next: NextFunction) =>
     }
     if (typeof score !== 'number' || score < 0 || score > 1) {
       return res.status(400).json({ error: 'score must be a number between 0 and 1' });
+    }
+    // Validate UUID format
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(civic_record_id)) {
+      return res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid civic_record_id UUID format' } });
     }
 
     const { rows } = await pool.query(`
