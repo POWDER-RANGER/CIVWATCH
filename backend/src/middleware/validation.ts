@@ -1,90 +1,45 @@
-/**
- * CIVWATCH - Request Validation Middleware
- * Zod-based validation for body, query, and params
- */
-
 import { Request, Response, NextFunction } from 'express';
-import { ZodSchema, ZodError } from 'zod';
+import { z, ZodError } from 'zod';
+import { AppError } from '../errors/AppError';
 
-interface ValidatedRequest<T = any> extends Request {
-  validatedBody?: T;
-  validatedQuery?: T;
-  validatedParams?: T;
-}
-
-export function validateBody<T>(schema: ZodSchema<T>) {
-  return (req: ValidatedRequest<T>, res: Response, next: NextFunction) => {
+export const validateBody = (schema: z.ZodSchema) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = schema.parse(req.body);
-      req.validatedBody = result;
+      req.body = schema.parse(req.body);
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        res.status(400).json({
-          error: 'Validation failed',
-          details: error.errors.map((e) => ({
-            path: e.path.join('.'),
-            message: e.message,
-          })),
-        });
-        return;
+        return next(new AppError(400, 'VALIDATION_ERROR', error.errors));
       }
       next(error);
     }
   };
-}
+};
 
-export function validateQuery<T>(schema: ZodSchema<T>) {
-  return (req: ValidatedRequest<T>, res: Response, next: NextFunction) => {
+export const validateParams = (schema: z.ZodSchema) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = schema.parse(req.query);
-      req.validatedQuery = result;
+      req.params = schema.parse(req.params);
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        res.status(400).json({
-          error: 'Query validation failed',
-          details: error.errors.map((e) => ({
-            path: e.path.join('.'),
-            message: e.message,
-          })),
-        });
-        return;
+        return next(new AppError(400, 'VALIDATION_ERROR', error.errors));
       }
       next(error);
     }
   };
-}
+};
 
-export function validateParams<T>(schema: ZodSchema<T>) {
-  return (req: ValidatedRequest<T>, res: Response, next: NextFunction) => {
+export const validateQuery = (schema: z.ZodSchema) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = schema.parse(req.params);
-      req.validatedParams = result;
+      req.query = schema.parse(req.query);
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        res.status(400).json({
-          error: 'Params validation failed',
-          details: error.errors.map((e) => ({
-            path: e.path.join('.'),
-            message: e.message,
-          })),
-        });
-        return;
+        return next(new AppError(400, 'VALIDATION_ERROR', error.errors));
       }
       next(error);
     }
   };
-}
-
-// Extend Express Request type
-declare global {
-  namespace Express {
-    interface Request {
-      validatedBody?: any;
-      validatedQuery?: any;
-      validatedParams?: any;
-    }
-  }
-}
+};
