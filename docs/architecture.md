@@ -1,122 +1,72 @@
-# CIVWATCH — Architecture Reference
-> **Status:** Phase 1 complete ✔️ | Phase 2 (Feature Completeness) in progress 🚧 | April 11, 2026> **Status:** Phase 0 complete ✔️ | Phase 1 (Electron shell) in progress 🟡
+# CIVWATCH architecture overview
 
----
+This document describes the major components and dataflows in CIVWATCH, focusing on authentication, ingestion, lineage (OpenLineage), ML service, and the outbox reliability pattern.
 
-## Canonical Port Map
+1) High-level components
+- Backend API (Node/TypeScript): handles auth, ingestion endpoints, and business logic.
+- Database (Postgres): stores users, civic_records, refresh_tokens, outbox.
+- Outbox Worker: background worker responsible for delivering events (OpenLineage) from the transactional outbox.
+- OpenLineage collector: external service that receives lineage events (HTTP API).
+- ML Service (FastAPI): clustering (DBSCAN ensemble) and NER/topic extraction; used asynchronously from pipeline.
+- Frontend: React app using httpOnly refresh cookies and short-lived access tokens.
 
-| Service | Internal Port | External (dev) | Env Override | Notes |
-|---------|--------------|----------------|--------------|-------|
-| Frontend | 5173 | 5173 | — | Vite dev server |
-| Backend | 3000 | 3000 | `PORT` | Express API |
-| ML Service | 5000 | 5000 | `FASTAPI_PORT` | FastAPI / Uvicorn |
-| PostgreSQL | 5432 | 5432 | `POSTGRES_PORT` | Postgres 15 |
-| Redis | 6379 | 6379 | `REDIS_PORT` | Redis 7 |
+2) Auth flow (secure rotation)
+- Login:
+  - User posts credentials to /auth/login.
+  - Backend validates credentials and issues an access token (RS256 JWT, short-lived) and a refresh token (cryptographically-random raw token stored hashed in DB).
+  - Refresh token is set as a secure, HttpOnly cookie with SameSite=strict.
 
-> **Electron mode:** Backend (3000) and ML (5000) bind to `127.0.0.1` only. Frontend is served from Electron's `loadFile()` — no external port.
+- Refresh:
+  - Client calls /auth/refresh (cookie sent automatically).
+  - Backend verifies hashed token in DB; on success rotates the refresh token (revoke old, issue/store new hash) and returns a new access token.
+  - Rotation prevents replay of stolen refresh tokens. Reuse detection triggers revoke-all and alerting.
 
-All ports configurable via root `.env`. See `.env.example`.
+- Logout:
+  - Backend revokes the refresh token and clears cookie.
 
----
+3) Ingestion & Lineage (transactional outbox)
+- Ingest endpoint (POST /ingest): validated and sanitized payload inserted into civic_records within a DB transaction.
+- As part of the same transaction, an outbox row is written with topic "openlineage" and the lineage payload.
+- Outbox Worker:
+  - Periodically polls the outbox table, acquiring a Postgres advisory lock for safe single-writer behavior.
+  - Attempts delivery to OpenLineage using a circuit-breaker and retries; on success marks outbox row processed.
+  - On repeated failures, increments tries and records last_error; metrics emitted for monitoring.
 
-## Planned vs Implemented
+Design guarantees:
+- At-least-once delivery for lineage events via transactional outbox.
+- Consumers should be idempotent; payloads include record identifiers.
 
-| Feature | Planned | Implemented |
-|--------|---------|-------------|
-| Docker Compose stack (5 svcs) | ✅ | ✅ Phase 0 |
-| `.env.example` templates | ✅ | ✅ Phase 0 |
-| CI/CD pipeline | ✅ | ✅ Phase 0 |
-| All CVEs patched | ✅ | ✅ Phase 0 |
-| Ingestion pipeline (schema + sanitize + aggregate) | ✅ | ✅ Phase 1 |
-| Electron shell + IPC bridge | ✅ | ✅ Phase 1 (PR #102) |
-| JWT auth (login / me) | ✅ | ⏳ Phase 1 (#58) |
-| RSS source CRUD | ✅ | ⏳ Phase 1 (#58) |
-| MVP API endpoints | ✅ | ⏳ Phase 1 (#58) |
-| FastAPI ML service — sentiment | ✅ | ✅ scaffold live |
-| `.env` aligned across all services | ✅ | ⏳ Phase 1 (#55 → this PR) |
-| package.json scripts aligned | ✅ | ✅ Phase 1 (this PR) |
-| Postgres schema (migrations) | ✅ | ⏳ Phase 1 |
-| React dashboard | ✅ | ⏳ Phase 1 |
-| Security hardening (bcrypt, rate limits) | ✅ | ⏳ Phase 1 (#68) |
-| Real CI/CD (non-placeholder tests) | ✅ | ⏳ Phase 1 (#66) |
-| Monitor scheduling | ✅ | ⏳ Phase 2 |
-| API polling source type | ✅ | ⏳ Phase 2 |
-| NER / topic classification | ✅ | ⏳ Phase 2 |
-| Report export (JSON/CSV) | ✅ | ⏳ Phase 2 |
-| PyInstaller ML binary | ✅ | ⏳ Phase 2 |
-| SQLite migration | ✅ | ⏳ Phase 3 |
-| Settings UI | ✅ | ⏳ Phase 3 |
-| NSIS installer + code signing | ✅ | ⏳ Phase 4 |
-| Auto-updater | ✅ | ⏳ Phase 4 |
-| Prometheus metrics | ✅ | ⏳ Phase 3 |
-| Sentry error tracking | ✅ | ⏳ Phase 3 |
+4) ML integration
+- After ingest/aggregation, the backend may call the ML service for clustering and NER.
+- ML service exposes /cluster and /tune endpoints; calls are wrapped in a circuit breaker with fallback heuristics.
+- ML outputs (clusters, NER topics) can be written back to DB or emitted as additional outbox events.
 
----
+5) Observability
+- Metrics (Prometheus via prom-client) include:
+  - civic_ingestions_total
+  - refresh_attempts_total, refresh_failures_total, refresh_revocations_total
+  - outbox_failures_total
+- Logs are structured and include correlation/request IDs for traceability.
+- OpenTelemetry traces can be added to end-to-end flows (recommended for high-traffic paths).
 
-## Service Diagram — Docker / Web Mode
+6) Migrations & zero-downtime upgrades
+- Migrations are idempotent SQL files (migrations/).
+- Use expand-migrate-contract pattern for schema changes that require zero downtime.
+- Migration playbook in PRs should include rollout verification and rollback steps.
 
-```
-┌─────────────────────────────────────────────────────┐
-│                   civwatch_net                       │
-│                                                     │
-│  [Browser]                                          │
-│      │  :5173                                       │
-│      ▼                                              │
-│  ┌─────────┐    :3000    ┌──────────┐               │
-│  │Frontend │►───────────►│ Backend  │               │
-│  │  React  │            │ Express  │               │
-│  └─────────┘            └────┬─────┘               │
-│                              │ :5000                │
-│                    ┌─────────▼─────┐               │
-│                    │  ML Service    │               │
-│                    │   FastAPI      │               │
-│                    └────────────────┘               │
-│                              │                      │
-│              ┌───────────────┴──────────┐           │
-│              │                          │           │
-│      ┌───────▼─────┐        ┌──────────▼─────┐   │
-│      │  PostgreSQL  │        │     Redis        │   │
-│      │  :5432       │        │     :6379        │   │
-│      └──────────────┘        └─────────────────┘   │
-└─────────────────────────────────────────────────────┘
-```
+7) Deployment and CI
+- CI runs lint, tests, and migrations in an isolated Postgres service.
+- Worker processes (outbox worker) should be run as separate containers or Kubernetes jobs with leader election (advisory lock used for safety).
+- Deploy using immutable images tagged with commit SHA; use feature flags for staged rollouts.
 
-## Service Diagram — Electron / Standalone .exe Mode
+8) Security notes
+- Keep JWT keys and other secrets in a secret manager (GitHub Secrets, Vault).
+- Rotate JWT keys periodically and design JWT verification to support public key rotation.
+- Use httpOnly cookies and CSRF protections for browser-based flows.
 
-```
-civwatch.exe (Electron main)
-  ├── Renderer (Chromium + React)  ───────────► contextBridge IPC
-  │                                         │
-  │       ipcMain handlers                  ▼
-  ├── Node backend subprocess   :3000  (127.0.0.1 only)
-  ├── Python ML subprocess      :5000  (127.0.0.1 only)
-  └── SQLite db                  %APPDATA%\CIVWATCH\civwatch.db
+9) Operational runbook items
+- Monitor outbox queue length and failure rates; alert if backlog grows > X (configurable).
+- Monitor refresh failure spikes and token reuse events (security incident potential).
+- Health checks for backend, outbox worker, and ML service.
 
-  No external ports. No Docker. No Python/Node install required.
-```
-
----
-
-## Data Flow
-
-1. User submits report → `POST /reports` → `sanitize()` → `aggregate()` (pipeline/routes.ts)
-2. User logs in → Backend issues JWT
-3. User adds RSS source → Backend stores in `sources`
-4. Backend fetches RSS, stores `documents`
-5. Backend calls ML Service `POST /analyze/sentiment` per document
-6. ML returns `{score, confidence, label}` → stored in `analyses`
-7. Confidence score fed back into `aggregate.ts` bucket
-8. Alert rules evaluated → `alerts` table updated, webhook fired
-9. Frontend polls `GET /heatmap`, `/trends`, `/summary` for dashboard metrics
-
----
-
-## Phase Roadmap
-
-| Phase | Status | Tag |
-|-------|--------|-----|
-| 0 — CI/CD stabilization | ✅ Complete | `v0.1.0-phase0-complete` |
-| 1 — Electron shell + ingestion pipeline | 🟡 In Progress | `v0.2.0-phase1-complete` |
-| 2 — PyInstaller Python binary | ⏳ Planned | `v0.3.0-phase2-complete` |
-| 3 — SQLite migration + settings | ⏳ Planned | `v0.4.0-phase3-complete` |
-| 4 — NSIS installer + signing + auto-update | ⏳ Planned | `v1.0.0` |
+For more details, see individual module docs in /backend and /ml.

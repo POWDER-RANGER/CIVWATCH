@@ -1,0 +1,16 @@
+# Code owners for CIVWATCH
+# Assign repository areas to the primary maintainer/team. Adjust to real GitHub teams or users as needed.
+
+# Backend and API
+/backend/ @POWDER-RANGER
+/backend/src/ @POWDER-RANGER
+
+# Machine learning service
+/ml/ @POWDER-RANGER
+
+# Infrastructure, workflows, and docs
+/.github/ @POWDER-RANGER
+/docs/ @POWDER-RANGER
+
+# Default fallback
+* @POWDER-RANGER
