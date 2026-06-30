@@ -11,7 +11,7 @@ python-dotenv==1.2.2
 textblob==0.20.0
 
 # ML layers — required for DBSCAN + TF-IDF composite scoring
-numpy>=1.26.0
+numpy>=2.5.0
 scikit-learn>=1.4.0
 
 # DistilBERT transformer stack

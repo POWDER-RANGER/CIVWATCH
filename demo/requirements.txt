@@ -1,7 +1,7 @@
 # CIVWATCH Demo Dependencies
 # Data manipulation and analysis
 pandas>=2.0.0
-numpy>=1.24.0
+numpy>=2.5.0
 
 # Data visualization
 matplotlib>=3.7.0
