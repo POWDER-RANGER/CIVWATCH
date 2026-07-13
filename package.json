@@ -48,7 +48,7 @@
     "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
     "typescript": "^5.9.3",
-    "prettier": "^3.9.1"
+    "prettier": "^3.9.5"
   },
   "engines": {
     "node": ">=18.0.0",
