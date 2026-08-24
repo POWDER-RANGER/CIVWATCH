@@ -30,7 +30,7 @@
     "@types/express": "^4.17.25",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.19.43",
-    "@types/pg": "^8.20.0",
+    "@types/pg": "^8.23.1",
     "@types/rss-parser": "^3.13.4",
     "jest": "^29.7.0",
     "ts-jest": "^29.4.11",
