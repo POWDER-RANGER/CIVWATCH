@@ -1,3 +1,142 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CIVWATCH · VEIL PROTOCOL</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0C0B09;--p:#111009;--r:#161410;--b:#2A2620;--t:#D8D0C0;--d:#9B9080;--m:#6B6358;--a:#B87D28;--ah:#D9962F;--red:#C94040;--g:#3A7044;--f:'Barlow Condensed',sans-serif;--mo:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}body{background:var(--bg);color:var(--t);font:13px/1.5 var(--mo);display:grid;grid-template-columns:200px 1fr;min-height:100vh}
+aside{background:var(--p);border-right:1px solid var(--b);padding:16px 0;position:sticky;top:0;height:100vh;overflow:auto}
+.logo{font:800 22px var(--f);letter-spacing:2px;color:var(--ah);padding:0 16px 12px}.logo small{display:block;font:400 10px var(--mo);color:var(--m);letter-spacing:1px}
+aside a{display:block;padding:8px 16px;color:var(--d);text-decoration:none;border-left:2px solid transparent;cursor:pointer}aside a:hover,aside a:focus-visible{color:var(--t);outline:0;background:var(--r)}
+aside a.on{color:var(--ah);border-color:var(--a);background:var(--r)}.role{padding:14px 16px;border-top:1px solid var(--b);margin-top:10px}
+main{padding:20px 24px;min-width:0}.demo{background:#2a1d0a;border:1px solid var(--a);color:var(--ah);padding:6px 12px;margin-bottom:16px;font-size:11px}
+h2{font:800 30px var(--f);letter-spacing:1px;margin-bottom:14px}h3{font:600 14px var(--f);letter-spacing:1.5px;color:var(--d);margin-bottom:10px;text-transform:uppercase}
+.pan{background:var(--p);border:1px solid var(--b);padding:14px;margin-bottom:14px;overflow-x:auto}.c2{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--b);border:1px solid var(--b);margin-bottom:14px}.kpi{background:var(--p);padding:12px 14px}.kpi small{color:var(--m)}.kpi b{display:block;font:800 34px var(--f)}
+.hi{color:var(--red)}.md{color:var(--ah)}.lo{color:var(--d)}.ok{color:#5FA36A}.big{font:800 26px var(--f);text-transform:uppercase;line-height:1.1;margin-bottom:8px}
+.bar{height:6px;background:var(--b);margin:6px 0}.bar i{display:block;height:100%;background:var(--red)}
+.feed{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--b)}.feed span:first-child{color:var(--m);min-width:60px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--b);white-space:nowrap}th{color:var(--m);font-weight:500;cursor:pointer}tr:hover td{background:var(--r)}
+button,select,input,textarea{font:inherit;background:var(--r);color:var(--t);border:1px solid var(--b);padding:7px 10px}button{cursor:pointer;border-color:var(--a);color:var(--ah)}button:hover{background:var(--a);color:#000}button.g{border-color:var(--b);color:var(--d)}
+:focus-visible{outline:2px solid var(--ah);outline-offset:1px}label{display:block;color:var(--d);margin:10px 0 3px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.map{width:100%;background:#0a0908;border:1px solid var(--b)}.grid{stroke:#1d1a15;stroke-width:1}.cov{fill:rgba(184,125,40,.08);stroke:var(--a);stroke-width:.5}.cam{fill:var(--ah)}.mic{fill:#5B9AFF}.cl{cursor:pointer;fill-opacity:.35;stroke-width:1.2}
+.pill{padding:1px 8px;border:1px solid var(--b);font-size:11px}.pill.hi{border-color:var(--red)}.pill.ok{border-color:var(--g)}.pill.md{border-color:var(--a)}
+#toast{position:fixed;bottom:18px;right:18px;background:var(--p);border:1px solid var(--a);padding:10px 14px;opacity:0;transition:opacity .2s;pointer-events:none}#toast.on{opacity:1}
+canvas{width:100%;max-width:600px;background:#0a0908;border:1px solid var(--b)}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:800px){body{grid-template-columns:1fr}aside{position:static;height:auto;display:flex;overflow-x:auto;padding:0}.logo,.role{display:none}aside a{white-space:nowrap;border-left:0;border-bottom:2px solid transparent}.c2,.two{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<aside><div class="logo">CIVWATCH<small>VEIL PROTOCOL</small></div><nav id="nav"></nav>
+<div class="role"><label for="role" style="margin-top:0">Role (demo)</label><select id="role"><option>USER</option><option>ADMIN</option></select></div></aside>
+<main><div class="demo">DEMO DATA — no backend connected. Figures, officials and RF scans are simulated. Set an API URL in Settings to send reports.</div><div id="v"></div></main>
+<div id="toast" role="status"></div>
+<script>
+"use strict";
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const VIEWS=[['dash','Dashboard'],['map','Veil Map'],['heat','Heatmap'],['rec','Records'],['off','Officials'],['rep','Reports'],['alr','Alerts'],['rf','RF Scanner'],['ing','Ingestion',1],['adm','Admin',1],['set','Settings']];
+const EV=[
+{id:'e1',loc:'Downtown Industrial',type:'raid',sev:94,la:44.978,ln:-93.270,cl:'C-04',t:11,src:'Crowd'},
+{id:'e2',loc:'Airport Perimeter',type:'checkpoint',sev:81,la:44.960,ln:-93.290,cl:'C-02',t:47,src:'News'},
+{id:'e3',loc:'South Minneapolis',type:'arrest',sev:74,la:44.950,ln:-93.260,cl:'C-04',t:60,src:'NGO'},
+{id:'e4',loc:'North Metro I-35',type:'patrol',sev:55,la:45.010,ln:-93.250,cl:'C-07',t:120,src:'Crowd'},
+{id:'e5',loc:'Cedar-Riverside',type:'plainclothes',sev:66,la:44.968,ln:-93.247,cl:'C-01',t:125,src:'OSINT'},
+{id:'e6',loc:'Brooklyn Park',type:'vehicle',sev:38,la:45.030,ln:-93.330,cl:null,t:180,src:'Crowd'},
+{id:'e7',loc:'Richfield Storage',type:'raid',sev:89,la:44.920,ln:-93.280,cl:'C-09',t:190,src:'Crowd'},
+{id:'e8',loc:'St. Paul East Side',type:'checkpoint',sev:61,la:44.960,ln:-93.170,cl:'C-11',t:240,src:'News'}];
+const CAMS=[{id:'c1',v:'Flock',la:44.975,ln:-93.265,r:300},{id:'c2',v:'Flock',la:44.955,ln:-93.240,r:250},{id:'c3',v:'Flock',la:45.000,ln:-93.260,r:400}];
+const MICS=[{id:'m1',v:'ShotSpotter',la:44.965,ln:-93.280},{id:'m2',v:'ShotSpotter',la:44.940,ln:-93.230}];
+const OFF=[{id:1,n:'Demo Official A',r:'City Council, Ward 4',p:[['Expand transit funding',1],['Publish police contract',0],['Audit surveillance vendors',1]]},
+{id:2,n:'Demo Official B',r:'County Commissioner',p:[['Open bid records',1],['Lower vendor spending cap',0],['Public hearing on cameras',0]]},
+{id:3,n:'Demo Official C',r:'Mayor',p:[['Body-cam policy',1],['Budget transparency portal',1]]}];
+const ING=[['fec','FEC contributions','0 2 * * *'],['dispatch','Dispatch logs','*/15 * * * *'],['bids','Bids','0 6 * * *'],['contracts','Contracts','0 6 * * 1']];
+const TREND=[42,51,68,55,82,74,78];
+const S={role:store.get('role','USER'),cfg:store.get('cfg',{api:'',eps:2,thr:75,ttl:4}),reports:store.get('reports',[]),rules:store.get('rules',[{id:'r1',type:'any',thr:85,ch:'in-app',on:true}]),audit:store.get('audit',[]),ing:store.get('ing',{}),users:store.get('users',[{e:'admin@example.org',r:'ADMIN'},{e:'citizen@example.org',r:'USER'}]),hist:[],rf:[],view:'dash',sort:['sev',-1],sel:null,L:{cl:1,cam:1,mic:1}};
+const save=k=>store.set(k,S[k]);
+const uid=()=>crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(16).slice(2);
+const now=()=>new Date().toISOString().slice(0,19).replace('T',' ');
+const log=(a,t='')=>{S.audit.unshift({ts:now(),u:S.role,a,t});S.audit.length=Math.min(S.audit.length,100);save('audit')};
+const toast=m=>{const e=$('#toast');e.textContent=m;e.className='on';clearTimeout(toast.h);toast.h=setTimeout(()=>e.className='',2800)};
+const tc=n=>n>=80?'hi':n>=50?'md':'lo',ago=m=>m<60?m+'m ago':Math.round(m/60)+'h ago',num=(v,d)=>Number.isFinite(+v)?+v:d;
+const kpi=(l,v,c='')=>`<div class="kpi"><small>${esc(l)}</small><b class="${c}">${esc(v)}</b></div>`;
+const tbl=(h,rows)=>`<table><thead><tr>${h.map(x=>{const[l,k]=Array.isArray(x)?x:[x];return`<th ${k?`data-act="sort" data-k="${k}"`:''}>${esc(l)}</th>`}).join('')}</tr></thead><tbody>${rows.join('')||'<tr><td colspan="9" style="color:var(--m)">Nothing here yet.</td></tr>'}</tbody></table>`;
+function dl(name,text,mime){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:mime}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+const csvCell=v=>{v=String(v??'');if(/^[=+\-@]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};
+const P=(la,ln)=>[((ln+93.35)/.2*600).toFixed(1),((45.05-la)/.15*400).toFixed(1)];
+function mapSVG(){let s='<svg viewBox="0 0 600 400" class="map" role="img" aria-label="Veil map">';
+for(let i=1;i<10;i++)s+=`<path class="grid" d="M${i*60} 0V400M0 ${i*40}H600"/>`;
+if(S.L.cam)CAMS.forEach(c=>{const[x,y]=P(c.la,c.ln);s+=`<circle class="cov" cx="${x}" cy="${y}" r="${c.r/25}"/><rect class="cam" data-act="pick" data-k="cam" data-i="${c.id}" x="${x-4}" y="${y-4}" width="8" height="8"/>`});
+if(S.L.mic)MICS.forEach(c=>{const[x,y]=P(c.la,c.ln);s+=`<circle class="mic" data-act="pick" data-k="mic" data-i="${c.id}" cx="${x}" cy="${y}" r="4"/>`});
+if(S.L.cl)EV.forEach(e=>{const[x,y]=P(e.la,e.ln),col={hi:'#C94040',md:'#B87D28',lo:'#4A5568'}[tc(e.sev)];s+=`<circle class="cl" data-act="pick" data-k="ev" data-i="${e.id}" cx="${x}" cy="${y}" r="${6+e.sev/8}" fill="${col}" stroke="${col}"/>`});
+return s+'</svg>'}
+function detail(){if(!S.sel)return'<small style="color:var(--m)">Select a marker for details.</small>';const[k,i]=S.sel;
+const o=k==='ev'?EV.find(e=>e.id===i):k==='cam'?CAMS.find(e=>e.id===i):MICS.find(e=>e.id===i);if(!o)return'';
+return k==='ev'?`<b>${esc(o.loc)}</b><br>${esc(o.type)} · threat <span class="${tc(o.sev)}">${o.sev}</span><br>${esc(o.cl||'no cluster')} · ${esc(o.src)} · ${ago(o.t)}`:`<b>${esc(o.v)} ${k==='cam'?'camera':'gunshot mic'}</b><br>${o.la}, ${o.ln}`}
+const spark=()=>`<svg viewBox="0 0 200 60" style="width:100%"><polyline fill="none" stroke="#B87D28" stroke-width="2" points="${TREND.map((v,i)=>`${i*33},${60-v*.65}`).join(' ')}"/></svg>`;
+const V={
+dash(){const ttl=S.cfg.ttl*60,cls=new Set(EV.filter(e=>e.cl).map(e=>e.cl)),avg=Math.round(EV.reduce((a,e)=>a+e.sev,0)/EV.length),top=[...EV].sort((a,b)=>b.sev-a.sev)[0];
+return`<h2>Dashboard</h2><div class="kpis">${kpi('Active clusters',cls.size)}${kpi('Avg threat',avg,tc(avg))}${kpi('Sightings in window',EV.filter(e=>e.t<=ttl).length)}${kpi('Cameras mapped',CAMS.length)}</div>
+<div class="c2"><div class="pan"><h3>Live Veil Map</h3>${mapSVG()}</div><div><div class="pan"><h3>Threat index (demo trend)</h3>${spark()}</div><div class="pan"><h3>Hottest cluster</h3><div class="big ${tc(top.sev)}">${esc(top.loc)}</div><div class="bar"><i style="width:${top.sev}%"></i></div><small>Threat ${top.sev} · ${esc(top.cl)}</small></div></div></div>
+<div class="pan"><h3>Recent sightings</h3>${[...EV].sort((a,b)=>a.t-b.t).slice(0,6).map(e=>`<div class="feed"><span>${ago(e.t)}</span><b class="${tc(e.sev)}">${esc(e.type)}</b><span>${esc(e.loc)}</span></div>`).join('')}</div>`},
+map(){return`<h2>Veil Map</h2><div class="row">${[['cl','Clusters'],['cam','Cameras'],['mic','Gunshot mics']].map(([k,l])=>`<label style="margin:0"><input type="checkbox" data-act="layer" data-k="${k}" ${S.L[k]?'checked':''}> ${l}</label>`).join(' ')}</div><div class="c2"><div class="pan">${mapSVG()}</div><div class="pan"><h3>Details</h3>${detail()}</div></div>`},
+heat(){return`<h2>Heatmap</h2><div class="row"><select id="ht" data-act="heat"><option value="">All types</option>${[...new Set(EV.map(e=>e.type))].map(t=>`<option>${esc(t)}</option>`).join('')}</select></div><canvas id="hc" width="600" height="400" aria-label="Activity density heatmap"></canvas>`},
+rec(){const q=($('#q')?.value||'').toLowerCase(),mt=num($('#ms')?.value,0),[k,d]=S.sort;
+const rows=EV.filter(e=>e.sev>=mt&&(e.loc+e.type+(e.cl||'')).toLowerCase().includes(q)).sort((a,b)=>(a[k]>b[k]?1:-1)*d);
+return`<h2>Records</h2><div class="row"><input id="q" placeholder="Search" data-act="rec" value="${esc(q)}"><label style="margin:0">Min threat <input id="ms" type="number" min="0" max="100" style="width:70px" data-act="rec" value="${mt}"></label><button data-act="exp" data-k="csv">Export CSV</button><button class="g" data-act="exp" data-k="json">Export JSON</button></div>
+<div class="pan">${tbl([['Location','loc'],['Type','type'],['Threat','sev'],['Cluster','cl'],['Age','t'],['Source','src']],rows.map(e=>`<tr><td>${esc(e.loc)}</td><td>${esc(e.type)}</td><td class="${tc(e.sev)}">${e.sev}</td><td>${esc(e.cl||'—')}</td><td>${ago(e.t)}</td><td>${esc(e.src)}</td></tr>`))}</div>`},
+off(){const sel=OFF.find(o=>o.id===S.selOff),sc=o=>Math.round(o.p.filter(x=>x[1]).length/o.p.length*100);
+return`<h2>Officials</h2><div class="c2"><div class="pan">${tbl(['Name','Role','Promise-action score'],OFF.map(o=>`<tr data-act="off" data-i="${o.id}" style="cursor:pointer"><td>${esc(o.n)}</td><td>${esc(o.r)}</td><td class="${sc(o)<50?'hi':'ok'}">${sc(o)}%</td></tr>`))}</div>
+<div class="pan"><h3>Promise timeline</h3>${sel?`<b>${esc(sel.n)}</b><div class="bar"><i style="width:${sc(sel)}%;background:var(--g)"></i></div>${sel.p.map(x=>`<div class="feed"><b class="${x[1]?'ok':'hi'}">${x[1]?'MATCHED':'NO ACTION'}</b><span>${esc(x[0])}</span></div>`).join('')}<small style="color:var(--m)">Demo scoring. Production uses embedding similarity (threshold 0.72).</small>`:'<small style="color:var(--m)">Select an official.</small>'}</div></div>`},
+rep(){const admin=S.role==='ADMIN';return`<h2>Citizen Reports</h2><div class="two"><div class="pan"><h3>New report</h3>
+<label for="rt">Type</label><select id="rt">${['raid','checkpoint','arrest','patrol','plainclothes','vehicle','unverified'].map(t=>`<option>${t}</option>`).join('')}</select>
+<label for="la">Latitude</label><input id="la" type="number" step="0.0001" placeholder="44.9778"><label for="ln">Longitude</label><input id="ln" type="number" step="0.0001" placeholder="-93.2650">
+<div class="row" style="margin-top:8px"><button class="g" data-act="geo">Use device location</button></div>
+<label for="nt">Note (280 max — omit identifying information)</label><textarea id="nt" maxlength="280" rows="3" style="width:100%"></textarea>
+<label for="cf">Confidence <span id="cfv">70</span>%</label><input id="cf" type="range" min="20" max="100" step="5" value="70" data-act="cf">
+<div class="row" style="margin-top:12px"><button data-act="submit">Submit report</button><button class="g" data-act="flush">Retry unsent (${S.reports.filter(r=>r.status==='queued').length})</button></div></div>
+<div class="pan"><h3>My reports</h3>${tbl(['Type','Location','Status',admin?'Moderate':''],S.reports.map(r=>`<tr><td>${esc(r.type)}</td><td>${esc(r.la)}, ${esc(r.ln)}</td><td><span class="pill ${r.status==='verified'||r.status==='sent'?'ok':r.status==='rejected'?'hi':'md'}">${esc(r.status)}</span>${r.err?`<br><small>${esc(r.err)}</small>`:''}</td><td>${admin?['verified','rejected','under_review'].map(s=>`<button class="g" data-act="mod" data-i="${esc(r.id)}" data-k="${s}">${s}</button>`).join(' '):''}</td></tr>`))}</div></div>`},
+alr(){return`<h2>Alerts</h2><div class="two"><div class="pan"><h3>Rule builder</h3><label for="at">Event type</label><select id="at"><option value="any">any</option>${[...new Set(EV.map(e=>e.type))].map(t=>`<option>${esc(t)}</option>`).join('')}</select>
+<label for="ath">Threat threshold</label><input id="ath" type="number" min="1" max="100" value="${S.cfg.thr}"><label for="ac">Channel</label><select id="ac"><option>in-app</option><option>email</option><option>webhook</option></select>
+<div class="row" style="margin-top:12px"><button data-act="addrule">Add rule</button><button class="g" data-act="eval">Evaluate now</button></div></div>
+<div class="pan"><h3>Rules</h3>${tbl(['Type','Threshold','Channel','On',''],S.rules.map(r=>`<tr><td>${esc(r.type)}</td><td>≥ ${esc(r.thr)}</td><td>${esc(r.ch)}</td><td><input type="checkbox" data-act="rtog" data-i="${esc(r.id)}" ${r.on?'checked':''} aria-label="Rule active"></td><td><button class="g" data-act="rdel" data-i="${esc(r.id)}">Delete</button></td></tr>`))}</div></div>
+<div class="pan"><h3>Alert history</h3>${tbl(['Time','Rule','Event'],S.hist.map(h=>`<tr><td>${esc(h.ts)}</td><td>${esc(h.r)}</td><td>${esc(h.e)}</td></tr>`))}<small style="color:var(--m)">Email and webhook delivery need the backend; here only in-app alerts fire.</small></div>`},
+rf(){return`<h2>RF Scanner</h2><div class="pan"><div class="row"><button data-act="scan">Run simulated scan</button><button class="g" data-act="rfexp">Export JSON</button></div><small style="color:var(--m)">SIMULATED. Real scans need the Android ADB bridge (Part II of the blueprint). Anomaly = RSRP z-score beyond 2 or unrecognised TAC.</small>
+${tbl(['Cell ID','EARFCN','RSRP dBm','TAC','z','Flag'],S.rf.map(c=>`<tr><td>${esc(c.id)}</td><td>${c.ea}</td><td>${c.rs}</td><td>${c.tac}</td><td>${c.z.toFixed(2)}</td><td class="${c.f?'hi':'ok'}">${c.f?'ANOMALY':'ok'}</td></tr>`))}</div>`},
+ing(){return`<h2>Ingestion</h2><div class="pan">${tbl(['Source','Schedule','Last manual trigger','',''],ING.map(([k,n,c])=>`<tr><td>${esc(n)}</td><td>${esc(c)}</td><td>${esc(S.ing[k]||'never')}</td><td><button data-act="trig" data-i="${k}">Log trigger</button></td><td></td></tr>`))}<small style="color:var(--m)">Triggers are recorded locally only. POST /api/v1/ingestion/trigger/:source runs them once a backend is connected.</small></div>`},
+adm(){return`<h2>Admin</h2><div class="pan"><h3>Users</h3>${tbl(['Email','Role'],S.users.map((u,i)=>`<tr><td>${esc(u.e)}</td><td><select data-act="urole" data-i="${i}">${['USER','ADMIN'].map(r=>`<option ${r===u.r?'selected':''}>${r}</option>`).join('')}</select></td></tr>`))}</div>
+<div class="pan"><h3>Audit log</h3>${tbl(['Time','Role','Action','Target'],S.audit.map(a=>`<tr><td>${esc(a.ts)}</td><td>${esc(a.u)}</td><td>${esc(a.a)}</td><td>${esc(a.t)}</td></tr>`))}</div>`},
+set(){const c=S.cfg;return`<h2>Settings</h2><div class="two"><div class="pan"><label for="sa">Backend API URL (blank = demo mode)</label><input id="sa" style="width:100%" value="${esc(c.api)}" placeholder="https://your-host/api">
+<label for="se">Cluster eps (km)</label><input id="se" type="number" min="1" max="10" value="${esc(c.eps)}"><label for="st">Alert threshold</label><input id="st" type="number" min="1" max="100" value="${esc(c.thr)}"><label for="sl">Sighting window (hours)</label><input id="sl" type="number" min="1" max="24" value="${esc(c.ttl)}">
+<div class="row" style="margin-top:12px"><button data-act="cfg">Save settings</button></div></div>
+<div class="pan"><h3>Offline cache</h3><p>Unsent reports: ${S.reports.filter(r=>r.status==='queued').length}<br>Stored reports: ${S.reports.length}</p><div class="row"><button class="g" data-act="clear">Clear local data</button></div></div></div>`}};
+function heat(){const c=$('#hc');if(!c)return;const x=c.getContext('2d'),f=$('#ht')?.value;x.fillStyle='#0a0908';x.fillRect(0,0,600,400);x.globalCompositeOperation='lighter';
+EV.filter(e=>!f||e.type===f).forEach(e=>{const[px,py]=P(e.la,e.ln),g=x.createRadialGradient(px,py,0,px,py,70);g.addColorStop(0,`rgba(217,150,47,${e.sev/140})`);g.addColorStop(1,'rgba(201,64,64,0)');x.fillStyle=g;x.fillRect(px-70,py-70,140,140)});x.globalCompositeOperation='source-over'}
+function render(){const v=VIEWS.find(x=>x[0]===S.view);$('#nav').innerHTML=VIEWS.map(([k,l])=>`<a tabindex="0" data-act="nav" data-k="${k}" class="${k===S.view?'on':''}">${l}</a>`).join('');
+$('#v').innerHTML=v[2]&&S.role!=='ADMIN'?'<h2>Admin only</h2><p>Switch role to ADMIN (demo). This is a UI gate; enforce roles on the server.</p>':V[S.view]();if(S.view==='heat')heat()}
+async function submit(){const la=parseFloat($('#la').value),ln=parseFloat($('#ln').value);if(!isFinite(la)||!isFinite(ln)||Math.abs(la)>90||Math.abs(ln)>180)return toast('Enter a valid latitude and longitude.');
+const r={id:uid(),type:$('#rt').value,la,ln,note:$('#nt').value.slice(0,280),conf:+$('#cf').value/100,status:'queued',ts:now()};S.reports.unshift(r);
+if(S.cfg.api)await send(r);else r.err='Demo mode: no API URL set';save('reports');log('report_created',r.id);render();toast(r.status==='sent'?'Report sent.':'Report saved but not sent.')}
+async function send(r){try{const res=await fetch(S.cfg.api.replace(/\/$/,'')+'/v1/reports',{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':r.id},body:JSON.stringify(r),signal:AbortSignal.timeout(4000)});if(!res.ok)throw new Error('HTTP '+res.status);r.status='sent';delete r.err}catch(e){r.status='queued';r.err=String(e.message||e)}}
+function scan(){const a=Array.from({length:8},(_,i)=>({id:'0x'+(0x1A2B00+i*37).toString(16),ea:[66486,5230,2000][i%3],rs:-Math.round(70+Math.random()*40),tac:i===5?9999:4100+(i%2)}));const m=a.reduce((s,c)=>s+c.rs,0)/a.length,sd=Math.sqrt(a.reduce((s,c)=>s+(c.rs-m)**2,0)/a.length)||1;
+S.rf=a.map(c=>({...c,z:(c.rs-m)/sd,f:Math.abs((c.rs-m)/sd)>2||c.tac===9999}));log('rf_scan_simulated')}
+function evalRules(){let n=0;S.rules.filter(r=>r.on).forEach(r=>EV.forEach(e=>{if((r.type==='any'||r.type===e.type)&&e.sev>=r.thr){S.hist.unshift({ts:now(),r:`${r.type} ≥ ${r.thr} (${r.ch})`,e:`${e.loc} · ${e.sev}`});n++}}));log('rules_evaluated',n+' hits');toast(n+' alert(s) matched.')}
+document.addEventListener('click',ev=>{const t=ev.target.closest('[data-act]');if(!t||t.tagName==='SELECT'||(t.tagName==='INPUT'&&t.type!=='button'))return;const a=t.dataset.act,k=t.dataset.k,i=t.dataset.i;
+if(a==='nav'){S.view=k;render()}else if(a==='pick'){S.sel=[k,i];render()}else if(a==='sort'){S.sort=S.sort[0]===k?[k,-S.sort[1]]:[k,1];render()}
+else if(a==='exp'){const h=['location','type','threat','cluster','age_min','source'],rows=EV.map(e=>[e.loc,e.type,e.sev,e.cl||'',e.t,e.src]);log('export',k);k==='csv'?dl('records.csv',[h,...rows].map(r=>r.map(csvCell).join(',')).join('\n'),'text/csv'):dl('records.json',JSON.stringify(EV,null,2),'application/json')}
+else if(a==='off'){S.selOff=+i;render()}else if(a==='geo'){navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>{$('#la').value=p.coords.latitude.toFixed(4);$('#ln').value=p.coords.longitude.toFixed(4)},()=>toast('Location unavailable. Enter coordinates manually.')):toast('Geolocation not supported.')}
+else if(a==='submit')submit();else if(a==='flush'){(async()=>{if(!S.cfg.api)return toast('Set an API URL in Settings first.');for(const r of S.reports.filter(r=>r.status==='queued'))await send(r);save('reports');render()})()}
+else if(a==='mod'){const r=S.reports.find(r=>r.id===i);if(r){r.status=k;save('reports');log('report_'+k,i);render()}}
+else if(a==='addrule'){S.rules.push({id:uid(),type:$('#at').value,thr:num($('#ath').value,75),ch:$('#ac').value,on:true});save('rules');log('rule_added');render()}
+else if(a==='eval'){evalRules();render()}else if(a==='rdel'){S.rules=S.rules.filter(r=>r.id!==i);save('rules');render()}
+else if(a==='scan'){scan();render()}else if(a==='rfexp')dl('rf-scan.json',JSON.stringify(S.rf,null,2),'application/json');
+else if(a==='trig'){S.ing[i]=now();save('ing');log('ingest_trigger',i);render()}
+else if(a==='cfg'){S.cfg={api:$('#sa').value.trim(),eps:num($('#se').value,2),thr:num($('#st').value,75),ttl:num($('#sl').value,4)};save('cfg');log('settings_saved');toast('Settings saved.');render()}
+else if(a==='clear'&&confirm('Delete all local reports, rules and logs?')){['reports','rules','audit','ing'].forEach(k=>{try{localStorage.removeItem(k)}catch{}});location.reload()}});
+document.addEventListener('change',ev=>{const t=ev.target,a=t.dataset.act;if(t.id==='role'){S.role=t.value;store.set('role',S.role);render()}
+else if(a==='layer'){S.L[t.dataset.k]=t.checked?1:0;render()}else if(a==='heat')heat();else if(a==='rtog'){const r=S.rules.find(r=>r.id===t.dataset.i);if(r){r.on=t.checked;save('rules')}}
+else if(a==='urole'){S.users[+t.dataset.i].r=t.value;save('users');log('role_changed',S.users[+t.dataset.i].e)}});
+document.addEventListener('input',ev=>{const t=ev.target;if(t.dataset.act==='cf')$('#cfv').textContent=t.value;else if(t.dataset.act==='rec'){const p=t.selectionStart,id=t.id;render();const n=$('#'+id);n.focus();try{n.setSelectionRange(p,p)}catch{}}});
+document.addEventListener('keydown',ev=>{if((ev.key==='Enter'||ev.key===' ')&&ev.target.matches('aside a')){ev.preventDefault();ev.target.click()}});
+$('#role').value=S.role;render();
+</script></body></html>
