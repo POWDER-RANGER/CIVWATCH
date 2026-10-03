@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIVWATCH — Architectural Blueprint</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg:        #0B0C10;
+    --surface:   #13151A;
+    --surface2:  #1A1D24;
+    --border:    #2A2D38;
+    --border2:   #3A3E50;
+    --text:      #CDD3DF;
+    --text-dim:  #6B7490;
+    --text-muted:#3E4460;
+    --accent:    #3D7EFF;
+    --accent2:   #5B9AFF;
+    --amber:     #F0A500;
+    --green:     #3DBA78;
+    --red:       #E05555;
+    --cyan:      #38BCD4;
+    --white:     #E8EBF4;
+    --mono:      'JetBrains Mono', 'Fira Code', monospace;
+    --sans:      'Inter', system-ui, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; font-size: 14px; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── NAV ── */
+  nav {
+    width: 220px;
+    min-width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 24px 0;
+    flex-shrink: 0;
+  }
+
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+    display: block;
+    line-height: 1.4;
+  }
+
+  .nav-section-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    padding: 12px 20px 4px;
+  }
+
+  nav a {
+    display: block;
+    font-size: 11.5px;
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 5px 20px;
+    border-left: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    font-family: var(--mono);
+  }
+
+  nav a:hover { color: var(--white); border-left-color: var(--accent2); }
+  nav a.sub { padding-left: 32px; font-size: 10.5px; color: var(--text-muted); }
+  nav a.sub:hover { color: var(--text-dim); }
+
+  /* ── MAIN ── */
+  main {
+    flex: 1;
+    max-width: 900px;
+    padding: 48px 52px;
+    overflow-x: hidden;
+  }
+
+  /* ── PART HEADER ── */
+  .part-header {
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .part-badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 2px;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+
+  .badge-web  { background: rgba(61,126,255,0.15); color: var(--accent2); border: 1px solid rgba(61,126,255,0.3); }
+  .badge-mob  { background: rgba(61,186,120,0.12); color: var(--green);  border: 1px solid rgba(61,186,120,0.3); }
+
+  .part-title {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: -0.02em;
+  }
+
+  .part-sub {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    max-width: 620px;
+  }
+
+  /* ── DIVIDER ── */
+  .part-divider {
+    margin: 56px 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .part-divider::before,
+  .part-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border2), transparent);
+  }
+
+  .part-divider span {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    margin-bottom: 48px;
+  }
+
+  h2 {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  h2::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  h3 {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--white);
+    margin: 24px 0 10px;
+  }
+
+  p {
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  /* ── CODE BLOCKS ── */
+  pre {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border2);
+    border-radius: 4px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    margin: 12px 0 20px;
+    line-height: 1.5;
+  }
+
+  pre code, code {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text);
+  }
+
+  .kw  { color: var(--accent2); }
+  .str { color: var(--green); }
+  .cmt { color: var(--text-muted); font-style: italic; }
+  .num { color: var(--amber); }
+  .tag { color: var(--cyan); }
+  .hdr { color: var(--amber); font-weight: 700; }
+  .grn { color: var(--green); }
+  .red { color: var(--red); }
+
+  /* ── TABLES ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 20px;
+    font-size: 12px;
+  }
+
+  th {
+    background: var(--surface2);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 8px 12px;
+    text-align: left;
+    border: 1px solid var(--border);
+  }
+
+  td {
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+    font-size: 11.5px;
+  }
+
+  td code {
+    background: var(--surface2);
+    padding: 1px 5px;
+    border-radius: 2px;
+    font-size: 10.5px;
+    color: var(--cyan);
+  }
+
+  tr:hover td { background: rgba(255,255,255,0.015); }
+
+  /* ── GRID ── */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 16px;
+  }
+
+  .card-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .card-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .card-body {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .pill {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-weight: 500;
+    margin: 2px 2px 0 0;
+  }
+
+  .pill-blue   { background: rgba(61,126,255,0.15); color: var(--accent2); }
+  .pill-amber  { background: rgba(240,165,0,0.12);  color: var(--amber); }
+  .pill-green  { background: rgba(61,186,120,0.12); color: var(--green); }
+  .pill-cyan   { background: rgba(56,188,212,0.12); color: var(--cyan); }
+  .pill-red    { background: rgba(224,85,85,0.12);  color: var(--red); }
+
+  .callout {
+    background: rgba(240,165,0,0.06);
+    border: 1px solid rgba(240,165,0,0.2);
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--amber);
+    margin: 12px 0 20px;
+    font-family: var(--mono);
+  }
+
+  .callout strong { font-weight: 700; }
+
+  .stack-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  .stack-num {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    min-width: 20px;
+    padding-top: 1px;
+  }
+
+  .stack-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--white);
+    min-width: 140px;
+  }
+
+  .stack-detail {
+    font-size: 11.5px;
+    color: var(--text-dim);
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    main { padding: 28px 22px; }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<nav>
+  <span class="nav-logo">CIVWATCH<br>BLUEPRINT v1.0</span>
+
+  <div class="nav-section-label">Part I — Web</div>
+  <a href="#web-overview">Overview</a>
+  <a href="#web-stack" class="sub">Layer Stack</a>
+  <a href="#web-frontend" class="sub">Frontend (VEIL)</a>
+  <a href="#web-api" class="sub">API Surface</a>
+  <a href="#web-ml" class="sub">ML Service</a>
+  <a href="#web-db" class="sub">Database Schema</a>
+  <a href="#web-jobs" class="sub">Job Queues</a>
+  <a href="#web-alerts" class="sub">Alert Dispatch</a>
+  <a href="#web-auth" class="sub">Auth & Security</a>
+  <a href="#web-infra" class="sub">Infrastructure</a>
+  <a href="#web-electron" class="sub">Electron Wrapper</a>
+
+  <div class="nav-section-label">Part II — Mobile</div>
+  <a href="#mob-overview">Overview</a>
+  <a href="#mob-stack" class="sub">Layer Stack</a>
+  <a href="#mob-screens" class="sub">Screen Map</a>
+  <a href="#mob-sqlite" class="sub">Local SQLite</a>
+  <a href="#mob-sync" class="sub">Offline Sync</a>
+  <a href="#mob-push" class="sub">Push Notifications</a>
+  <a href="#mob-rf" class="sub">RF Bridge</a>
+  <a href="#mob-sec" class="sub">Mobile Security</a>
+  <a href="#mob-build" class="sub">Build & Distribution</a>
+</nav>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main>
+
+<!-- ════════════════════════════════════
+     PART I — WEB
+════════════════════════════════════ -->
+<div class="part-header" id="web-overview">
+  <span class="part-badge badge-web">Part I</span>
+  <div class="part-title">Web-Based · Self-Paced</div>
+  <p class="part-sub">Full-stack civic intelligence platform. Self-paced model: user-driven workflows, batch-capable ingestion, async ML processing. Real-time (WebSocket) available but not mandatory UX axis. Deployable via Docker Compose on any VPS; Electron wraps for desktop.</p>
+</div>
+
+<!-- STACK -->
+<section id="web-stack">
+  <h2>Layer Stack</h2>
+
+  <div class="stack-row">
+    <span class="stack-num">01</span>
+    <span class="stack-name">Presentation</span>
+    <span class="stack-detail">React 18 + Vite 5 · VEIL Dashboard · Leaflet maps · WebSocket client (optional) · TanStack Query for server state</span>
+  </div>
+  <div class="stack-row">
+    <span class="stack-num">02</span>
+    <span class="stack-name">API Gateway</span>
+    <span class="stack-detail">Nginx — SSL termination, reverse proxy, static asset serve, rate limiting (limit_req_zone)</span>
+  </div>
+  <div class="stack-row">
+    <span class="stack-num">03</span>
+    <span class="stack-name">Application</span>
+    <span class="stack-detail">Express.js / TypeScript · Node 20 · REST + WebSocket (socket.io) · Bull job queues · node-cron scheduler · JWT middleware</span>
+  </div>
+  <div class="stack-row">
+    <span class="stack-num">04</span>
+    <span class="stack-name">ML Service</span>
+    <span class="stack-detail">FastAPI / Python 3.11 · DBSCAN anomaly · HuggingFace sentiment/NER · Promise-action scorer · Celery async workers</span>
+  </div>
+  <div class="stack-row">
+    <span class="stack-num">05</span>
+    <span class="stack-name">Ingestion Pipeline</span>
+    <span class="stack-detail">Node/Python scrapers · FEC, dispatch logs, contracts/bids, citizen intake · Bull queue-backed · retry + dead-letter</span>
+  </div>
+  <div class="stack-row">
+    <span class="stack-num">06</span>
+    <span class="stack-name">Data Layer</span>
+    <span class="stack-detail">PostgreSQL 16 (primary) · Redis 7 (cache + pub/sub + session) · MinIO or local FS (documents, evidence, exports)</span>
+  </div>
+  <div class="stack-row">
+    <span class="stack-num">07</span>
+    <span class="stack-name">Infrastructure</span>
+    <span class="stack-detail">Docker Compose (7 services) · Nginx · Certbot (Let's Encrypt) · Electron (optional desktop wrapper)</span>
+  </div>
+
+  <pre><code><span class="cmt"># Full dependency tree</span>
+
+[Browser]
+  └── React 18 + Vite 5
+      ├── VEIL Dashboard / Heatmaps / Forms / Reports
+      ├── Leaflet + heatmap.js (GeoJSON overlays)
+      ├── Recharts (KPI viz)
+      ├── TanStack Table (paginated records)
+      └── socket.io-client (opt-in real-time)
+
+[Nginx :80/:443]
+  └── /api/* → backend :3000
+  └── /ml/*  → ml-service :8000
+  └── /      → Vite build (static)
+
+[Express/TS :3000]
+  ├── REST /api/v1/*
+  ├── socket.io  (room-based per user)
+  ├── Bull queues → Redis :6379
+  ├── node-cron  (scraper triggers)
+  └── pg pool    → PostgreSQL :5432
+
+[FastAPI :8000]
+  ├── /analyze/anomaly
+  ├── /analyze/sentiment
+  ├── /analyze/ner
+  ├── /score/promise-action
+  └── Celery workers → Redis broker
+
+[PostgreSQL :5432]   [Redis :6379]   [MinIO :9000]</code></pre>
+</section>
+
+<!-- FRONTEND -->
+<section id="web-frontend">
+  <h2>Frontend Modules — VEIL</h2>
+  <p>VEIL is the dashboard shell. Each module loads as a lazy-chunked route. Shared state via Zustand; server state via TanStack Query with stale-while-revalidate.</p>
+
+  <table>
+    <thead>
+      <tr><th>Module</th><th>Route</th><th>Purpose</th><th>Key Deps</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Dashboard</td><td><code>/</code></td><td>KPI tiles, live alert feed, activity stream</td><td>Recharts, socket.io-client</td></tr>
+      <tr><td>VEIL Map</td><td><code>/map</code></td><td>Flock cam pins, gunshot mic overlays, event clusters, layer toggles</td><td>Leaflet, MarkerCluster, GeoJSON</td></tr>
+      <tr><td>Heatmap</td><td><code>/heatmap</code></td><td>Emergency activity density, camera coverage zones</td><td>Leaflet.heat, date-range picker</td></tr>
+      <tr><td>History Browser</td><td><code>/records</code></td><td>Paginated civic events, filter/sort, CSV/JSON export</td><td>TanStack Table, date-fns</td></tr>
+      <tr><td>Officials</td><td><code>/officials/:id</code></td><td>Promise tracker, promise-vs-action score gauge, statement timeline</td><td>Recharts gauge, custom diff viz</td></tr>
+      <tr><td>Citizen Reports</td><td><code>/reports</code></td><td>Submit report, evidence upload, view moderation status</td><td>React Hook Form, Dropzone</td></tr>
+      <tr><td>Alert Manager</td><td><code>/alerts</code></td><td>Rule builder (conditions, thresholds, channels), alert history</td><td>Rule editor component, socket.io</td></tr>
+      <tr><td>Ingestion Status</td><td><code>/admin/ingest</code></td><td>Scraper health, last-run timestamps, manual trigger, error logs</td><td>Bull Board (embedded)</td></tr>
+      <tr><td>Admin Panel</td><td><code>/admin</code></td><td>User role management, audit log viewer, system config</td><td>Protected route (ADMIN role)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>State Architecture</h3>
+  <pre><code><span class="cmt"># Zustand stores (client-only / ephemeral)</span>
+useMapStore        → layer visibility, active overlays, viewport
+useAlertStore     → unread count, live alert queue (socket feed)
+useAuthStore      → user, token, role, logout
+useReportDraft    → form state, evidence queue, submission status
+
+<span class="cmt"># TanStack Query (server state)</span>
+useEvents()         → GET /api/v1/events  (paginated)
+useOfficial(id)     → GET /api/v1/officials/:id
+useCameraLayer()    → GET /api/v1/map/cameras  (GeoJSON, 10m cache)
+useHeatmapData()    → GET /api/v1/map/heatmap  (1m cache)
+useAlertRules()     → GET /api/v1/alerts
+useJobStatus(id)    → GET /api/v1/ml/jobs/:id  (polling, 2s interval)</code></pre>
+</section>
+
+<!-- API -->
+<section id="web-api">
+  <h2>Backend API Surface</h2>
+  <pre><code>POST  /api/v1/auth/register
+POST  /api/v1/auth/login           <span class="cmt">→ { accessToken, refreshToken(httpOnly) }</span>
+POST  /api/v1/auth/refresh
+DEL   /api/v1/auth/logout
+
+GET   /api/v1/events               <span class="cmt">?page&limit&type&severity&from&to&source</span>
+GET   /api/v1/events/:id
+POST  /api/v1/events               <span class="cmt">ingestion endpoint (API key auth)</span>
+
+GET   /api/v1/reports              <span class="cmt">?status&from&to</span>
+POST  /api/v1/reports              <span class="cmt">multipart/form-data (evidence files)</span>
+PATCH /api/v1/reports/:id/status   <span class="cmt">ADMIN: verified|rejected|under_review</span>
+
+GET   /api/v1/officials
+GET   /api/v1/officials/:id/promises
+GET   /api/v1/officials/:id/score
+
+GET   /api/v1/alerts
+POST  /api/v1/alerts               <span class="cmt">{ conditions, threshold, channel, active }</span>
+DEL   /api/v1/alerts/:id
+
+GET   /api/v1/map/cameras          <span class="cmt">→ GeoJSON FeatureCollection</span>
+GET   /api/v1/map/gunshot-mics     <span class="cmt">→ GeoJSON FeatureCollection</span>
+GET   /api/v1/map/heatmap          <span class="cmt">?from&to&type → aggregated point weights</span>
+
+POST  /api/v1/ml/analyze           <span class="cmt">{ payload, task } → { job_id }</span>
+GET   /api/v1/ml/jobs/:id          <span class="cmt">→ { status, result | null }</span>
+
+POST  /api/v1/ingestion/trigger/:source   <span class="cmt">ADMIN: manual scraper kick</span>
+GET   /api/v1/ingestion/status            <span class="cmt">→ { source, last_run, status }[]</span>
+
+GET   /api/v1/export/report        <span class="cmt">?format=pdf|csv|json&from&to&type</span>
+
+GET   /api/v1/health
+GET   /api/v1/metrics              <span class="cmt">Prometheus-compatible</span></code></pre>
+
+  <div class="callout"><strong>Auth model:</strong> JWT access token (15 min, Bearer header) + refresh token (7 day, httpOnly cookie). Ingestion endpoint uses separate long-lived API key (X-API-Key header). Role check middleware: <code>requireRole('ADMIN')</code> on admin routes.</div>
+</section>
+
+<!-- ML -->
+<section id="web-ml">
+  <h2>ML Service — FastAPI</h2>
+  <pre><code><span class="tag">POST</span> /analyze/anomaly
+  body:  { data: float[][], eps: float, min_samples: int }
+  resp:  { labels: int[], n_clusters: int, noise_indices: int[] }
+  impl:  sklearn DBSCAN; caller passes normalized feature matrix
+         (columns: lat, lng, severity, hour_of_day, frequency)
+
+<span class="tag">POST</span> /analyze/sentiment
+  body:  { text: str, source: str }
+  resp:  { score: float, label: "positive"|"neutral"|"negative",
+           confidence: float }
+  impl:  cardiffnlp/twitter-roberta-base-sentiment (HuggingFace)
+         cached in Redis 1h by sha256(text)
+
+<span class="tag">POST</span> /analyze/ner
+  body:  { text: str }
+  resp:  { entities: [{ text, label, start, end }] }
+  impl:  spaCy en_core_web_trf; labels: PERSON, ORG, GPE, DATE, MONEY
+
+<span class="tag">POST</span> /score/promise-action
+  body:  { promise_text: str, actions: [{ description, date, evidence_url }] }
+  resp:  { score: float,      <span class="cmt"># 0.0–1.0</span>
+           matched: int, unmatched: int,
+           detail: [{ promise_fragment, matched_action|null, confidence }] }
+  impl:  sentence-transformers/all-MiniLM-L6-v2 cosine similarity;
+         threshold 0.72 for match
+
+<span class="tag">GET</span>  /health   → { status: "ok", models_loaded: bool }
+<span class="tag">GET</span>  /metrics  → Prometheus text format</code></pre>
+
+  <h3>Async Processing (Celery)</h3>
+  <pre><code><span class="cmt"># For long-running batch jobs</span>
+POST /analyze → returns { job_id }
+Celery task dispatched → Redis broker
+Caller polls GET /jobs/:id → { status: "pending|running|done|failed", result }
+
+Queues:
+  civwatch.ml.anomaly    concurrency=2
+  civwatch.ml.sentiment  concurrency=4
+  civwatch.ml.ner        concurrency=4
+  civwatch.ml.scoring    concurrency=2</code></pre>
+</section>
+
+<!-- DB -->
+<section id="web-db">
+  <h2>Database Schema — Core Tables</h2>
+  <pre><code><span class="cmt">-- Civic events (primary aggregation target)</span>
+civic_events (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  type         TEXT NOT NULL,          <span class="cmt">-- dispatch|bid|contract|camera|protest|...</span>
+  source       TEXT NOT NULL,          <span class="cmt">-- fec|dispatch|manual|scraper_id</span>
+  location     GEOMETRY(POINT,4326),
+  jurisdiction TEXT,
+  severity     SMALLINT DEFAULT 0,     <span class="cmt">-- 0-4</span>
+  raw_data     JSONB,
+  tags         TEXT[],
+  created_at   TIMESTAMPTZ DEFAULT now(),
+  ingested_at  TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX ON civic_events USING GIST(location);
+CREATE INDEX ON civic_events (type, created_at DESC);
+
+<span class="cmt">-- Officials + accountability</span>
+officials (id UUID, name TEXT, role TEXT, jurisdiction TEXT,
+           party TEXT, contact JSONB, active BOOL);
+
+promises   (id UUID, official_id UUID REFERENCES officials,
+            statement TEXT, date_made DATE, source_url TEXT,
+            verified BOOL DEFAULT false);
+
+actions    (id UUID, official_id UUID, description TEXT,
+            date DATE, evidence_url TEXT, source TEXT);
+
+promise_scores (id UUID, promise_id UUID, score FLOAT,
+                matched_action_ids UUID[], computed_at TIMESTAMPTZ);
+
+<span class="cmt">-- Surveillance infrastructure map</span>
+cameras (id UUID, vendor TEXT, location GEOMETRY(POINT,4326),
+         cam_type TEXT, coverage_radius_m INT,
+         active BOOL, verified BOOL, source TEXT, added_at DATE);
+
+gunshot_mics (id UUID, vendor TEXT, location GEOMETRY(POINT,4326),
+              active BOOL, source TEXT, added_at DATE);
+
+<span class="cmt">-- Citizen layer</span>
+users          (id UUID, email TEXT UNIQUE, password_hash TEXT,
+                role TEXT DEFAULT 'USER', created_at TIMESTAMPTZ);
+
+citizen_reports (id UUID, user_id UUID, location GEOMETRY(POINT,4326),
+                 description TEXT, evidence_urls TEXT[],
+                 status TEXT DEFAULT 'pending', reviewed_by UUID,
+                 created_at TIMESTAMPTZ);
+
+alert_rules    (id UUID, user_id UUID, conditions JSONB,
+                threshold JSONB, channel TEXT, channel_config JSONB,
+                active BOOL DEFAULT true, last_triggered TIMESTAMPTZ);
+
+<span class="cmt">-- System</span>
+audit_log      (id UUID, user_id UUID, action TEXT, target TEXT,
+                ip INET, timestamp TIMESTAMPTZ);
+
+ingestion_jobs (id UUID, source TEXT, status TEXT,
+                started_at TIMESTAMPTZ, completed_at TIMESTAMPTZ,
+                records_ingested INT, error TEXT);</code></pre>
+</section>
+
+<!-- JOBS -->
+<section id="web-jobs">
+  <h2>Job Queue Architecture — Bull + Redis</h2>
+  <pre><code>Queues (all backed by Redis, Bull v4):
+
+civwatch:ingestion
+  ├── scrape-fec           cron: "0 2 * * *"   retry: 3, backoff: exp
+  ├── scrape-dispatch      cron: "*/15 * * * *" retry: 5, backoff: 30s
+  ├── scrape-bids          cron: "0 6 * * *"   retry: 3, backoff: exp
+  ├── scrape-contracts     cron: "0 6 * * 1"
+  └── import-citizen-report  on-demand (triggered by POST /reports)
+
+civwatch:ml
+  ├── anomaly-batch         concurrency: 2   triggered: post-ingestion
+  ├── sentiment-batch       concurrency: 4
+  ├── ner-batch             concurrency: 4
+  └── promise-score-update  cron: "0 3 * * *"  recalculate all scores
+
+civwatch:alerts
+  ├── evaluate-rules        interval: 60s     priority: HIGH
+  └── dispatch-notification on-demand         concurrency: 10
+
+civwatch:export
+  └── generate-report       on-demand         TTL: result cached 1h Redis
+
+Dead letter: all queues → civwatch:dead-letter (manual review via Bull Board)</code></pre>
+</section>
+
+<!-- ALERTS -->
+<section id="web-alerts">
+  <h2>Alert Dispatch Chain</h2>
+  <pre><code><span class="cmt">Rule evaluation loop (every 60s via node-cron)</span>
+
+1. SELECT active alert_rules
+2. For each rule:
+   a. Evaluate conditions against:
+      - Redis pub/sub stream (real-time events)
+      - PostgreSQL window query (aggregated thresholds)
+   b. condition match → enqueue civwatch:alerts/dispatch-notification
+
+3. Dispatch job resolves channel:
+   ├── "email"    → nodemailer → SMTP/SES
+   │                payload: { subject, body_html, event_detail }
+   ├── "webhook"  → axios.post(user.channel_config.url, payload)
+   │                retry 3x, HMAC-signed body
+   ├── "in-app"   → socket.io emit to room "user:{user_id}"
+   │                → frontend toast + badge increment
+   └── "sms"      → Twilio (opt-in, requires TWILIO_* env vars)
+
+4. Write to audit_log (action="alert_dispatched", target=alert_rule_id)
+5. UPDATE alert_rules SET last_triggered = now() WHERE id = ...
+
+<span class="cmt">WebSocket room model:</span>
+  user connects → join("user:{user_id}")  [authenticated via token]
+  admin connects → join("admin")
+  events emitted: "alert:new", "event:ingested", "job:complete"</code></pre>
+</section>
+
+<!-- AUTH -->
+<section id="web-auth">
+  <h2>Auth &amp; Security Controls</h2>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-label">Authentication</div>
+      <div class="card-title">JWT + Refresh Token</div>
+      <div class="card-body">Access: 15 min, Bearer. Refresh: 7d, httpOnly Secure cookie. Rotation on use. bcrypt cost 12 for passwords.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Transport</div>
+      <div class="card-title">Nginx TLS + Helmet.js</div>
+      <div class="card-body">TLS 1.2+ only. HSTS, X-Frame-Options, CSP header. CORS: explicit allowlist only.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Rate Limiting</div>
+      <div class="card-title">Per-IP + Per-User</div>
+      <div class="card-body">express-rate-limit: 100 req/15 min global. Auth endpoints: 10 req/15 min. Ingestion API: 500 req/min (keyed).</div>
+    </div>
+    <div class="card">
+      <div class="card-label">DB Queries</div>
+      <div class="card-title">Parameterized Only</div>
+      <div class="card-body">Knex.js query builder; zero raw string interpolation. Input validated via Zod schemas at route layer before any DB call.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Secrets</div>
+      <div class="card-title">Env Vars — No Exceptions</div>
+      <div class="card-body">JWT_SECRET, DB_URL, REDIS_URL, API keys: env only. .env never committed. Docker secrets or Vault for production.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Audit</div>
+      <div class="card-title">Full Audit Log</div>
+      <div class="card-body">Every auth event, admin action, report status change, and alert trigger written to audit_log with IP and timestamp.</div>
+    </div>
+  </div>
+</section>
+
+<!-- INFRA -->
+<section id="web-infra">
+  <h2>Infrastructure — Docker Compose</h2>
+  <pre><code><span class="kw">services:</span>
+
+  <span class="grn">nginx:</span>
+    image: nginx:1.25-alpine
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - vite_dist:/usr/share/nginx/html:ro
+    depends_on: [backend]
+
+  <span class="grn">backend:</span>
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    depends_on: [postgres, redis]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/v1/health"]
+      interval: 30s
+
+  <span class="grn">ml-service:</span>
+    build: ./ml-service
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PORT: 8000
+    depends_on: [redis]
+    deploy:
+      resources:
+        limits: { memory: 4G }
+
+  <span class="grn">celery-worker:</span>
+    build: ./ml-service
+    command: celery -A app.celery worker -Q civwatch.ml.anomaly,civwatch.ml.sentiment
+    env_file: .env
+    depends_on: [redis]
+
+  <span class="grn">postgres:</span>
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: civwatch
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DB_USER}"]
+
+  <span class="grn">redis:</span>
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes: [redisdata:/data]
+
+  <span class="grn">minio:</span>          <span class="cmt"># optional; replace with local FS for minimal deploy</span>
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASS}
+    volumes: [miniodata:/data]
+
+<span class="kw">volumes:</span> { pgdata, redisdata, miniodata, vite_dist }</code></pre>
+</section>
+
+<!-- ELECTRON -->
+<section id="web-electron">
+  <h2>Electron Desktop Wrapper</h2>
+  <pre><code><span class="cmt"># Wraps built Vite bundle; optionally embeds backend</span>
+
+electron-main.ts:
+  app.whenReady() → BrowserWindow.loadURL(
+    isDev
+      ? "http://localhost:5173"
+      : `file://${path.join(__dirname, '../dist/index.html')}`
+  )
+
+IPC channels (main ↔ renderer):
+  "local:import-file"    → dialog.showOpenDialog → returns file path
+  "local:notify"         → new Notification(title, body)
+  "local:minimize-tray"  → tray icon setup
+  "app:version"          → app.getVersion()
+
+Optional embedded backend:
+  const server = child_process.fork("./backend/dist/server.js", [], {
+    env: { ...process.env, PORT: "3000" }
+  })
+  app.on("before-quit", () => server.kill())
+
+Updates:
+  autoUpdater.setFeedURL({ provider: "github",
+    owner: "POWDER-RANGER", repo: "CIVWATCH" })
+  autoUpdater.checkForUpdatesAndNotify()
+
+Build targets:
+  electron-builder:
+    linux:   AppImage, deb
+    win:     NSIS installer
+    mac:     dmg (unsigned, notarization optional)</code></pre>
+</section>
+
+
+<!-- ════════════════════════════════════
+     DIVIDER
+════════════════════════════════════ -->
+<div class="part-divider">
+  <span>End Part I · Begin Part II</span>
+</div>
+
+
+<!-- ════════════════════════════════════
+     PART II — MOBILE
+════════════════════════════════════ -->
+<div class="part-header" id="mob-overview">
+  <span class="part-badge badge-mob">Part II</span>
+  <div class="part-title">Mobile — Android-Primary</div>
+  <p class="part-sub">React Native (Expo SDK 51), targeting Android 12+ (Samsung Galaxy Tab S10 FE as primary sensor device). Offline-first, SQLite-backed local cache. Shares the main CIVWATCH Express backend. ADB-bridged RF integration for cell-titan. iOS parity without RF hardware capability.</p>
+</div>
+
+<!-- STACK -->
+<section id="mob-stack">
+  <h2>Layer Stack</h2>
+
+  <div class="stack-row">
+    <span class="stack-num">01</span>
+    <span class="stack-name">App Shell</span>
+    <span class="stack-detail">React Native + Expo SDK 51 · Expo Router (file-based nav) · Zustand (state) · React Query (server state)</span>
+  </div>
+  <div class="stack-row">
+    <span class="stack-num">02</span>
+    <span class="stack-name">Local Storage</span>
+    <span class="stack-detail">expo-sqlite (primary offline cache) · expo-secure-store (tokens) · expo-file-system (evidence files)</span>
+  </div>
+  <div class="stack-row">
+    <span class="stack-num">03</span>
+    <span class="stack-name">API Client</span>
+    <span class="stack-detail">Axios + retry interceptor · JWT header injection · offline job queue (SQLite-backed pending_sync table)</span>
+  </div>
+  <div class="stack-row">
+    <span class="stack-num">04</span>
+    <span class="stack-name">Mapping</span>
+    <span class="stack-detail">react-native-maps (MapboxGL optional) · GeoJSON overlays · clustering via supercluster</span>
+  </div>
+  <div class="stack-row">
+    <span class="stack-num">05</span>
+    <span class="stack-name">Push</span>
+    <span class="stack-detail">Firebase Cloud Messaging (FCM) via expo-notifications · deep-link routing on tap</span>
+  </div>
+  <div class="stack-row">
+    <span class="stack-num">06</span>
+    <span class="stack-name">RF Bridge (Android)</span>
+    <span class="stack-detail">ADB intent bridge or USB serial module → civwatch-cell-titan scan output → normalizer → pending_sync queue</span>
+  </div>
+  <div class="stack-row">
+    <span class="stack-num">07</span>
+    <span class="stack-name">Shared Backend</span>
+    <span class="stack-detail">Same CIVWATCH Express instance · Mobile-specific endpoints: /mobile/sync, /mobile/fcm-register, /mobile/config</span>
+  </div>
+
+  <pre><code><span class="cmt"># Architecture pattern: MVVM + Repository</span>
+
+View      →  RN components (Expo Router screens)
+ViewModel →  Zustand stores + React Query hooks
+Repository → ApiRepository (Axios) + LocalRepository (expo-sqlite)
+
+Offline-first rule:
+  READ  → SQLite first; if stale (> TTL), background-fetch from API
+  WRITE → write to SQLite immediately; enqueue pending_sync;
+          flush queue on network restore</code></pre>
+</section>
+
+<!-- SCREENS -->
+<section id="mob-screens">
+  <h2>Screen Map</h2>
+  <pre><code>(Auth Stack)
+  app/(auth)/login.tsx
+  app/(auth)/register.tsx
+  app/(auth)/forgot-password.tsx
+
+(Tab Navigator)  ← app/(tabs)/
+  index.tsx           Dashboard: KPI tiles, alert badge, quick-report FAB
+  map.tsx             Map: camera pins, event clusters, heatmap layer, filter drawer
+  reports/
+    index.tsx         Report list: status filter, pull-to-refresh
+    [id].tsx          Report detail: evidence viewer, status badge
+    new.tsx           Submit form: location, description, camera/file attach
+  officials/
+    index.tsx         Officials list: jurisdiction filter, score sort
+    [id].tsx          Profile: promise timeline, score gauge, action log
+  alerts/
+    index.tsx         Alert list: active/triggered, badge count
+    new.tsx           Rule builder: condition picker, threshold, channel
+
+(RF Screen — Android only, feature-flagged)
+  app/(tabs)/rf.tsx   Scan controls, signal log, anomaly highlight, export
+
+(Settings)
+  app/settings/account.tsx
+  app/settings/notifications.tsx
+  app/settings/offline.tsx     Clear cache, storage used, last-sync timestamp
+  app/settings/backend.tsx     CIVWATCH_API_URL (self-hosted config)
+  app/settings/about.tsx</code></pre>
+</section>
+
+<!-- SQLITE -->
+<section id="mob-sqlite">
+  <h2>Local SQLite Schema — Offline Cache</h2>
+  <pre><code><span class="cmt">-- Mirrors server schema; pruned for mobile footprint</span>
+
+CREATE TABLE events_cache (
+  id           TEXT PRIMARY KEY,
+  type         TEXT,
+  location_lat REAL, location_lng REAL,
+  severity     INTEGER,
+  source       TEXT,
+  raw_json     TEXT,           <span class="cmt">-- JSON blob</span>
+  created_at   TEXT,
+  synced_at    TEXT
+);
+
+CREATE TABLE officials_cache (
+  id       TEXT PRIMARY KEY,
+  name     TEXT,
+  role     TEXT,
+  score    REAL,
+  raw_json TEXT,
+  cached_at TEXT
+);
+
+CREATE TABLE reports_local (
+  id             TEXT PRIMARY KEY,
+  body_json      TEXT,
+  evidence_paths TEXT,         <span class="cmt">-- JSON array of local file paths</span>
+  synced         INTEGER DEFAULT 0,
+  created_at     TEXT
+);
+
+CREATE TABLE alerts_local (
+  id              TEXT PRIMARY KEY,
+  rule_json       TEXT,
+  last_triggered  TEXT,
+  active          INTEGER DEFAULT 1
+);
+
+CREATE TABLE map_layers_cache (
+  id         TEXT PRIMARY KEY,
+  layer_type TEXT,             <span class="cmt">-- cameras|gunshot_mics|heatmap</span>
+  geojson    TEXT,
+  cached_at  TEXT
+);
+
+CREATE TABLE pending_sync (
+  id           TEXT PRIMARY KEY,
+  endpoint     TEXT,
+  method       TEXT,
+  payload_json TEXT,
+  retry_count  INTEGER DEFAULT 0,
+  last_error   TEXT,
+  created_at   TEXT
+);
+
+CREATE TABLE app_config (
+  key   TEXT PRIMARY KEY,
+  value TEXT
+);
+<span class="cmt">-- stores: last_sync_ts, backend_url, fcm_token, etc.</span></code></pre>
+</section>
+
+<!-- SYNC -->
+<section id="mob-sync">
+  <h2>Offline Sync Protocol</h2>
+  <pre><code><span class="cmt">Triggered: network state change (NetInfo) + background fetch (expo-background-fetch)</span>
+
+<span class="hdr">PULL (server → device)</span>
+1. GET /api/v1/mobile/sync?since={last_sync_ts}
+   → server returns delta:
+     { events: [], officials: [], alerts: [], map_layers: {} }
+2. Upsert each entity into corresponding SQLite table
+3. UPDATE app_config SET value=now() WHERE key='last_sync_ts'
+
+<span class="hdr">PUSH (device → server)</span>
+1. SELECT * FROM pending_sync ORDER BY created_at ASC
+2. For each row:
+   a. axios[method](endpoint, JSON.parse(payload_json))
+   b. HTTP 2xx  → DELETE FROM pending_sync WHERE id=...
+   c. HTTP 4xx  → UPDATE last_error, mark failed (surface in Settings)
+   d. HTTP 5xx  → UPDATE retry_count += 1
+                  if retry_count >= 5 → mark failed
+3. On all clear → emit "sync:complete" event → refresh React Query cache
+
+<span class="hdr">Conflict resolution</span>
+  Server wins on pull (upsert by server ID, server timestamp authoritative)
+  Device wins on push (server validates and either accepts or rejects with 4xx)
+  No merge: last-write-wins model. Conflicts exposed in UI if push returns 409.</code></pre>
+</section>
+
+<!-- PUSH -->
+<section id="mob-push">
+  <h2>Push Notification Flow</h2>
+  <pre><code><span class="hdr">Device Registration</span>
+expo-notifications.getExpoPushTokenAsync()
+  → also get FCM token for direct FCM use
+POST /api/v1/mobile/fcm-register
+  body: { fcm_token, device_id, platform, app_version }
+  server stores in users.fcm_tokens JSONB array
+
+<span class="hdr">Server → Device</span>
+Alert dispatch job resolves "in-app" channel:
+  → build FCM payload:
+    {
+      token: user.fcm_token,
+      notification: { title, body },
+      data: {
+        alert_id, type, deep_link: "/alerts/{alert_id}"
+      },
+      android: {
+        priority: "high",
+        notification: { channelId: "civwatch_alerts" }
+      }
+    }
+  → send via Firebase Admin SDK (server-side)
+
+<span class="hdr">App Receives</span>
+Foreground  → Notifications.addNotificationReceivedListener
+              → in-app toast + Zustand alert badge += 1
+
+Background  → OS notification
+              → tap → Notifications.addNotificationResponseReceivedListener
+              → Expo Router navigate(data.deep_link)
+
+<span class="hdr">Notification Channels (Android)</span>
+civwatch_alerts    importance: HIGH    vibration: on
+civwatch_reports   importance: DEFAULT
+civwatch_system    importance: LOW</code></pre>
+</section>
+
+<!-- RF BRIDGE -->
+<section id="mob-rf">
+  <h2>RF Bridge — Android / ADB</h2>
+  <pre><code><span class="cmt"># Integrates civwatch-cell-titan scan output into CIVWATCH event schema</span>
+
+<span class="hdr">Architecture</span>
+  civwatch-cell-titan process (ADB / USB serial device)
+    ↓ stdout: newline-delimited JSON scan events
+  RFBridgeModule (React Native native module OR exec wrapper)
+    ↓ parses + validates scan events
+  RFEventNormalizer
+    ↓ maps to CivWatch event schema
+  → POST /api/v1/events  (if online)
+    OR insert pending_sync  (if offline)
+
+<span class="hdr">Scan event schema (cell-titan output)</span>
+{
+  "scan_type": "cellular|wifi|bluetooth|d2d",
+  "anomaly":   "imsi_catcher|rogue_ap|airtag|signal_drop|cipher_downgrade",
+  "arfcn":     number,     <span class="cmt">// corrected EARFCN per v2.0 calibration fix</span>
+  "rssi":      number,
+  "band":      string,
+  "location":  { "lat": number, "lng": number },
+  "raw":       string,
+  "timestamp": "ISO8601"
+}
+
+<span class="hdr">Normalized CivWatch event</span>
+{
+  type:     "rf_anomaly",
+  source:   "cell_titan_v2",
+  location: { lat, lng },
+  severity: mapAnomalyToSeverity(anomaly),  <span class="cmt">// 0-4</span>
+  raw_data: { ...original_scan_event },
+  tags:     [anomaly, scan_type, "rf"]
+}
+
+<span class="hdr">Implementation options (ranked by complexity)</span>
+1. expo-modules-core native module → cleanest long-running bridge
+2. react-native-execroot (rooted device ADB shell + stdout pipe)
+3. HTTP polling: cell-titan exposes local :8888 REST API, app polls
+
+Feature flag: RF_BRIDGE_ENABLED = Platform.OS === "android" &amp;&amp; ENABLE_RF_BRIDGE
+UI: hidden tab on non-Android or when flag false</code></pre>
+</section>
+
+<!-- SECURITY -->
+<section id="mob-sec">
+  <h2>Mobile Security Controls</h2>
+
+  <table>
+    <thead>
+      <tr><th>Control</th><th>Implementation</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Token storage</td><td><code>expo-secure-store</code></td><td>Keychain (iOS) / Keystore (Android). Never AsyncStorage.</td></tr>
+      <tr><td>SQLite encryption</td><td>SQLCipher via <code>expo-sqlite</code> or <code>react-native-encrypted-storage</code></td><td>Sensitive rows only (reports, evidence paths)</td></tr>
+      <tr><td>Certificate pinning</td><td><code>react-native-ssl-pinning</code></td><td>Optional. Recommended for production self-hosted deploy.</td></tr>
+      <tr><td>Root / jailbreak</td><td><code>react-native-jail-monkey</code></td><td>Soft warn only — do not hard-block. User may intentionally root for ADB.</td></tr>
+      <tr><td>Biometric gate</td><td><code>expo-local-authentication</code></td><td>Guards RF screen, Admin settings, evidence export.</td></tr>
+      <tr><td>Backend URL validation</td><td>Regex + allowlist schema check on user-set URL</td><td>Prevents SSRF via custom backend URL in settings.</td></tr>
+      <tr><td>Evidence files</td><td>Stored in <code>expo-file-system</code> app sandbox</td><td>Not accessible by other apps. Deleted on logout option.</td></tr>
+      <tr><td>Network</td><td>HTTPS enforced; cleartext disabled via android:usesCleartextTraffic="false"</td><td>Allow localhost for dev builds only.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- BUILD -->
+<section id="mob-build">
+  <h2>Build &amp; Distribution</h2>
+  <pre><code><span class="hdr">Build Configuration (app.config.ts)</span>
+export default {
+  name: "CIVWATCH",
+  slug: "civwatch",
+  version: "1.0.0",
+  android: {
+    package: "com.powderranger.civwatch",
+    minSdkVersion: 31,         <span class="cmt">// Android 12</span>
+    targetSdkVersion: 34,      <span class="cmt">// Android 14</span>
+    compileSdkVersion: 34,
+    permissions: [
+      "ACCESS_FINE_LOCATION",
+      "ACCESS_COARSE_LOCATION",
+      "CAMERA",
+      "READ_EXTERNAL_STORAGE",
+      "USE_BIOMETRIC",
+    ]
+  },
+  ios: {
+    bundleIdentifier: "com.powderranger.civwatch",
+    infoPlist: {
+      NSLocationWhenInUseUsageDescription: "...",
+      NSCameraUsageDescription: "...",
+    }
+  },
+  plugins: [
+    "expo-router",
+    "expo-sqlite",
+    "expo-secure-store",
+    "expo-notifications",
+    "expo-local-authentication",
+    ["expo-location", { ... }]
+  ]
+}
+
+<span class="hdr">Runtime Config (env-driven)</span>
+EXPO_PUBLIC_API_URL        = "https://civwatch.example.com"
+EXPO_PUBLIC_WS_URL         = "wss://civwatch.example.com"
+EXPO_PUBLIC_FCM_ENABLED    = "true"
+EXPO_PUBLIC_RF_ENABLED     = "true"    <span class="cmt">// still gated by Platform.OS</span>
+EXPO_PUBLIC_OFFLINE_TTL_H  = "24"
+
+<span class="hdr">Build &amp; Release</span>
+Local:    npx expo build:android --type apk      <span class="cmt">// debug/testing</span>
+EAS:      eas build --platform android           <span class="cmt">// AAB for store or APK</span>
+
+Distribution:
+  Primary:  GitHub Releases (APK) — self-hosted, no store required
+  Alt:      F-Droid (FOSS track, requires reproducible build)
+  Optional: Google Play (AAB, requires signing config + privacy policy)
+
+OTA Updates (JS-only changes):
+  expo-updates → EAS Update or self-hosted update server
+  No rebuild required for: UI changes, API URL updates, logic fixes
+  Rebuild required: native module changes, SDK upgrades, permission adds
+
+<span class="hdr">CI Sketch</span>
+  push to main → GitHub Actions:
+    1. expo doctor
+    2. npx expo export (web bundle)
+    3. eas build (Android APK) → upload to GH Release
+    4. eas update (OTA JS bundle push)</code></pre>
+
+  <div class="callout">
+    <strong>Self-hosted note:</strong> app/settings/backend.tsx exposes a user-editable CIVWATCH_API_URL field. Any operator can point the mobile app at their own CIVWATCH instance without a rebuild. Validate the URL on save (regex + test GET /api/v1/health). Store in app_config SQLite table.
+  </div>
+</section>
+
+</main>
+</body>
+</html>
