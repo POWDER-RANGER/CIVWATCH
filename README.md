@@ -12,10 +12,10 @@
 | Area | Status |
 |------|--------|
 | Architecture & planning docs | ✅ Complete (see below) |
-| Backend / frontend / ML scaffolding | 🟡 Partial — Docker services exist but need work (PR1) |
-| ML anomaly detection | 🟡 Specified, not yet implemented |
-| Data ingestion pipelines | 🔴 Specification phase |
-| Security hardening | 🔴 Specification phase |
+| Backend / frontend / ML | 🟡 Substantial legacy implementation; not the unified production surface |
+| ML anomaly detection | 🟡 Implemented in `ml/`, pending unified acceptance |
+| Data ingestion pipelines | 🟡 Legacy implementation; being consolidated into CIVINTELLIGENCE |
+| Security hardening | 🟡 Partial; container boundary hardened in this branch, security scans still require remediation |
 
 ## Consolidation
 
