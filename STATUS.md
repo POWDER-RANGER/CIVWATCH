@@ -1,14 +1,12 @@
 # CIVWATCH Status Report
 
-> **Last verified:** 2026-06-23 by automated audit
-> **Version:** 0.6.0-post-fix
-> **Main branch:** All fixes applied, integration verified
-
----
+> **Integration role (2026-10-04):** legacy platform and migration source for the unified [CIVINTELLIGENCE](https://github.com/POWDER-RANGER/CivilianIntelligence) system. **CivilianIntelligence is the system of record.**
+>
+> The status tables below describe what this repository declares, not an independently re-certified production deployment. The repository contains substantial backend/ML implementation, but documentation has drifted and the current default branch still has failing security/CI checks.
 
 ## Quick Summary
 
-CIVWATCH is a civic transparency platform with a working full-stack architecture. After a comprehensive code audit and rewrite, all backend routes now match the database schema, frontend API calls align with backend endpoints, and the core data pipeline (ingest → analyze → display) is functional.
+CIVWATCH is retained as a source repository for political-finance, ingestion, anomaly/ML, backend, security, and operations components being consolidated into CIVINTELLIGENCE. Do not use this repository's older health/status claims as the unified product acceptance criteria.
 
 **What's working today:** Ingest civic records, detect anomalies with ML, view and filter anomalies on a dashboard, track trends, manage data sources, configure alerts.
 
@@ -16,7 +14,7 @@ CIVWATCH is a civic transparency platform with a working full-stack architecture
 
 ---
 
-## System Health
+## Historical System Health (not re-certified)
 
 | Component | Status | Endpoint | Notes |
 |-----------|--------|----------|-------|
@@ -128,7 +126,7 @@ All primary keys, foreign keys, and frequently queried columns are indexed. See 
 
 ---
 
-## What's Fixed (June 2026)
+## Historical Fixes (June 2026)
 
 1. **Route path bug**: `ingest.ts` was double-prefixed (`/api/ingest/api/ingest`). Fixed to `/` since router is mounted at `/api/ingest`.
 2. **Schema mismatch**: All backend routes rewritten to match actual `002_civic_records.sql` schema (UUIDs, `record_id` FK, `score`/`label`/`method` columns).

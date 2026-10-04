@@ -27,13 +27,13 @@ services:
     networks: [civwatch_net]
     environment:
       POSTGRES_USER: civwatch
-      POSTGRES_PASSWORD: civwatch_dev
+      POSTGRES_PASSWORD: ${CIVWATCH_DB_PASSWORD:?Set CIVWATCH_DB_PASSWORD in .env; use a hex secret}
       POSTGRES_DB: civwatch
     volumes:
       - pg_data:/var/lib/postgresql/data
       - ./backend/migrations:/docker-entrypoint-initdb.d:ro
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U civwatch"]
       interval: 10s
@@ -51,7 +51,7 @@ services:
     volumes:
       - redis_data:/data
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -71,7 +71,6 @@ services:
     environment:
       ML_PORT: "5000"
     ports:
-      - "5000:5000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 15s
@@ -96,7 +95,6 @@ services:
       CIVWATCH_BACKEND_URL: http://backend:3000/api
       CIVWATCH_API_KEY: ${CIVWATCH_API_KEY:-}
     ports:
-      - "5001:5001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
       interval: 15s
@@ -123,18 +121,18 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://civwatch:civwatch_dev@db:5432/civwatch
+      DATABASE_URL: postgresql://civwatch:${CIVWATCH_DB_PASSWORD}@db:5432/civwatch
       REDIS_URL: redis://redis:6379
       ML_SERVICE_URL: http://ml:5000
       SCRAPER_URL: http://scraper:5001
-      JWT_SECRET: ${JWT_SECRET:-changeme_in_production}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
       JWT_EXPIRES_IN: 24h
-      REFRESH_TOKEN_SECRET: ${JWT_SECRET:-changeme_in_production}_refresh
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:?Set REFRESH_TOKEN_SECRET in .env}
       REFRESH_TOKEN_EXPIRES_IN: 7d
       CIVWATCH_API_KEY: ${CIVWATCH_API_KEY:-}
       PORT: "3000"
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 15s
@@ -180,7 +178,6 @@ services:
       - scraper
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     healthcheck:
