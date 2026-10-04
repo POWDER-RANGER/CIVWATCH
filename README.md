@@ -5,7 +5,7 @@
 
 **CIVWATCH** is a civic transparency platform for monitoring government and political processes: political finance, lobbying influence, voting records, and public accountability.
 
-> **Status: BETA — honest scope.** Data ingestion and security features are in specification/planning phase. Production claims have been downgraded to match reality. See the tables below.
+> **Status: legacy integration source.** This repository is retained for backend/ML/operations assets being consolidated into CivilianIntelligence; its declared architecture and runtime status are not the unified product source of truth. Production claims have been downgraded to match reality. See the tables below.
 
 ## Current State
 
@@ -16,6 +16,10 @@
 | ML anomaly detection | 🟡 Specified, not yet implemented |
 | Data ingestion pipelines | 🔴 Specification phase |
 | Security hardening | 🔴 Specification phase |
+
+## Consolidation
+
+`CivilianIntelligence` is the system of record for the unified application. Use this repository as a migration source for political-finance, ML, ingestion, security, and operations components; do not create a second production integration surface here.
 
 ## Documentation Map
 
