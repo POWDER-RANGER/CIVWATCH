@@ -11,7 +11,7 @@ seaborn>=0.12.0
 python-dateutil>=2.9.0.post0
 
 # Random data generation (for demo purposes)
-Faker>=18.0.0
+Faker>=40.40.0
 
 # Optional: Additional visualization libraries
 # plotly>=5.14.0  # Uncomment for interactive visualizations
