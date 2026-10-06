@@ -184,4 +184,3 @@ router.post('/score', requireAuth, requireRole('admin', 'analyst'), validateBody
 });
 
 export default router;
-
