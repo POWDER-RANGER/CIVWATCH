@@ -1,9 +1,17 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { pool } from '../db';
 import { cacheDel } from '../db/redis';
+import { validateBody } from '../middleware/validation';
+import { z } from 'zod';
 
 const ML_URL = process.env.ML_SERVICE_URL ?? 'http://ml:5000';
 const router  = Router();
+
+const ingestSchema = z.object({
+  source: z.string().trim().min(1).max(200),
+  content: z.string().trim().min(1).max(100_000),
+  metadata: z.record(z.unknown()).optional(),
+});
 
 interface MLPredictResult {
   is_anomalous:  boolean;
@@ -26,21 +34,11 @@ interface MLPredictResponse {
 // Full pipeline: validate → persist civic_records → forward to ML service
 // → write confirmed anomalies to anomaly_scores → bust Redis cache
 // NOTE: Router mounted at /api/ingest in app.ts, so '/' = '/api/ingest'
-router.post('/', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', validateBody(ingestSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { source, content, metadata } = req.body as {
-      source: string;
-      content: string;
-      metadata?: Record<string, unknown>;
-    };
+    const { source, content, metadata } = req.validatedBody as z.infer<typeof ingestSchema>;
 
     // 1. Validate required fields (matches civic_records schema: source, content)
-    if (!source || !content) {
-      return res.status(400).json({
-        error: 'Missing required fields: source, content',
-      });
-    }
-
     // 2. Persist to civic_records (matches 002_civic_records.sql migration)
     const { rows: inserted } = await pool.query<{ id: string }>(
       `INSERT INTO civic_records (source, content, metadata, scored)
@@ -128,3 +126,4 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 export default router;
+
