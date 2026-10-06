@@ -5,13 +5,20 @@ import { pool } from '../db';
 import { env } from '../config/env';
 import { requireAuth } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
+import { validateBody } from '../middleware/validation';
+import { z } from 'zod';
 
 const router = Router();
 
+const loginSchema = z.object({
+  email: z.string().trim().email().max(320),
+  password: z.string().min(1).max(1024),
+});
+
 // POST /api/auth/login
-router.post('/login', async (req: Request, res: Response, next) => {
+router.post('/login', validateBody(loginSchema), async (req: Request, res: Response, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.validatedBody as z.infer<typeof loginSchema>;
     if (!email || !password) throw new AppError(400, 'VALIDATION_ERROR', 'Email and password required');
 
     const rows = await pool.query<any>('SELECT * FROM users WHERE email = $1', [email]);
@@ -24,7 +31,7 @@ router.post('/login', async (req: Request, res: Response, next) => {
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
       env.JWT_SECRET,
-      { expiresIn: env.JWT_EXPIRATION } as any
+      { expiresIn: env.JWT_EXPIRES_IN } as any
     );
 
     res.json({ token, user: { id: user.id, email: user.email, role: user.role } });
@@ -37,3 +44,4 @@ router.get('/me', requireAuth, (req: Request, res: Response) => {
 });
 
 export default router;
+
