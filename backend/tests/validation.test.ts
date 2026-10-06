@@ -88,4 +88,3 @@ describe('request validation middleware', () => {
     expect(next).not.toHaveBeenCalled();
   });
 });
-
