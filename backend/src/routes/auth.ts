@@ -44,4 +44,3 @@ router.get('/me', requireAuth, (req: Request, res: Response) => {
 });
 
 export default router;
-
