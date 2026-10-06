@@ -7,7 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
-    "test": "jest --forceExit",
+    "test": "jest --forceExit --preset ts-jest --testEnvironment node",
     "lint": "eslint src --ext .ts",
     "validate:env": "ts-node src/config/env.ts",
     "seed": "ts-node src/db/seed.ts"
@@ -31,7 +31,6 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.19.43",
     "@types/pg": "^8.20.0",
-    "@types/rss-parser": "^3.13.4",
     "jest": "^29.7.0",
     "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
@@ -39,3 +38,4 @@
     "typescript": "^5.4.5"
   }
 }
+
