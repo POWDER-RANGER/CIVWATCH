@@ -86,6 +86,10 @@ For confirmed vulnerabilities, we follow a coordinated disclosure process that b
 
 Credit will use the name and affiliation you provide, or we can keep your report anonymous if you prefer.
 
+## Security Maintainer
+
+Curtis Charles Farrar (GitHub: [@POWDER-RANGER](https://github.com/POWDER-RANGER)) is the maintainer responsible for security review and disclosure handling. This is a single-maintainer project with no separate security team. See [MAINTAINERS.md](MAINTAINERS.md) for the ecosystem-level maintainer record.
+
 ## Security Best Practices for Deployers
 
 If you are deploying CIVWATCH in a production environment, we recommend the following security hardening measures:
