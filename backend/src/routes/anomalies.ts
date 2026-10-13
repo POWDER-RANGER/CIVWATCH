@@ -2,23 +2,26 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { pool } from '../db';
 import { cacheGet, cacheSet } from '../db/redis';
 import { requireAuth, requireRole } from '../middleware/auth';
+import { validateBody, validateParams, validateQuery } from '../middleware/validation';
+import { z } from 'zod';
 
 const ANOMALY_TTL = 60; // seconds
 const router      = Router();
 
-// ── Input validation helpers ─────────────────────────────────────────────────
-function sanitizeLimit(val: unknown): number {
-  const n = parseInt(val as string, 10);
-  if (isNaN(n) || n < 1) return 1;
-  if (n > 200) return 200;
-  return n;
-}
-
-function sanitizeOffset(val: unknown): number {
-  const n = parseInt(val as string, 10);
-  if (isNaN(n) || n < 0) return 0;
-  return n;
-}
+const listAnomaliesSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(200).optional().default(50),
+  offset: z.coerce.number().int().min(0).optional().default(0),
+  source: z.string().trim().min(1).max(200).optional(),
+  since: z.string().refine(isValidISODate, 'since must be an ISO-8601 date').optional(),
+});
+const anomalyIdSchema = z.object({ id: z.string().uuid() });
+const scoreSchema = z.object({
+  civic_record_id: z.string().uuid(),
+  score: z.number().min(0).max(1),
+  label: z.string().trim().min(1).max(128).optional().default('anomalous'),
+  method: z.string().trim().min(1).max(64).optional().default('manual'),
+  flags: z.record(z.unknown()).optional(),
+});
 
 function isValidISODate(val: string): boolean {
   return /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$/.test(val);
@@ -28,17 +31,9 @@ function isValidISODate(val: string): boolean {
 // Returns paginated anomaly_scores joined with civic_records for full context.
 // Uses the actual schema: anomaly_scores(record_id, score, label, method, data)
 // joined with civic_records(id, source, content, metadata, created_at)
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/', validateQuery(listAnomaliesSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const limit  = sanitizeLimit(req.query.limit);
-    const offset = sanitizeOffset(req.query.offset);
-    const source = req.query.source as string | undefined;
-    const since  = req.query.since  as string | undefined;
-
-    // Validate since parameter format to prevent SQL injection via type casting
-    if (since && !isValidISODate(since)) {
-      return res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'since must be an ISO-8601 date' } });
-    }
+    const { limit, offset, source, since } = req.validatedQuery as z.infer<typeof listAnomaliesSchema>;
 
     const cacheKey = `anomalies:${limit}:${offset}:${source ?? ''}:${since ?? ''}`;
     const cached   = await cacheGet(cacheKey);
@@ -139,14 +134,9 @@ router.get('/stats', async (_req: Request, res: Response, next: NextFunction) =>
 });
 
 // ─── GET /api/anomalies/:id ───────────────────────────────────────────────────
-router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id', validateParams(anomalyIdSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
-
-    // Validate UUID format to prevent SQL injection via type casting
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
-      return res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid UUID format' } });
-    }
+    const { id } = req.validatedParams as z.infer<typeof anomalyIdSchema>;
 
     const { rows } = await pool.query(`
       SELECT
@@ -176,20 +166,9 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
 // ─── POST /api/anomalies/score ────────────────────────────────────────────────
 // Protected: only authenticated users can write anomaly scores
 // REF: NIST 800-53 AC-3 (Access Enforcement), AC-6 (Least Privilege)
-router.post('/score', requireAuth, requireRole('admin', 'analyst'), async (req: Request, res: Response, next: NextFunction) => {
+router.post('/score', requireAuth, requireRole('admin', 'analyst'), validateBody(scoreSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { civic_record_id, score, label = 'anomalous', method = 'manual', flags } = req.body;
-
-    if (!civic_record_id || score === undefined) {
-      return res.status(400).json({ error: 'civic_record_id and score are required' });
-    }
-    if (typeof score !== 'number' || score < 0 || score > 1) {
-      return res.status(400).json({ error: 'score must be a number between 0 and 1' });
-    }
-    // Validate UUID format
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(civic_record_id)) {
-      return res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid civic_record_id UUID format' } });
-    }
+    const { civic_record_id, score, label, method, flags } = req.validatedBody as z.infer<typeof scoreSchema>;
 
     const { rows } = await pool.query(`
       INSERT INTO anomaly_scores (record_id, score, label, method, data)
