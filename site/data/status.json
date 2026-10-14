@@ -1,26 +1,26 @@
 {
-  "checked_at": "2026-10-14T05:34:52.903Z",
+  "checked_at": "2026-10-14T06:09:35.613Z",
   "checked_by": "local run",
   "method": "GET, follow redirects, 45 s timeout, hosts warmed first (90 s)",
   "inventory": {
-    "title": "CIVINTELLIGENCE Master URL Inventory",
+    "title": "CIVWATCH master URL inventory",
     "prepared": "2026-10-13",
     "owner": "POWDER-RANGER"
   },
   "warm": {
     "civint": {
       "http_status": 200,
-      "ms": 408,
+      "ms": 288,
       "error": null
     },
     "godseye": {
       "http_status": 200,
-      "ms": 218,
+      "ms": 115,
       "error": null
     },
     "titan": {
       "http_status": 200,
-      "ms": 273,
+      "ms": 238,
       "error": null
     }
   },
@@ -29,8 +29,7 @@
     "not-probed": 4,
     "needs-input": 4,
     "unconfigured": 2,
-    "not-found": 1,
-    "restricted": 2
+    "restricted": 3
   },
   "results": [
     {
@@ -38,14 +37,14 @@
       "system": "civint",
       "kind": "page",
       "path": "/",
-      "label": "Framework home",
+      "label": "Home",
       "url": "https://civintelligence.onrender.com/",
       "method": "GET",
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 20853,
-      "ms": 49,
+      "bytes": 21694,
+      "ms": 51,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -55,14 +54,14 @@
       "system": "civint",
       "kind": "page",
       "path": "/watchtower",
-      "label": "Watchtower map",
+      "label": "Map",
       "url": "https://civintelligence.onrender.com/watchtower",
       "method": "GET",
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 18144,
-      "ms": 57,
+      "bytes": 20135,
+      "ms": 75,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -72,14 +71,14 @@
       "system": "civint",
       "kind": "page",
       "path": "/place",
-      "label": "Place dossier",
+      "label": "Address lookup",
       "url": "https://civintelligence.onrender.com/place",
       "method": "GET",
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 18820,
-      "ms": 89,
+      "bytes": 19814,
+      "ms": 46,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -95,8 +94,8 @@
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 25250,
-      "ms": 97,
+      "bytes": 26398,
+      "ms": 51,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -112,8 +111,8 @@
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 27991,
-      "ms": 103,
+      "bytes": 29034,
+      "ms": 48,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -129,8 +128,8 @@
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 24734,
-      "ms": 99,
+      "bytes": 25720,
+      "ms": 47,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -140,14 +139,14 @@
       "system": "civint",
       "kind": "page",
       "path": "/records",
-      "label": "Record index",
+      "label": "Record search",
       "url": "https://civintelligence.onrender.com/records",
       "method": "GET",
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 13822,
-      "ms": 99,
+      "bytes": 14870,
+      "ms": 47,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -163,8 +162,8 @@
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 28357,
-      "ms": 98,
+      "bytes": 29154,
+      "ms": 55,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -180,8 +179,8 @@
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 27487,
-      "ms": 109,
+      "bytes": 28345,
+      "ms": 48,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -191,14 +190,14 @@
       "system": "civint",
       "kind": "page",
       "path": "/veil",
-      "label": "Veil briefing",
+      "label": "Briefing",
       "url": "https://civintelligence.onrender.com/veil",
       "method": "GET",
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 24759,
-      "ms": 95,
+      "bytes": 25617,
+      "ms": 163,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -214,8 +213,8 @@
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 21545,
-      "ms": 49,
+      "bytes": 22598,
+      "ms": 45,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -231,8 +230,8 @@
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 42132,
-      "ms": 53,
+      "bytes": 43239,
+      "ms": 49,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -248,8 +247,8 @@
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 47892,
-      "ms": 93,
+      "bytes": 48903,
+      "ms": 43,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -265,8 +264,8 @@
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 13543,
-      "ms": 46,
+      "bytes": 14591,
+      "ms": 52,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -276,14 +275,14 @@
       "system": "civint",
       "kind": "page",
       "path": "/titan",
-      "label": "Cell Titan surface",
+      "label": "Cell Monitor view",
       "url": "https://civintelligence.onrender.com/titan",
       "method": "GET",
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 15810,
-      "ms": 52,
+      "bytes": 20485,
+      "ms": 43,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -299,8 +298,8 @@
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 22979,
-      "ms": 49,
+      "bytes": 23714,
+      "ms": 54,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -327,8 +326,8 @@
       "http_status": 200,
       "final_url": null,
       "content_type": "application/json",
-      "bytes": 103,
-      "ms": 44,
+      "bytes": 126,
+      "ms": 62,
       "outcome": "ok",
       "hint": {
         "status": "ok",
@@ -347,8 +346,8 @@
       "http_status": 200,
       "final_url": null,
       "content_type": "application/json",
-      "bytes": 5764,
-      "ms": 861,
+      "bytes": 5766,
+      "ms": 846,
       "outcome": "ok",
       "hint": {
         "keys": [
@@ -370,7 +369,7 @@
       "final_url": null,
       "content_type": "application/json",
       "bytes": 201,
-      "ms": 58,
+      "ms": 40,
       "outcome": "needs-input",
       "hint": {
         "state": "invalid",
@@ -401,7 +400,7 @@
       "final_url": null,
       "content_type": "application/json",
       "bytes": 48,
-      "ms": 46,
+      "ms": 40,
       "outcome": "needs-input",
       "hint": {
         "state": "invalid",
@@ -421,7 +420,7 @@
       "final_url": null,
       "content_type": "application/json",
       "bytes": 60,
-      "ms": 45,
+      "ms": 39,
       "outcome": "needs-input",
       "hint": {
         "message": "Enter a GitHub owner/repository or GitHub URL."
@@ -440,7 +439,7 @@
       "final_url": null,
       "content_type": "application/json",
       "bytes": 96,
-      "ms": 38,
+      "ms": 39,
       "outcome": "unconfigured",
       "hint": {
         "state": "unconfigured",
@@ -471,7 +470,7 @@
       "final_url": null,
       "content_type": "application/json",
       "bytes": 88,
-      "ms": 40,
+      "ms": 41,
       "outcome": "unconfigured",
       "hint": {
         "state": "unconfigured",
@@ -491,7 +490,7 @@
       "final_url": null,
       "content_type": "application/json",
       "bytes": 86,
-      "ms": 39,
+      "ms": 42,
       "outcome": "needs-input",
       "hint": {
         "state": "invalid",
@@ -511,7 +510,7 @@
       "final_url": null,
       "content_type": "application/json",
       "bytes": 63,
-      "ms": 87,
+      "ms": 42,
       "outcome": "ok",
       "hint": {
         "state": "available"
@@ -541,7 +540,7 @@
       "final_url": null,
       "content_type": "text/html",
       "bytes": 76284,
-      "ms": 72,
+      "ms": 57,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -551,14 +550,14 @@
       "system": "titan",
       "kind": "page",
       "path": "/",
-      "label": "Standalone surface",
+      "label": "Public surface",
       "url": "https://civwatch-cell-titan.onrender.com/",
       "method": "GET",
       "http_status": 200,
       "final_url": null,
       "content_type": "text/html",
-      "bytes": 9252,
-      "ms": 46,
+      "bytes": 12986,
+      "ms": 48,
       "outcome": "ok",
       "hint": null,
       "error": null
@@ -575,12 +574,12 @@
       "final_url": null,
       "content_type": "application/json",
       "bytes": 388,
-      "ms": 49,
+      "ms": 47,
       "outcome": "ok",
       "hint": {
         "status": "ok",
         "service": "cell-titan",
-        "version": "0.1.2"
+        "version": "0.1.3"
       },
       "error": null
     },
@@ -592,12 +591,12 @@
       "label": "Capabilities",
       "url": "https://civwatch-cell-titan.onrender.com/api/capabilities",
       "method": "GET",
-      "http_status": 404,
+      "http_status": 401,
       "final_url": null,
       "content_type": "application/json",
-      "bytes": 22,
-      "ms": 51,
-      "outcome": "not-found",
+      "bytes": 33,
+      "ms": 43,
+      "outcome": "restricted",
       "hint": {
         "keys": [
           "detail"
@@ -638,7 +637,7 @@
       "final_url": null,
       "content_type": "application/json",
       "bytes": 33,
-      "ms": 44,
+      "ms": 51,
       "outcome": "restricted",
       "hint": {
         "keys": [

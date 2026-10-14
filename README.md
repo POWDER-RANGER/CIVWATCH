@@ -1,6 +1,6 @@
 <p>
-  <img src="assets/brand/civwatch-lockup-ink.svg#gh-light-mode-only" width="220" alt="CIVWATCH">
-  <img src="assets/brand/civwatch-lockup-reversed.svg#gh-dark-mode-only" width="220" alt="CIVWATCH">
+  <img src="site/assets/brand/civwatch-lockup-ink.svg#gh-light-mode-only" width="220" alt="CIVWATCH">
+  <img src="site/assets/brand/civwatch-lockup-reversed.svg#gh-dark-mode-only" width="220" alt="CIVWATCH">
 </p>
 
 **Public evidence about surveillance infrastructure: who is watching a place, who paid for it, and how to challenge it.**
@@ -8,12 +8,6 @@
 This repository hosts the **CIVWATCH project site** ([powder-ranger.github.io/CIVWATCH](https://powder-ranger.github.io/CIVWATCH/)) and legacy backend, ML, ingest and operations material. The live web app is **https://civintelligence.onrender.com**, built from [CivilianIntelligence](https://github.com/POWDER-RANGER/CivilianIntelligence), which is the system of record.
 
 > CIVWATCH documents publicly visible infrastructure and public records about government surveillance technology. Every record shows its source and verification status. We do not access camera feeds, intercept communications, or track individuals.
-
-## Public site
-
-**https://powder-ranger.github.io/CIVWATCH/** is the front door for the whole ecosystem: what CIVINTELLIGENCE does, which parts are running, and the standards for every claim. The [status page](https://powder-ranger.github.io/CIVWATCH/status.html) shows what each public URL actually returned, checked every six hours.
-
-The site source is [`site/`](./site). The list of checked URLs is [`site/data/endpoints.json`](./site/data/endpoints.json); the checker is [`scripts/site/probe.mjs`](./scripts/site/probe.mjs). Run it locally with `node scripts/site/probe.mjs`, then serve `site/` with any static server.
 
 ## Products
 
@@ -29,7 +23,17 @@ Retired names: CIVINT / CIVINTELLIGENCE, Watchtower (repository codename only), 
 
 ## Project site
 
-`index.html` is the GitHub Pages site, published by `.github/workflows/static.yml` on every push to `main`. It follows **CIVWATCH Design Standard v2** (IBM Plex Sans, Source Serif 4, IBM Plex Mono; editorial light and ops dark themes; no glow, no neon). Brand files are in [`assets/brand/`](./assets/brand).
+The GitHub Pages site lives in [`site/`](./site) and follows **CIVWATCH Design Standard v2** (IBM Plex Sans, Source Serif 4, IBM Plex Mono; editorial light and ops dark themes; no glow, no neon). Brand files are in [`site/assets/brand/`](./site/assets/brand).
+
+| Page | What it shows |
+|---|---|
+| [Home](https://powder-ranger.github.io/CIVWATCH/) | Products, how we work, where things stand |
+| [Status](https://powder-ranger.github.io/CIVWATCH/status.html) | What every public URL returned on its last check |
+| [Standards](https://powder-ranger.github.io/CIVWATCH/standards.html) | Status words, verification states, sources, corrections |
+
+`.github/workflows/static.yml` publishes only `site/`, on pushes that touch it and every six hours. Each run first runs [`scripts/site/probe.mjs`](./scripts/site/probe.mjs), which requests every URL in [`site/data/endpoints.json`](./site/data/endpoints.json) and writes `site/data/status.json`. To preview locally: `node scripts/site/probe.mjs`, then serve `site/` with any static server.
+
+GitHub Pages must be set to **Source: GitHub Actions**. The root `index.html` is a redirect kept only for the legacy branch build.
 
 ## What else lives here
 

@@ -8,15 +8,16 @@
   <link rel="canonical" href="https://powder-ranger.github.io/CIVWATCH/standards.html">
   <meta name="theme-color" content="#F7F6F2" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0A0C10" media="(prefers-color-scheme: dark)">
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" type="image/svg+xml" href="assets/brand/favicon.svg">
+  <link rel="apple-touch-icon" href="assets/brand/icon-180.png">
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="CIVWATCH">
   <meta property="og:title" content="Standards: how CIVWATCH handles claims">
   <meta property="og:description" content="Status words, provenance, public sources, accuracy and corrections.">
   <meta property="og:url" content="https://powder-ranger.github.io/CIVWATCH/standards.html">
-  <meta property="og:image" content="https://powder-ranger.github.io/CIVWATCH/assets/og.png">
+  <meta property="og:image" content="https://powder-ranger.github.io/CIVWATCH/assets/brand/og.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <script>(function(){var t;try{t=localStorage.getItem("cw-theme")}catch(e){}if(t!=="ops"&&t!=="editorial"){t=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"ops":"editorial"}document.documentElement.dataset.theme=t})();</script>
+  <script>document.documentElement.dataset.theme=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"ops":"editorial";</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
@@ -27,19 +28,15 @@
 <body>
   <a class="skip" href="#main">Skip to content</a>
 
-  <header class="site-head">
+  <header class="site">
     <div class="wrap">
-      <a class="mark" href="./" aria-label="CIVWATCH home">
-        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 16 29 6.5a23.8 23.8 0 0 1 0 19Z" fill="var(--cw-accent)" fill-opacity=".22" stroke="var(--cw-accent)" stroke-width="2" stroke-linejoin="round"/><circle cx="7" cy="16" r="4.5" fill="var(--cw-text-primary)"/></svg>
-        CIVWATCH
-      </a>
-      <nav class="site-nav" aria-label="Main">
-        <a href="./#ecosystem">Ecosystem</a>
+      <a class="lockup" href="./" aria-label="CIVWATCH home"><svg class="glyph" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="4.25"><path d="M6.5 18.5V10.5a4 4 0 0 1 4-4h8" /><path d="M41.5 29.5v8a4 4 0 0 1-4 4h-8" /></g><circle cx="24" cy="24" r="5" class="dot" stroke="none"/></g></svg><span>CIVWATCH</span></a>
+      <nav class="top" aria-label="Site">
+        <a href="./#products">Products</a>
+        <a class="opt" href="standards.html" aria-current="page">How we work</a>
         <a href="status.html">Status</a>
-        <a href="standards.html" aria-current="page">Standards</a>
-        <a href="https://github.com/POWDER-RANGER/CivilianIntelligence">Source code</a>
+        <a href="https://github.com/POWDER-RANGER/CivilianIntelligence">GitHub</a>
       </nav>
-      <button class="theme-toggle" type="button" data-theme-toggle>Dark</button>
     </div>
   </header>
 
@@ -74,7 +71,7 @@
 
         <h2 id="sources">Sources</h2>
         <p>Only public-record sources are used. Nothing is collected from behind a login, and every source is cited where its data appears.</p>
-        <h3>Wired into CIVINTELLIGENCE</h3>
+        <h3>Wired into the CIVWATCH web app</h3>
         <ul>
           <li><a href="https://geocoding.geo.census.gov/">U.S. Census Geocoder</a> for place, county, state and district lookups</li>
           <li><a href="https://deflock.me/">DeFlock</a> community map of license-plate reader locations</li>
@@ -94,39 +91,46 @@
         <p>Contract amounts, terms and votes are shown as the public record states them, linked to that record.</p>
 
         <h2 id="corrections">Corrections</h2>
-        <p>To report a wrong record or a broken source, open an issue on the <a href="https://github.com/POWDER-RANGER/CivilianIntelligence/issues">CIVINTELLIGENCE repository</a> with the page link and what you believe is correct. The longer policy is in the <a href="https://github.com/POWDER-RANGER/CIVWATCH/blob/main/docs/legal/ETHICS_CHARTER.md">ethics charter</a>.</p>
+        <p>To report a wrong record or a broken source, open an issue on the <a href="https://github.com/POWDER-RANGER/CivilianIntelligence/issues">web app repository</a> with the page link and what you believe is correct. The longer policy is in the <a href="https://github.com/POWDER-RANGER/CIVWATCH/blob/main/docs/legal/ETHICS_CHARTER.md">ethics charter</a>.</p>
         <p>Report security vulnerabilities privately through the repository's <a href="https://github.com/POWDER-RANGER/CIVWATCH/security">Security tab</a>, as described in the <a href="https://github.com/POWDER-RANGER/CIVWATCH/blob/main/SECURITY.md">security policy</a>.</p>
 
         <h2 id="attribution">Attribution and ownership</h2>
-        <p>CIVWATCH, CIVINTELLIGENCE, Watchtower, Cell Titan and the CIVWATCH App are designed, built and maintained by Curtis Charles Farrar, published as <a href="https://github.com/POWDER-RANGER">POWDER-RANGER</a> (<a href="https://orcid.org/0009-0008-9273-2458">ORCID 0009-0008-9273-2458</a>). The work is self-funded and released under the MIT license.</p>
-        <p>The global view runs a configured instance of <a href="https://github.com/bilawalsidhu/gods-eye-view">God's Eye View</a>, an open-source project by Bilawal Sidhu. Its core authorship remains with that project.</p>
+        <p>CIVWATCH, including the web app, Cell Monitor, Globe and Platform, is designed, built and maintained by Curtis Charles Farrar, published as <a href="https://github.com/POWDER-RANGER">POWDER-RANGER</a> (<a href="https://orcid.org/0009-0008-9273-2458">ORCID 0009-0008-9273-2458</a>). The work is self-funded and released under the MIT license.</p>
+        <p>The CIVWATCH Globe runs a configured instance of <a href="https://github.com/bilawalsidhu/gods-eye-view">God's Eye View</a>, an open-source project by Bilawal Sidhu. Its core authorship remains with that project.</p>
       </div>
     </div>
   </main>
 
-  <footer class="site-foot">
+  <footer class="site">
     <div class="wrap">
-      <div class="about">
-        <h2>CIVWATCH</h2>
-        <p>Designed, built and maintained independently by Curtis Charles Farrar (<span style="white-space:nowrap">POWDER-RANGER</span>) in Iowa. Open source under the MIT license.</p>
+      <div class="cols">
+        <div>
+          <a class="lockup" href="./"><svg class="glyph" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="4.25"><path d="M6.5 18.5V10.5a4 4 0 0 1 4-4h8" /><path d="M41.5 29.5v8a4 4 0 0 1-4 4h-8" /></g><circle cx="24" cy="24" r="5" class="dot" stroke="none"/></g></svg><span>CIVWATCH</span></a>
+          <p style="margin-top:14px">Public evidence about surveillance infrastructure. Built by <a href="https://powder-ranger.github.io">POWDER-RANGER</a>.</p>
+        </div>
+        <div>
+          <h4>Project</h4>
+          <ul>
+            <li><a href="status.html">Status</a></li>
+            <li><a href="standards.html">Standards</a></li>
+            <li><a href="https://github.com/POWDER-RANGER/CivilianIntelligence">Web app source</a></li>
+            <li><a href="https://github.com/POWDER-RANGER/CivilianIntelligence/issues/new?title=Correction%3A%20">Report an error</a></li>
+            <li><a href="https://github.com/POWDER-RANGER/CIVWATCH/blob/main/CONTRIBUTING.md">Contributing</a></li>
+            <li><a href="https://github.com/POWDER-RANGER/CIVWATCH/blob/main/LICENSE">License</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>More from POWDER-RANGER</h4>
+          <ul>
+            <li><a href="https://powder-ranger.github.io">Portfolio</a></li>
+            <li><a href="https://powder-ranger.github.io/OBLISK">OBLISK</a></li>
+            <li><a href="https://powder-ranger.github.io/ai-nexus">AI Nexus</a></li>
+            <li><a href="https://powder-ranger.github.io/dollar-gravity-framework">Dollar Gravity</a></li>
+            <li><a href="https://powder-ranger.github.io/nso-kryptonite-platform">NSO Kryptonite</a></li>
+          </ul>
+        </div>
       </div>
-      <div>
-        <h2>Project</h2>
-        <ul>
-          <li><a href="https://civintelligence.onrender.com/">CIVINTELLIGENCE</a></li>
-          <li><a href="status.html">Status</a></li>
-          <li><a href="standards.html">Standards</a></li>
-          <li><a href="blueprint.html">Legacy blueprint</a></li>
-        </ul>
-      </div>
-      <div>
-        <h2>Builder</h2>
-        <ul>
-          <li><a href="https://powder-ranger.github.io">Portfolio</a></li>
-          <li><a href="https://github.com/POWDER-RANGER">GitHub</a></li>
-          <li><a href="https://orcid.org/0009-0008-9273-2458">ORCID</a></li>
-        </ul>
-      </div>
+      <p class="legal">CIVWATCH documents publicly visible infrastructure and public records about government surveillance technology. Locations come from public records, open data (OpenStreetMap) and volunteer reports; each shows its source and verification status. We do not access camera feeds, intercept communications, or track individuals. Vendor names identify vendors only; CIVWATCH is not affiliated with any vendor or government agency.</p>
     </div>
   </footer>
 </body>

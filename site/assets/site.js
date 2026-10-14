@@ -1,34 +1,17 @@
-// CIVWATCH public site: theme toggle, live receipt on the home page, status page renderer.
+// CIVWATCH public site: theme sync, live receipt on the home page, status page renderer.
 // No dependencies. Every string that comes from probe data is escaped before insertion.
 
 (() => {
   "use strict";
 
-  const store = {
-    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
-    set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } },
-  };
-
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   // ---------- Theme ----------
-  const root = document.documentElement;
-  const toggle = document.querySelector("[data-theme-toggle]");
-  function paintToggle() {
-    if (!toggle) return;
-    const dark = root.dataset.theme === "ops";
-    toggle.textContent = dark ? "Light" : "Dark";
-    toggle.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
-  }
-  if (toggle) {
-    toggle.addEventListener("click", () => {
-      const next = root.dataset.theme === "ops" ? "editorial" : "ops";
-      root.dataset.theme = next;
-      store.set("cw-theme", next);
-      paintToggle();
-    });
-    paintToggle();
-  }
+  // Follows the system setting, like the home page. tokens.css keys dark mode off data-theme="ops".
+  const dark = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
+  const applyTheme = () => { document.documentElement.dataset.theme = dark && dark.matches ? "ops" : "editorial"; };
+  applyTheme();
+  if (dark && dark.addEventListener) dark.addEventListener("change", applyTheme);
 
   // ---------- Time ----------
   function ago(iso) {
@@ -109,12 +92,12 @@
       const ok = probed.filter((r) => r.outcome === "ok").length;
       const up = probed.filter((r) => ["ok", "input"].includes(outcomeOf(r).group)).length;
       const lead = health && health.http_status
-        ? `CIVINTELLIGENCE answered <strong>HTTP <span class="cw-num">${esc(health.http_status)}</span></strong> in <span class="cw-num">${esc(health.ms)}</span>&nbsp;ms`
-        : `CIVINTELLIGENCE <strong>did not answer</strong> its health check`;
+        ? `The web app answered <strong>HTTP <span class="cw-num">${esc(health.http_status)}</span></strong> in <span class="cw-num">${esc(health.ms)}</span>&nbsp;ms`
+        : `The web app <strong>did not answer</strong> its health check`;
       receipt.innerHTML =
         `${lead} when last checked, <time datetime="${esc(s.checked_at)}" title="${esc(stamp(s.checked_at))}">${esc(ago(s.checked_at))}</time>. ` +
         `<span class="cw-num">${ok}</span> of <span class="cw-num">${probed.length}</span> inventoried URLs responded normally and <span class="cw-num">${up - ok}</span> more were up but asked for input or authorization. ` +
-        `<a href="status.html">See every result</a>.`;
+        `<a href="status.html">See what's running</a>.`;
     }).catch(() => { /* keep the static fallback text */ });
   }
 
