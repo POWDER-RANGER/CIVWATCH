@@ -1,49 +1,53 @@
-# CIVWATCH
+<p>
+  <img src="site/assets/brand/civwatch-lockup-ink.svg#gh-light-mode-only" width="220" alt="CIVWATCH">
+  <img src="site/assets/brand/civwatch-lockup-reversed.svg#gh-dark-mode-only" width="220" alt="CIVWATCH">
+</p>
 
-**Legacy civic transparency, anomaly-detection, ingestion, and operations source for the unified CIVINTELLIGENCE platform.**
+**Public evidence about surveillance infrastructure: who is watching a place, who paid for it, and how to challenge it.**
 
-> **Status: migration/source repository.**
-> **CivilianIntelligence is the system of record.**
-> This repository is retained for components being consolidated into the unified platform and is not a second production integration hub.
+This repository hosts the **CIVWATCH project site** ([powder-ranger.github.io/CIVWATCH](https://powder-ranger.github.io/CIVWATCH/)) and legacy backend, ML, ingest and operations material. The live web app is **https://civintelligence.onrender.com**, built from [CivilianIntelligence](https://github.com/POWDER-RANGER/CivilianIntelligence), which is the system of record.
 
-## Public site
+> CIVWATCH documents publicly visible infrastructure and public records about government surveillance technology. Every record shows its source and verification status. We do not access camera feeds, intercept communications, or track individuals.
 
-**https://powder-ranger.github.io/CIVWATCH/** is the front door for the whole ecosystem: what CIVINTELLIGENCE does, which parts are running, and the standards for every claim. The [status page](https://powder-ranger.github.io/CIVWATCH/status.html) shows what each public URL actually returned, checked every six hours.
+## Products
 
-The site source is [`site/`](./site). The list of checked URLs is [`site/data/endpoints.json`](./site/data/endpoints.json); the checker is [`scripts/site/probe.mjs`](./scripts/site/probe.mjs). Run it locally with `node scripts/site/probe.mjs`, then serve `site/` with any static server.
+| Product | What it does | Code |
+|---|---|---|
+| **CIVWATCH Map** | Documented ALPRs, acoustic sensors and view cones, with sources | [CivilianIntelligence](https://github.com/POWDER-RANGER/CivilianIntelligence) |
+| **CIVWATCH Record** | Contracts, legislation and records with provenance | [CivilianIntelligence](https://github.com/POWDER-RANGER/CivilianIntelligence) |
+| **CIVWATCH Cell Monitor** | Your own device's cell environment, with a signed evidence log | [civwatch-cell-titan](https://github.com/POWDER-RANGER/civwatch-cell-titan) |
+| **CIVWATCH Globe** | National and global view of documented deployments | [CivilianIntelligence](https://github.com/POWDER-RANGER/CivilianIntelligence) |
+| **CIVWATCH Platform** | Shared backend services | [civwatch-watchtower](https://github.com/POWDER-RANGER/civwatch-watchtower) |
 
-## What belongs here
+Retired names: CIVINT / CIVINTELLIGENCE, Watchtower (repository codename only), CELL TITAN, God's Eye, VEIL.
 
-This repository contains legacy/subsystem material covering:
+## Project site
+
+The GitHub Pages site lives in [`site/`](./site) and follows **CIVWATCH Design Standard v2** (IBM Plex Sans, Source Serif 4, IBM Plex Mono; editorial light and ops dark themes; no glow, no neon). Brand files are in [`site/assets/brand/`](./site/assets/brand).
+
+| Page | What it shows |
+|---|---|
+| [Home](https://powder-ranger.github.io/CIVWATCH/) | Products, how we work, where things stand |
+| [Status](https://powder-ranger.github.io/CIVWATCH/status.html) | What every public URL returned on its last check |
+| [Standards](https://powder-ranger.github.io/CIVWATCH/standards.html) | Status words, verification states, sources, corrections |
+
+`.github/workflows/static.yml` publishes only `site/`, on pushes that touch it and every six hours. Each run first runs [`scripts/site/probe.mjs`](./scripts/site/probe.mjs), which requests every URL in [`site/data/endpoints.json`](./site/data/endpoints.json) and writes `site/data/status.json`. To preview locally: `node scripts/site/probe.mjs`, then serve `site/` with any static server.
+
+GitHub Pages must be set to **Source: GitHub Actions**. The root `index.html` is a redirect kept only for the legacy branch build.
+
+## What else lives here
+
+Legacy material retained while it is consolidated into CivilianIntelligence:
 
 - backend API infrastructure
 - PostgreSQL / Redis orchestration
 - civic-record ingestion
-- anomaly detection and ML
+- statistical review rules and ML
 - analytics and alerting
 - political-finance source material
 - security and deployment documentation
 
-New unified production integration should terminate in **CivilianIntelligence**, not a parallel CIVWATCH hub.
-
-## Architecture position
-
-~~~text
-                 CIVINTELLIGENCE
-                 system of record
-                        |
-          +-------------+-------------+
-          |                           |
-     Watchtower                  Cell Titan
-    map/oversight               RF evidence
-          |
-       clients / integrations
-
-CIVWATCH (this repo)
-       |
-       +--> migration/source material
-            backend / ML / ingestion / ops
-~~~
+New production integration terminates in CivilianIntelligence, not here.
 
 ## Local legacy stack
 
@@ -57,7 +61,7 @@ The Docker-based legacy stack contains:
 - frontend
 - nginx reverse proxy
 
-The stack is retained for migration/reference work and is **not** the acceptance environment for the unified CIVINTELLIGENCE product.
+The stack is retained for migration/reference work and is **not** the acceptance environment for the CIVWATCH web app.
 
 ## Quick start
 
@@ -95,7 +99,7 @@ The integration branch:
 
 ## Migration rule
 
-When functionality is promoted into CIVINTELLIGENCE, move its canonical contract, tests, and production integration there. Avoid creating a new cross-repository production dependency on this legacy hub.
+When functionality is promoted into CivilianIntelligence, move its canonical contract, tests, and production integration there. Avoid creating a new cross-repository production dependency on this legacy hub.
 
 ## Documentation
 
@@ -112,9 +116,9 @@ For the unified contract, see [CROSS_REPO_INTEGRATION.md](https://github.com/POW
 ## Related repositories
 
 - [CivilianIntelligence](https://github.com/POWDER-RANGER/CivilianIntelligence) — system of record
-- [Watchtower](https://github.com/POWDER-RANGER/civwatch-watchtower) — geospatial pillar
-- [Cell Titan](https://github.com/POWDER-RANGER/civwatch-cell-titan) — RF/evidence pillar
-- [CIVWATCH App](https://github.com/POWDER-RANGER/civwatch-app) — operator client
+- [civwatch-watchtower](https://github.com/POWDER-RANGER/civwatch-watchtower) — CIVWATCH Platform services
+- [civwatch-cell-titan](https://github.com/POWDER-RANGER/civwatch-cell-titan) — CIVWATCH Cell Monitor
+- [CIVWATCH App](https://github.com/POWDER-RANGER/civwatch-app) — Flutter client
 - [Community](https://github.com/POWDER-RANGER/civwatch-powder-ranger) — community pointer
 
 ## License
@@ -126,15 +130,15 @@ MIT
 
 ## Public platform status — October 2026
 
-**CIVINTELLIGENCE is live on the public web and its REST/API surface is active.**
+**The CIVWATCH web app is live and its REST/API surface is active.**
 
 **Public site:** https://civintelligence.onrender.com
 
-The web platform is now the working reference implementation for the CIVWATCH ecosystem: the core application, public-data surfaces, evidence/provenance model, specialized pillars, and integration boundaries are being exercised through the deployed CIVINTELLIGENCE service.
+The web platform is now the working reference implementation for the CIVWATCH ecosystem: the core application, public-data surfaces, evidence/provenance model, specialized pillars, and integration boundaries are being exercised through the deployed web app.
 
 ### Applications are next
 
-With the web application and REST contracts now active, the remaining client work is primarily **productization and platform packaging**, not rebuilding the intelligence platform from scratch. Native applications for the major target platforms are planned and will be coming soon.
+With the web application and REST contracts now active, the remaining client work is primarily **productization and platform packaging**, not rebuilding the platform from scratch. Native applications for the major target platforms are planned and will be coming soon.
 
 The application layer can consume the same stable contracts already used by the web experience:
 
@@ -144,18 +148,18 @@ The application layer can consume the same stable contracts already used by the 
 - **Linux**
 - additional platform clients as the shared API contract matures
 
-The existing Flutter client and service boundaries give the ecosystem a head start. Mobile/desktop applications can progressively adopt the established authentication, API, provenance, map, evidence, and desk contracts rather than duplicating backend intelligence.
+The existing Flutter client and service boundaries give the ecosystem a head start. Mobile/desktop applications can progressively adopt the established authentication, API, provenance, map, evidence, and desk contracts rather than duplicating backend logic.
 
 ### How quickly this came together
 
-The current milestone is notable because the ecosystem moved from a multi-repository architecture and integration plan to a functioning public platform in a short development window. The difficult architectural work — ownership boundaries, public-data ingestion, REST contracts, evidence/provenance rules, Watchtower/Cell Titan integration, and the user-facing desk model — is already substantially established.
+The current milestone is notable because the ecosystem moved from a multi-repository architecture and integration plan to a functioning public platform in a short development window. The difficult architectural work — ownership boundaries, public-data ingestion, REST contracts, evidence/provenance rules, Platform and Cell Monitor integration, and the user-facing desk model — is already substantially established.
 
-That means the next step should be treated as **client delivery on top of an operating platform**. The web application is the reference surface; native clients become additional presentation and interaction layers over the same CIVINTELLIGENCE contracts.
+That means the next step should be treated as **client delivery on top of an operating platform**. The web application is the reference surface; native clients become additional presentation and interaction layers over the same contracts.
 
 > **Build once at the platform layer. Deliver many clients at the edge.**
 
 ### Ecosystem rule
 
-CIVINTELLIGENCE remains the system of record. Specialized repositories retain clear ownership of their domains, while clients consume stable public/service contracts. Legacy and predecessor repositories remain valuable migration/reference material but are not silently represented as unified production capabilities.
+CivilianIntelligence remains the system of record. Specialized repositories retain clear ownership of their domains, while clients consume stable public/service contracts. Legacy and predecessor repositories remain valuable migration/reference material but are not silently represented as unified production capabilities.
 
 **Status discipline:** live means exposed and usable; available means implemented and integrated; in progress means actively being built; planned means not yet shipped. No synthetic or unavailable source is represented as live evidence.

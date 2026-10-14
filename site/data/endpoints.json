@@ -1,23 +1,19 @@
 {
-  "$comment": "Source of truth for every public URL the CIVWATCH site links to or probes. Derived from the owner-supplied CIVINTELLIGENCE Master URL Inventory (prepared 2026-10-13). A listed URL is a claim to verify, not proof it works: scripts/site/probe.mjs records what each one actually returns.",
-  "inventory": {
-    "title": "CIVINTELLIGENCE Master URL Inventory",
-    "prepared": "2026-10-13",
-    "owner": "POWDER-RANGER"
-  },
+  "$comment": "Source of truth for every public URL the CIVWATCH site links to or probes. Derived from the owner's master URL inventory (prepared 2026-10-13). A listed URL is a claim to verify, not proof it works: scripts/site/probe.mjs records what each one actually returns. Hostnames and route paths keep their original slugs on purpose.",
+  "inventory": {"title": "CIVWATCH master URL inventory", "prepared": "2026-10-13", "owner": "POWDER-RANGER"},
   "systems": [
     {
       "id": "civint",
-      "name": "CIVINTELLIGENCE",
-      "role": "System of record. Unified civic application: desks, Veil briefing, record index, ingest, integration contract.",
+      "name": "CIVWATCH web app",
+      "role": "CIVWATCH Map, Record and Globe, the records-request toolkit and the public API. Built from the CivilianIntelligence repository, the system of record.",
       "base": "https://civintelligence.onrender.com",
       "repo": "POWDER-RANGER/CivilianIntelligence",
       "declared": "live"
     },
     {
       "id": "godseye",
-      "name": "God's Eye View",
-      "role": "Configured 3D globe deployment (Cesium). Upstream open-source work by Bilawal Sidhu; this instance is operated under the CIVINTELLIGENCE umbrella.",
+      "name": "CIVWATCH Globe, 3D deployment",
+      "role": "A configured Cesium globe built on the open-source gods-eye-view project by Bilawal Sidhu. The Globe inside the web app is at /globe.",
       "base": "https://civintelligence-gods-eye-prod.onrender.com",
       "link": "https://civintelligence-gods-eye-prod.onrender.com/#v=2&lat=64.3412&lon=173.5818&alt=1583749&heading=19&pitch=-68&roll=2&style=normal&bloom=0&sharpen=1&bi=0&bv=2&si=49&hud=tactical&hv=1&dm=DENSE&dd=75&da=elastic&kf=7&ko=1&cr=0&sc=1&scf=11&map=esri-imagery&l=&lo=f.e.1_k.o.n&ui=c.c.1_c.p.0_l.c.1_l.p.0_d.c.1_v.c.0_i.c.0_t.c.0_r.c.1_s.c.1_g.c.1_p.c.1_m.c.0",
       "repo": null,
@@ -26,16 +22,16 @@
     },
     {
       "id": "titan",
-      "name": "Cell Titan",
-      "role": "Defensive RF telemetry and signed evidence pillar.",
+      "name": "CIVWATCH Cell Monitor",
+      "role": "Observes the cell networks around a device you control and keeps a signed, hash-chained evidence log. This host serves its public surface and API.",
       "base": "https://civwatch-cell-titan.onrender.com",
       "repo": "POWDER-RANGER/civwatch-cell-titan",
       "declared": "live"
     },
     {
       "id": "watchtower",
-      "name": "Watchtower",
-      "role": "Map-first civic oversight pillar. No standalone public host yet; surfaced inside CIVINTELLIGENCE at /watchtower.",
+      "name": "CIVWATCH Platform",
+      "role": "Map and report services for the web app (repository codename: watchtower). No standalone public host.",
       "base": null,
       "repo": "POWDER-RANGER/civwatch-watchtower",
       "declared": "in-progress"
@@ -43,7 +39,7 @@
     {
       "id": "app",
       "name": "CIVWATCH App",
-      "role": "Flutter operator client for Android, iOS, Windows and Linux, consuming the CIVINTELLIGENCE contracts.",
+      "role": "Flutter client for Android, iOS, Windows and Linux, built on the web app's API.",
       "base": null,
       "repo": "POWDER-RANGER/civwatch-app",
       "declared": "in-progress"
@@ -51,7 +47,7 @@
     {
       "id": "legacy",
       "name": "CIVWATCH (this repository)",
-      "role": "Legacy backend, ML, ingest and operations source being consolidated into CIVINTELLIGENCE.",
+      "role": "Project site, Design Standard, and legacy backend, ML and ingest material being consolidated into the web app.",
       "base": null,
       "repo": "POWDER-RANGER/CIVWATCH",
       "declared": "reference"
@@ -82,43 +78,40 @@
     }
   ],
   "endpoints": [
-    { "id": "civint-root", "system": "civint", "kind": "page", "path": "/", "label": "Framework home" },
-    { "id": "civint-watchtower", "system": "civint", "kind": "page", "path": "/watchtower", "label": "Watchtower map" },
-    { "id": "civint-place", "system": "civint", "kind": "page", "path": "/place", "label": "Place dossier" },
-    { "id": "civint-privacy", "system": "civint", "kind": "page", "path": "/privacy", "label": "Privacy and surveillance" },
-    { "id": "civint-finance", "system": "civint", "kind": "page", "path": "/finance", "label": "Finance and contracts" },
-    { "id": "civint-toolkit", "system": "civint", "kind": "page", "path": "/toolkit", "label": "Records request toolkit" },
-    { "id": "civint-records", "system": "civint", "kind": "page", "path": "/records", "label": "Record index" },
-    { "id": "civint-movement", "system": "civint", "kind": "page", "path": "/movement", "label": "Movement" },
-    { "id": "civint-oversight", "system": "civint", "kind": "page", "path": "/oversight", "label": "Oversight" },
-    { "id": "civint-veil", "system": "civint", "kind": "page", "path": "/veil", "label": "Veil briefing" },
-    { "id": "civint-signal", "system": "civint", "kind": "page", "path": "/signal", "label": "Signal" },
-    { "id": "civint-sources", "system": "civint", "kind": "page", "path": "/sources", "label": "Sources" },
-    { "id": "civint-reading-room", "system": "civint", "kind": "page", "path": "/reading-room", "label": "Reading room" },
-    { "id": "civint-github-reading-room", "system": "civint", "kind": "page", "path": "/github-reading-room", "label": "GitHub reading room" },
-    { "id": "civint-titan", "system": "civint", "kind": "page", "path": "/titan", "label": "Cell Titan surface" },
-    { "id": "civint-globe", "system": "civint", "kind": "page", "path": "/globe", "label": "Globe" },
-    { "id": "civint-record-id", "system": "civint", "kind": "pattern", "path": "/records/{id}", "label": "Single record", "note": "Dynamic route; needs a real record ID." },
-
-    { "id": "api-health", "system": "civint", "kind": "api", "path": "/api/health", "label": "Health" },
-    { "id": "api-sources", "system": "civint", "kind": "api", "path": "/api/civint/sources", "label": "Source registry" },
-    { "id": "api-alpr", "system": "civint", "kind": "api", "path": "/api/civint/alpr/data", "label": "ALPR data" },
-    { "id": "api-finance-federal", "system": "civint", "kind": "api", "method": "POST", "path": "/api/civint/finance/federal", "label": "Federal awards" },
-    { "id": "api-finance-sec", "system": "civint", "kind": "api", "path": "/api/civint/finance/sec", "label": "SEC filings" },
-    { "id": "api-github", "system": "civint", "kind": "api", "path": "/api/civint/github/repository", "label": "GitHub repository" },
-    { "id": "api-congress", "system": "civint", "kind": "api", "path": "/api/civint/legislation/congress", "label": "Congress legislation" },
-    { "id": "api-location", "system": "civint", "kind": "api", "method": "POST", "path": "/api/civint/location/context", "label": "Location context" },
-    { "id": "api-foia", "system": "civint", "kind": "api", "path": "/api/civint/oversight/foia", "label": "FOIA oversight" },
-    { "id": "api-dossier", "system": "civint", "kind": "api", "path": "/api/civint/place/dossier", "label": "Place dossier" },
-    { "id": "api-records-search", "system": "civint", "kind": "api", "path": "/api/civint/records/search", "label": "Record search" },
-    { "id": "api-record-id", "system": "civint", "kind": "pattern", "path": "/api/civint/records/{id}", "label": "Single record", "note": "Dynamic route; needs a real record ID." },
-
-    { "id": "godseye-root", "system": "godseye", "kind": "page", "path": "/", "label": "Configured globe view" },
-
-    { "id": "titan-root", "system": "titan", "kind": "page", "path": "/", "label": "Standalone surface" },
-    { "id": "titan-health", "system": "titan", "kind": "api", "path": "/api/health", "label": "Health" },
-    { "id": "titan-capabilities", "system": "titan", "kind": "api", "path": "/api/capabilities", "label": "Capabilities" },
-    { "id": "titan-verify", "system": "titan", "kind": "api", "path": "/api/evidence/verify", "label": "Evidence chain verify" },
-    { "id": "titan-tail", "system": "titan", "kind": "api", "path": "/api/evidence/tail?n=20", "label": "Evidence tail (20)" }
+    {"id": "civint-root", "system": "civint", "kind": "page", "path": "/", "label": "Home"},
+    {"id": "civint-watchtower", "system": "civint", "kind": "page", "path": "/watchtower", "label": "Map"},
+    {"id": "civint-place", "system": "civint", "kind": "page", "path": "/place", "label": "Address lookup"},
+    {"id": "civint-privacy", "system": "civint", "kind": "page", "path": "/privacy", "label": "Privacy and surveillance"},
+    {"id": "civint-finance", "system": "civint", "kind": "page", "path": "/finance", "label": "Finance and contracts"},
+    {"id": "civint-toolkit", "system": "civint", "kind": "page", "path": "/toolkit", "label": "Records request toolkit"},
+    {"id": "civint-records", "system": "civint", "kind": "page", "path": "/records", "label": "Record search"},
+    {"id": "civint-movement", "system": "civint", "kind": "page", "path": "/movement", "label": "Movement"},
+    {"id": "civint-oversight", "system": "civint", "kind": "page", "path": "/oversight", "label": "Oversight"},
+    {"id": "civint-veil", "system": "civint", "kind": "page", "path": "/veil", "label": "Briefing"},
+    {"id": "civint-signal", "system": "civint", "kind": "page", "path": "/signal", "label": "Signal"},
+    {"id": "civint-sources", "system": "civint", "kind": "page", "path": "/sources", "label": "Sources"},
+    {"id": "civint-reading-room", "system": "civint", "kind": "page", "path": "/reading-room", "label": "Reading room"},
+    {"id": "civint-github-reading-room", "system": "civint", "kind": "page", "path": "/github-reading-room", "label": "GitHub reading room"},
+    {"id": "civint-titan", "system": "civint", "kind": "page", "path": "/titan", "label": "Cell Monitor view"},
+    {"id": "civint-globe", "system": "civint", "kind": "page", "path": "/globe", "label": "Globe"},
+    {"id": "civint-record-id", "system": "civint", "kind": "pattern", "path": "/records/{id}", "label": "Single record", "note": "Dynamic route; needs a real record ID."},
+    {"id": "api-health", "system": "civint", "kind": "api", "path": "/api/health", "label": "Health"},
+    {"id": "api-sources", "system": "civint", "kind": "api", "path": "/api/civint/sources", "label": "Source registry"},
+    {"id": "api-alpr", "system": "civint", "kind": "api", "path": "/api/civint/alpr/data", "label": "ALPR data"},
+    {"id": "api-finance-federal", "system": "civint", "kind": "api", "method": "POST", "path": "/api/civint/finance/federal", "label": "Federal awards"},
+    {"id": "api-finance-sec", "system": "civint", "kind": "api", "path": "/api/civint/finance/sec", "label": "SEC filings"},
+    {"id": "api-github", "system": "civint", "kind": "api", "path": "/api/civint/github/repository", "label": "GitHub repository"},
+    {"id": "api-congress", "system": "civint", "kind": "api", "path": "/api/civint/legislation/congress", "label": "Congress legislation"},
+    {"id": "api-location", "system": "civint", "kind": "api", "method": "POST", "path": "/api/civint/location/context", "label": "Location context"},
+    {"id": "api-foia", "system": "civint", "kind": "api", "path": "/api/civint/oversight/foia", "label": "FOIA oversight"},
+    {"id": "api-dossier", "system": "civint", "kind": "api", "path": "/api/civint/place/dossier", "label": "Place dossier"},
+    {"id": "api-records-search", "system": "civint", "kind": "api", "path": "/api/civint/records/search", "label": "Record search"},
+    {"id": "api-record-id", "system": "civint", "kind": "pattern", "path": "/api/civint/records/{id}", "label": "Single record", "note": "Dynamic route; needs a real record ID."},
+    {"id": "godseye-root", "system": "godseye", "kind": "page", "path": "/", "label": "Configured globe view"},
+    {"id": "titan-root", "system": "titan", "kind": "page", "path": "/", "label": "Public surface"},
+    {"id": "titan-health", "system": "titan", "kind": "api", "path": "/api/health", "label": "Health"},
+    {"id": "titan-capabilities", "system": "titan", "kind": "api", "path": "/api/capabilities", "label": "Capabilities"},
+    {"id": "titan-verify", "system": "titan", "kind": "api", "path": "/api/evidence/verify", "label": "Evidence chain verify"},
+    {"id": "titan-tail", "system": "titan", "kind": "api", "path": "/api/evidence/tail?n=20", "label": "Evidence tail (20)"}
   ]
 }
