@@ -9,6 +9,12 @@ This repository hosts the **CIVWATCH project site** ([powder-ranger.github.io/CI
 
 > CIVWATCH documents publicly visible infrastructure and public records about government surveillance technology. Every record shows its source and verification status. We do not access camera feeds, intercept communications, or track individuals.
 
+## Public site
+
+**https://powder-ranger.github.io/CIVWATCH/** is the front door for the whole ecosystem: what CIVINTELLIGENCE does, which parts are running, and the standards for every claim. The [status page](https://powder-ranger.github.io/CIVWATCH/status.html) shows what each public URL actually returned, checked every six hours.
+
+The site source is [`site/`](./site). The list of checked URLs is [`site/data/endpoints.json`](./site/data/endpoints.json); the checker is [`scripts/site/probe.mjs`](./scripts/site/probe.mjs). Run it locally with `node scripts/site/probe.mjs`, then serve `site/` with any static server.
+
 ## Products
 
 | Product | What it does | Code |

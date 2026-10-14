@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CIVWATCH: who is watching your town, and who paid for it</title>
+  <meta name="description" content="CIVWATCH is an open-source civic intelligence project. Its application, CIVINTELLIGENCE, traces surveillance technology from the street to the contract that paid for it, with every claim linked to a public source.">
+  <link rel="canonical" href="https://powder-ranger.github.io/CIVWATCH/">
+  <meta name="theme-color" content="#F7F6F2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0A0C10" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CIVWATCH">
+  <meta property="og:title" content="CIVWATCH: who is watching your town, and who paid for it">
+  <meta property="og:description" content="Open-source civic intelligence. Trace surveillance technology from the street to the contract that paid for it, with every claim linked to a public source.">
+  <meta property="og:url" content="https://powder-ranger.github.io/CIVWATCH/">
+  <meta property="og:image" content="https://powder-ranger.github.io/CIVWATCH/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <script>(function(){var t;try{t=localStorage.getItem("cw-theme")}catch(e){}if(t!=="ops"&&t!=="editorial"){t=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"ops":"editorial"}document.documentElement.dataset.theme=t})();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/site.js" defer></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "CIVWATCH",
+    "url": "https://powder-ranger.github.io/CIVWATCH/",
+    "description": "Open-source civic intelligence project. Front door for the CIVINTELLIGENCE application and its specialized pillars.",
+    "license": "https://opensource.org/licenses/MIT",
+    "author": {
+      "@type": "Person",
+      "name": "Curtis Charles Farrar",
+      "alternateName": "POWDER-RANGER",
+      "url": "https://powder-ranger.github.io",
+      "sameAs": [
+        "https://github.com/POWDER-RANGER",
+        "https://orcid.org/0009-0008-9273-2458"
+      ]
+    }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-head">
+    <div class="wrap">
+      <a class="mark" href="./" aria-label="CIVWATCH home">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 16 29 6.5a23.8 23.8 0 0 1 0 19Z" fill="var(--cw-accent)" fill-opacity=".22" stroke="var(--cw-accent)" stroke-width="2" stroke-linejoin="round"/><circle cx="7" cy="16" r="4.5" fill="var(--cw-text-primary)"/></svg>
+        CIVWATCH
+      </a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="#ecosystem">Ecosystem</a>
+        <a href="status.html">Status</a>
+        <a href="standards.html">Standards</a>
+        <a href="https://github.com/POWDER-RANGER/CivilianIntelligence">Source code</a>
+      </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle>Dark</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap">
+        <div class="hero-copy">
+          <h1 id="hero-title">Who is watching my town, who paid for it, and how do I challenge it?</h1>
+          <p class="lede">CIVWATCH is an open-source civic intelligence project. Its working application, CIVINTELLIGENCE, follows surveillance technology from the street corner to the contract that paid for it and the public record you can request about it. Every claim links to its source.</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="https://civintelligence.onrender.com/">Open CIVINTELLIGENCE</a>
+            <a class="btn btn-quiet" href="status.html">Check what's running</a>
+          </div>
+          <p class="receipt" data-receipt aria-live="polite">Every public URL in the project is checked automatically every six hours. <a href="status.html">See the latest results</a>.</p>
+        </div>
+
+        <div class="chain-wrap">
+          <div class="chain-head">
+            <h2>From one address to a records request</h2>
+            <p>Declared status, October&nbsp;2026</p>
+          </div>
+          <ol class="chain">
+            <li data-s="available" style="--i:0">
+              <span class="n" aria-hidden="true"></span>
+              <h3>Address to jurisdiction</h3>
+              <span class="tag tag-available">Available</span>
+              <p class="what">Enter an address, city and state, ZIP or coordinates. Get the place, county, state and legislative districts from the U.S. Census geocoder.<span class="where">In <a href="https://civintelligence.onrender.com/place">/place</a></span></p>
+            </li>
+            <li data-s="available" style="--i:1">
+              <span class="n" aria-hidden="true"></span>
+              <h3>Cameras nearby</h3>
+              <span class="tag tag-available">Available</span>
+              <p class="what">License-plate readers mapped around that point from DeFlock's public camera map, with a count within up to ten miles.<span class="where">In <a href="https://civintelligence.onrender.com/watchtower">/watchtower</a></span></p>
+            </li>
+            <li data-s="progress" style="--i:2">
+              <span class="n" aria-hidden="true"></span>
+              <h3>Operating agency</h3>
+              <span class="tag tag-progress">In progress</span>
+              <p class="what">The agency or company that runs each camera, read from the operator and brand fields in the mapped data.</p>
+            </li>
+            <li data-s="progress" style="--i:3">
+              <span class="n" aria-hidden="true"></span>
+              <h3>Contract and dollars</h3>
+              <span class="tag tag-progress">In progress</span>
+              <p class="what">Federal awards and SEC filings are searchable now. City and county procurement from council systems such as Legistar comes next.<span class="where">In <a href="https://civintelligence.onrender.com/finance">/finance</a></span></p>
+            </li>
+            <li data-s="planned" style="--i:4">
+              <span class="n" aria-hidden="true"></span>
+              <h3>Council vote</h3>
+              <span class="tag tag-planned">Planned</span>
+              <p class="what">The agenda item and recorded vote that approved the purchase, linked to the meeting record.</p>
+            </li>
+            <li data-s="planned" style="--i:5">
+              <span class="n" aria-hidden="true"></span>
+              <h3>Retention and sharing policy</h3>
+              <span class="tag tag-planned">Planned</span>
+              <p class="what">How long plate reads are kept and which agencies can search them, taken from the operator's published transparency page.</p>
+            </li>
+            <li data-s="available" style="--i:6">
+              <span class="n" aria-hidden="true"></span>
+              <h3>Records request</h3>
+              <span class="tag tag-available">Available</span>
+              <p class="what">A public records letter drafted under your state's statute or the federal FOIA, with a preset for license-plate reader records.<span class="where">In <a href="https://civintelligence.onrender.com/toolkit">/toolkit</a></span></p>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="ecosystem" aria-labelledby="eco-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="eco-title">One system of record, specialized parts</h2>
+          <p>CIVINTELLIGENCE holds the records and the public API. Each pillar owns one domain and reports into it. Older repositories stay open as reference and are not presented as running features.</p>
+        </div>
+
+        <div class="ledger" role="table" aria-label="CIVWATCH ecosystem">
+          <div class="ledger-row is-head" role="row">
+            <span role="columnheader">System</span><span role="columnheader">What it does</span><span role="columnheader">Where it runs</span><span role="columnheader">Status</span>
+          </div>
+
+          <div class="ledger-group" role="row"><span role="cell">Running</span></div>
+          <div class="ledger-row" role="row">
+            <div class="name" role="cell">CIVINTELLIGENCE<small>System of record</small></div>
+            <div class="role" role="cell">The web application: the map, place dossiers, finance and oversight desks, the record index, the records request toolkit and the public REST API.</div>
+            <div class="runs" role="cell"><a href="https://civintelligence.onrender.com/">civintelligence.onrender.com</a><a href="https://github.com/POWDER-RANGER/CivilianIntelligence">Source</a></div>
+            <div class="state" role="cell"><span class="tag tag-live">Live</span></div>
+          </div>
+          <div class="ledger-row" role="row">
+            <div class="name" role="cell">Cell Titan<small>RF evidence pillar</small></div>
+            <div class="role" role="cell">Defensive cellular-signal telemetry with a signed evidence chain, for detecting suspicious base stations.</div>
+            <div class="runs" role="cell"><a href="https://civwatch-cell-titan.onrender.com/">civwatch-cell-titan.onrender.com</a><a href="https://github.com/POWDER-RANGER/civwatch-cell-titan">Source</a></div>
+            <div class="state" role="cell"><span class="tag tag-live">Live</span></div>
+          </div>
+          <div class="ledger-row" role="row">
+            <div class="name" role="cell">God's Eye View<small>Global view</small></div>
+            <div class="role" role="cell">A configured 3D globe of public feeds, built on the open-source God's Eye View project by Bilawal Sidhu.</div>
+            <div class="runs" role="cell"><a href="https://civintelligence-gods-eye-prod.onrender.com/#v=2&amp;lat=64.3412&amp;lon=173.5818&amp;alt=1583749&amp;heading=19&amp;pitch=-68&amp;roll=2&amp;style=normal&amp;bloom=0&amp;sharpen=1&amp;bi=0&amp;bv=2&amp;si=49&amp;hud=tactical&amp;hv=1&amp;dm=DENSE&amp;dd=75&amp;da=elastic&amp;kf=7&amp;ko=1&amp;cr=0&amp;sc=1&amp;scf=11&amp;map=esri-imagery&amp;l=&amp;lo=f.e.1_k.o.n&amp;ui=c.c.1_c.p.0_l.c.1_l.p.0_d.c.1_v.c.0_i.c.0_t.c.0_r.c.1_s.c.1_g.c.1_p.c.1_m.c.0">Open the globe</a><a href="https://github.com/bilawalsidhu/gods-eye-view">Upstream</a></div>
+            <div class="state" role="cell"><span class="tag tag-live">Live</span></div>
+          </div>
+
+          <div class="ledger-group" role="row"><span role="cell">Being built</span></div>
+          <div class="ledger-row" role="row">
+            <div class="name" role="cell">Watchtower<small>Geospatial pillar</small></div>
+            <div class="role" role="cell">Map-first oversight: features, reports and alerts by place. Shown today through the Watchtower view in CIVINTELLIGENCE.</div>
+            <div class="runs" role="cell"><a href="https://civintelligence.onrender.com/watchtower">Inside CIVINTELLIGENCE</a><a href="https://github.com/POWDER-RANGER/civwatch-watchtower">Source</a></div>
+            <div class="state" role="cell"><span class="tag tag-progress">In progress</span></div>
+          </div>
+          <div class="ledger-row" role="row">
+            <div class="name" role="cell">CIVWATCH App<small>Native client</small></div>
+            <div class="role" role="cell">A Flutter client for Android, iOS, Windows and Linux that uses the same API as the web application.</div>
+            <div class="runs" role="cell"><span>Not yet published</span><a href="https://github.com/POWDER-RANGER/civwatch-app">Source</a></div>
+            <div class="state" role="cell"><span class="tag tag-progress">In progress</span></div>
+          </div>
+
+          <div class="ledger-group" role="row"><span role="cell">Reference and extensions</span></div>
+          <div class="ledger-row" role="row">
+            <div class="name" role="cell">CIVWATCH<small>This repository</small></div>
+            <div class="role" role="cell">The original backend, machine-learning, ingest and operations code, being moved into CIVINTELLIGENCE piece by piece.</div>
+            <div class="runs" role="cell"><a href="https://github.com/POWDER-RANGER/CIVWATCH">Source</a></div>
+            <div class="state" role="cell"><span class="tag tag-reference">Reference</span></div>
+          </div>
+          <div class="ledger-row" role="row">
+            <div class="name" role="cell">civwatch-v3<small>Predecessor</small></div>
+            <div class="role" role="cell">An earlier RF dashboard, kept as a reference implementation.</div>
+            <div class="runs" role="cell"><a href="https://github.com/POWDER-RANGER/civwatch-v3">Source</a></div>
+            <div class="state" role="cell"><span class="tag tag-reference">Reference</span></div>
+          </div>
+          <div class="ledger-row" role="row">
+            <div class="name" role="cell">civwatch-ruby-gem<small>Extension</small></div>
+            <div class="role" role="cell">A Ruby package scaffold for working with the API.</div>
+            <div class="runs" role="cell"><a href="https://github.com/POWDER-RANGER/civwatch-ruby-gem">Source</a></div>
+            <div class="state" role="cell"><span class="tag tag-planned">Planned</span></div>
+          </div>
+          <div class="ledger-row" role="row">
+            <div class="name" role="cell">civwatch-powder-ranger<small>Community</small></div>
+            <div class="role" role="cell">Community notes and documentation.</div>
+            <div class="runs" role="cell"><a href="https://github.com/POWDER-RANGER/civwatch-powder-ranger">Source</a></div>
+            <div class="state" role="cell"><span class="tag tag-reference">Reference</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="claims-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="claims-title">How claims are handled</h2>
+          <p>The people who need this most, reporters, council members and defense attorneys, need to cite it. That sets the rules.</p>
+        </div>
+        <div class="commitments">
+          <div>
+            <h3>Every line has a source</h3>
+            <p>Each record keeps the public URL it came from and when it was retrieved. When a source can't be reached, the page says so instead of filling the gap.</p>
+          </div>
+          <div>
+            <h3>A mapped camera is a report</h3>
+            <p>Camera locations come from community mapping. They show where a device was reported, not proof that it is operating today.</p>
+          </div>
+          <div>
+            <h3>Status words mean one thing</h3>
+            <p>Live means public and usable. Available means built and connected. In progress means being built. Planned means not started.</p>
+          </div>
+        </div>
+        <p style="margin-top:var(--cw-space-8)"><a href="standards.html">Read the full standards</a></p>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="build-title">
+      <div class="wrap split">
+        <div>
+          <h2 id="build-title">Build on it</h2>
+          <p>All code is MIT licensed. The REST API behind the web application is public, and the native clients for Android, iOS, Windows and Linux are being built on the same contract rather than a separate backend.</p>
+          <div class="actions">
+            <a class="btn btn-quiet" href="https://github.com/POWDER-RANGER/CivilianIntelligence">Read the source</a>
+            <a class="btn btn-quiet" href="https://github.com/POWDER-RANGER/CIVWATCH/blob/main/CONTRIBUTING.md">Contributing guide</a>
+          </div>
+        </div>
+        <div>
+          <h2>Found a problem?</h2>
+          <p>Report a wrong record or a broken page as an issue on the CIVINTELLIGENCE repository. Report a security vulnerability privately through GitHub's vulnerability reporting, not in a public issue.</p>
+          <div class="actions">
+            <a class="btn btn-quiet" href="https://github.com/POWDER-RANGER/CivilianIntelligence/issues/new">Report an error</a>
+            <a class="btn btn-quiet" href="https://github.com/POWDER-RANGER/CIVWATCH/security">Report a vulnerability</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <div class="about">
+        <h2>CIVWATCH</h2>
+        <p>Designed, built and maintained independently by Curtis Charles Farrar (<span style="white-space:nowrap">POWDER-RANGER</span>) in Iowa. Open source under the MIT license.</p>
+      </div>
+      <div>
+        <h2>Project</h2>
+        <ul>
+          <li><a href="https://civintelligence.onrender.com/">CIVINTELLIGENCE</a></li>
+          <li><a href="status.html">Status</a></li>
+          <li><a href="standards.html">Standards</a></li>
+          <li><a href="blueprint.html">Legacy blueprint</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Builder</h2>
+        <ul>
+          <li><a href="https://powder-ranger.github.io">Portfolio</a></li>
+          <li><a href="https://github.com/POWDER-RANGER">GitHub</a></li>
+          <li><a href="https://orcid.org/0009-0008-9273-2458">ORCID</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

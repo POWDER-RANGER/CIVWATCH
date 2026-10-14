@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>What's running: CIVWATCH status</title>
+  <meta name="description" content="Observed status of every public CIVINTELLIGENCE, Cell Titan and God's Eye View URL, checked automatically every six hours.">
+  <link rel="canonical" href="https://powder-ranger.github.io/CIVWATCH/status.html">
+  <meta name="theme-color" content="#F7F6F2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0A0C10" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CIVWATCH">
+  <meta property="og:title" content="What's running: CIVWATCH status">
+  <meta property="og:description" content="Every public URL in the CIVINTELLIGENCE inventory, checked automatically. A listed route is a claim; this page records what each server returned.">
+  <meta property="og:url" content="https://powder-ranger.github.io/CIVWATCH/status.html">
+  <meta property="og:image" content="https://powder-ranger.github.io/CIVWATCH/assets/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <script>(function(){var t;try{t=localStorage.getItem("cw-theme")}catch(e){}if(t!=="ops"&&t!=="editorial"){t=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"ops":"editorial"}document.documentElement.dataset.theme=t})();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/site.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-head">
+    <div class="wrap">
+      <a class="mark" href="./" aria-label="CIVWATCH home">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 16 29 6.5a23.8 23.8 0 0 1 0 19Z" fill="var(--cw-accent)" fill-opacity=".22" stroke="var(--cw-accent)" stroke-width="2" stroke-linejoin="round"/><circle cx="7" cy="16" r="4.5" fill="var(--cw-text-primary)"/></svg>
+        CIVWATCH
+      </a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="./#ecosystem">Ecosystem</a>
+        <a href="status.html" aria-current="page">Status</a>
+        <a href="standards.html">Standards</a>
+        <a href="https://github.com/POWDER-RANGER/CivilianIntelligence">Source code</a>
+      </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle>Dark</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <header class="page-head">
+        <h1>What's running</h1>
+        <p class="lede">Every public URL in the CIVINTELLIGENCE inventory, checked automatically. A listed route is a claim; this page records what each server actually returned.</p>
+        <p class="system-meta" data-checked>Loading the latest check.</p>
+      </header>
+
+      <div data-status-board>
+        <noscript><p class="empty">This page needs JavaScript to read the latest results. The raw results are in <a href="data/status.json">data/status.json</a>.</p></noscript>
+      </div>
+
+      <section class="section" aria-labelledby="meaning-title">
+        <div class="section-head">
+          <h2 id="meaning-title">What the results mean</h2>
+        </div>
+        <dl class="meanings">
+          <div><dt><span class="tag out-ok">Responding</span></dt><dd>The server returned a 2xx response of the expected type: a page for routes, JSON for API endpoints.</dd></div>
+          <div><dt><span class="tag out-input">Up, asks for input</span></dt><dd>The endpoint is deployed and replied with a validation message, because a bare check sends no address, ID or query.</dd></div>
+          <div><dt><span class="tag out-input">Up, needs authorization</span></dt><dd>The endpoint is deployed and answered 401 or 403, so it needs credentials that a public check does not send.</dd></div>
+          <div><dt><span class="tag out-config">Up, key not set</span></dt><dd>The endpoint is deployed but the server is missing an API key for its upstream source, so it cannot return data yet.</dd></div>
+          <div><dt><span class="tag out-fail">Not found</span></dt><dd>The URL is listed in the inventory but the server returned 404. Either the inventory is ahead of the deployment or the route was removed.</dd></div>
+          <div><dt><span class="tag out-fail">Server error or unreachable</span></dt><dd>The server failed, timed out after 45 seconds, or could not be reached.</dd></div>
+          <div><dt><span class="tag out-skip">Not probed</span></dt><dd>Pattern routes that need a real record ID, and endpoints that only accept POST. A GET check would not tell you anything true about them.</dd></div>
+        </dl>
+      </section>
+
+      <section class="section" aria-labelledby="how-title">
+        <div class="section-head">
+          <h2 id="how-title">How checks run</h2>
+        </div>
+        <div class="prose">
+          <p>A GitHub Actions job requests each URL with a plain GET every six hours and whenever this site is published. Hosts on Render's free tier sleep when idle, so each one is woken first and a cold start is not reported as an outage.</p>
+          <p>Response bodies are not stored. The job keeps the status code, response time, content type and, for JSON, a short status or error message. No credentials are sent. Everything after a <code>#</code> in a link stays in your browser and is never part of a check.</p>
+          <p>The list of URLs is <a href="data/endpoints.json">data/endpoints.json</a>, taken from the project's master URL inventory. The checker is <a href="https://github.com/POWDER-RANGER/CIVWATCH/blob/main/scripts/site/probe.mjs">scripts/site/probe.mjs</a>.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <div class="about">
+        <h2>CIVWATCH</h2>
+        <p>Designed, built and maintained independently by Curtis Charles Farrar (<span style="white-space:nowrap">POWDER-RANGER</span>) in Iowa. Open source under the MIT license.</p>
+      </div>
+      <div>
+        <h2>Project</h2>
+        <ul>
+          <li><a href="https://civintelligence.onrender.com/">CIVINTELLIGENCE</a></li>
+          <li><a href="status.html">Status</a></li>
+          <li><a href="standards.html">Standards</a></li>
+          <li><a href="blueprint.html">Legacy blueprint</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Builder</h2>
+        <ul>
+          <li><a href="https://powder-ranger.github.io">Portfolio</a></li>
+          <li><a href="https://github.com/POWDER-RANGER">GitHub</a></li>
+          <li><a href="https://orcid.org/0009-0008-9273-2458">ORCID</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
