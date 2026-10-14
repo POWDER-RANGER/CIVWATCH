@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Standards: how CIVWATCH handles claims</title>
+  <meta name="description" content="How CIVWATCH decides what to show, what to call it, and where it came from: status words, provenance, public sources, accuracy and corrections.">
+  <link rel="canonical" href="https://powder-ranger.github.io/CIVWATCH/standards.html">
+  <meta name="theme-color" content="#F7F6F2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0A0C10" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="CIVWATCH">
+  <meta property="og:title" content="Standards: how CIVWATCH handles claims">
+  <meta property="og:description" content="Status words, provenance, public sources, accuracy and corrections.">
+  <meta property="og:url" content="https://powder-ranger.github.io/CIVWATCH/standards.html">
+  <meta property="og:image" content="https://powder-ranger.github.io/CIVWATCH/assets/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <script>(function(){var t;try{t=localStorage.getItem("cw-theme")}catch(e){}if(t!=="ops"&&t!=="editorial"){t=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"ops":"editorial"}document.documentElement.dataset.theme=t})();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/site.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-head">
+    <div class="wrap">
+      <a class="mark" href="./" aria-label="CIVWATCH home">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 16 29 6.5a23.8 23.8 0 0 1 0 19Z" fill="var(--cw-accent)" fill-opacity=".22" stroke="var(--cw-accent)" stroke-width="2" stroke-linejoin="round"/><circle cx="7" cy="16" r="4.5" fill="var(--cw-text-primary)"/></svg>
+        CIVWATCH
+      </a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="./#ecosystem">Ecosystem</a>
+        <a href="status.html">Status</a>
+        <a href="standards.html" aria-current="page">Standards</a>
+        <a href="https://github.com/POWDER-RANGER/CivilianIntelligence">Source code</a>
+      </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle>Dark</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <header class="page-head">
+        <h1>Standards</h1>
+        <p class="lede">How CIVWATCH decides what to show, what to call it, and where it came from. These rules apply to the application, its pillars and this site.</p>
+      </header>
+
+      <div class="prose">
+        <h2 id="status-words">Status words</h2>
+        <p>Each feature carries exactly one of these words. A feature moves up only when it meets the definition, not when the code for it exists.</p>
+        <dl class="defs">
+          <dt><span class="tag tag-live">Live</span></dt><dd>Exposed to the public and usable today.</dd>
+          <dt><span class="tag tag-available">Available</span></dt><dd>Built and connected to the system of record, reachable inside a live service.</dd>
+          <dt><span class="tag tag-progress">In progress</span></dt><dd>Being built now. Parts may work; the feature as described does not yet.</dd>
+          <dt><span class="tag tag-planned">Planned</span></dt><dd>Decided on and not started, or only scaffolded.</dd>
+          <dt><span class="tag tag-reference">Reference</span></dt><dd>Kept open for its code and history. Not presented as a running feature.</dd>
+        </dl>
+
+        <h2 id="declared-observed">Declared and observed</h2>
+        <p>Declared status is what the project says about a feature. Observed status is what a server returned when it was checked. The <a href="status.html">status page</a> shows both for every public URL. When they disagree, the observed result is the one to trust, and the declared status gets corrected.</p>
+
+        <h2 id="provenance">Provenance</h2>
+        <ul>
+          <li>Records keep the public URL they came from and the time they were retrieved.</li>
+          <li>When a source is down or a key is missing, the interface says the source is unavailable. It does not substitute sample numbers.</li>
+          <li>Sample data used for demonstrations is labeled as sample. No synthetic record is presented as live evidence.</li>
+          <li>When document extraction ships, every fact pulled from a contract or policy must cite the page and passage it came from and be confirmed by a person before it is published.</li>
+        </ul>
+
+        <h2 id="sources">Sources</h2>
+        <p>Only public-record sources are used. Nothing is collected from behind a login, and every source is cited where its data appears.</p>
+        <h3>Wired into CIVINTELLIGENCE</h3>
+        <ul>
+          <li><a href="https://geocoding.geo.census.gov/">U.S. Census Geocoder</a> for place, county, state and district lookups</li>
+          <li><a href="https://deflock.me/">DeFlock</a> community map of license-plate reader locations</li>
+          <li><a href="https://www.usaspending.gov/">USAspending</a> for federal awards</li>
+          <li><a href="https://www.sec.gov/edgar/search/">SEC EDGAR</a> for company filings</li>
+          <li><a href="https://www.federalregister.gov/">Federal Register</a> for federal rules and notices</li>
+        </ul>
+        <h3>Wired, waiting on API keys</h3>
+        <ul>
+          <li><a href="https://api.congress.gov/">Congress.gov API</a> for federal legislation</li>
+          <li><a href="https://www.foia.gov/developer/">FOIA.gov API</a> for agency FOIA contacts and reports</li>
+        </ul>
+        <p>The <a href="status.html#civint">status page</a> shows which of these respond right now.</p>
+
+        <h2 id="accuracy">Accuracy</h2>
+        <p>A mapped camera is a report, not a confirmation. Community maps show where a device was seen and reported; a device can be moved, removed or misidentified. CIVWATCH shows where each location came from so you can judge it.</p>
+        <p>Contract amounts, terms and votes are shown as the public record states them, linked to that record.</p>
+
+        <h2 id="corrections">Corrections</h2>
+        <p>To report a wrong record or a broken source, open an issue on the <a href="https://github.com/POWDER-RANGER/CivilianIntelligence/issues">CIVINTELLIGENCE repository</a> with the page link and what you believe is correct. The longer policy is in the <a href="https://github.com/POWDER-RANGER/CIVWATCH/blob/main/docs/legal/ETHICS_CHARTER.md">ethics charter</a>.</p>
+        <p>Report security vulnerabilities privately through the repository's <a href="https://github.com/POWDER-RANGER/CIVWATCH/security">Security tab</a>, as described in the <a href="https://github.com/POWDER-RANGER/CIVWATCH/blob/main/SECURITY.md">security policy</a>.</p>
+
+        <h2 id="attribution">Attribution and ownership</h2>
+        <p>CIVWATCH, CIVINTELLIGENCE, Watchtower, Cell Titan and the CIVWATCH App are designed, built and maintained by Curtis Charles Farrar, published as <a href="https://github.com/POWDER-RANGER">POWDER-RANGER</a> (<a href="https://orcid.org/0009-0008-9273-2458">ORCID 0009-0008-9273-2458</a>). The work is self-funded and released under the MIT license.</p>
+        <p>The global view runs a configured instance of <a href="https://github.com/bilawalsidhu/gods-eye-view">God's Eye View</a>, an open-source project by Bilawal Sidhu. Its core authorship remains with that project.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <div class="about">
+        <h2>CIVWATCH</h2>
+        <p>Designed, built and maintained independently by Curtis Charles Farrar (<span style="white-space:nowrap">POWDER-RANGER</span>) in Iowa. Open source under the MIT license.</p>
+      </div>
+      <div>
+        <h2>Project</h2>
+        <ul>
+          <li><a href="https://civintelligence.onrender.com/">CIVINTELLIGENCE</a></li>
+          <li><a href="status.html">Status</a></li>
+          <li><a href="standards.html">Standards</a></li>
+          <li><a href="blueprint.html">Legacy blueprint</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Builder</h2>
+        <ul>
+          <li><a href="https://powder-ranger.github.io">Portfolio</a></li>
+          <li><a href="https://github.com/POWDER-RANGER">GitHub</a></li>
+          <li><a href="https://orcid.org/0009-0008-9273-2458">ORCID</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

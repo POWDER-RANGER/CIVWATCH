@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://powder-ranger.github.io/CIVWATCH/sitemap.xml

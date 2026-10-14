@@ -55,3 +55,6 @@ secrets/
 
 # Generated
 public/sitemap.xml
+
+# Public site: generated at deploy by scripts/site/probe.mjs
+site/data/repos.json

@@ -48,11 +48,9 @@ We use GitHub Security Advisories for coordinated vulnerability disclosure. This
    - **Suggested remediation**: If you have ideas for fixing the issue, we welcome them
    - **Affected versions**: Specify which versions you've tested and confirmed vulnerable
 
-**Option 2: Email**
+**Option 2: No private channel available to you**
 
-For researchers who prefer email contact, you can send reports to:
-
-**Email**: security@civwatch.io (or contact information TBD)  
+No security email address is published. If you cannot use GitHub's private reporting, open a public issue titled "Security contact request" with no technical details, and a private channel will be arranged.
 
 ### What to Expect
 

@@ -6,6 +6,12 @@
 > **CivilianIntelligence is the system of record.**
 > This repository is retained for components being consolidated into the unified platform and is not a second production integration hub.
 
+## Public site
+
+**https://powder-ranger.github.io/CIVWATCH/** is the front door for the whole ecosystem: what CIVINTELLIGENCE does, which parts are running, and the standards for every claim. The [status page](https://powder-ranger.github.io/CIVWATCH/status.html) shows what each public URL actually returned, checked every six hours.
+
+The site source is [`site/`](./site). The list of checked URLs is [`site/data/endpoints.json`](./site/data/endpoints.json); the checker is [`scripts/site/probe.mjs`](./scripts/site/probe.mjs). Run it locally with `node scripts/site/probe.mjs`, then serve `site/` with any static server.
+
 ## What belongs here
 
 This repository contains legacy/subsystem material covering:
