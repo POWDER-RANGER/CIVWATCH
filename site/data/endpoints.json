@@ -14,8 +14,8 @@
       "id": "godseye",
       "name": "CIVWATCH Globe, 3D deployment",
       "role": "A configured Cesium globe built on the open-source gods-eye-view project by Bilawal Sidhu. The Globe inside the web app is at /globe.",
-      "base": "https://civintelligence-gods-eye-prod.onrender.com",
-      "link": "https://civintelligence-gods-eye-prod.onrender.com/#v=2&lat=64.3412&lon=173.5818&alt=1583749&heading=19&pitch=-68&roll=2&style=normal&bloom=0&sharpen=1&bi=0&bv=2&si=49&hud=tactical&hv=1&dm=DENSE&dd=75&da=elastic&kf=7&ko=1&cr=0&sc=1&scf=11&map=esri-imagery&l=&lo=f.e.1_k.o.n&ui=c.c.1_c.p.0_l.c.1_l.p.0_d.c.1_v.c.0_i.c.0_t.c.0_r.c.1_s.c.1_g.c.1_p.c.1_m.c.0",
+      "base": "https://civintelligence-gods-eye-view.onrender.com",
+      "link": "https://civintelligence-gods-eye-view.onrender.com/#v=2&lat=64.3412&lon=173.5818&alt=1583749&heading=19&pitch=-68&roll=2&style=normal&bloom=0&sharpen=1&bi=0&bv=2&si=49&hud=tactical&hv=1&dm=DENSE&dd=75&da=elastic&kf=7&ko=1&cr=0&sc=1&scf=11&map=esri-imagery&l=&lo=f.e.1_k.o.n&ui=c.c.1_c.p.0_l.c.1_l.p.0_d.c.1_v.c.0_i.c.0_t.c.0_r.c.1_s.c.1_g.c.1_p.c.1_m.c.0",
       "repo": null,
       "upstream": "https://github.com/bilawalsidhu/gods-eye-view",
       "declared": "live"
