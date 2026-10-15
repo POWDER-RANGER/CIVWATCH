@@ -534,7 +534,7 @@
       "kind": "page",
       "path": "/",
       "label": "Configured globe view",
-      "url": "https://civintelligence-gods-eye-prod.onrender.com/",
+      "url": "https://civintelligence-gods-eye-view.onrender.com/",
       "method": "GET",
       "http_status": 200,
       "final_url": null,
