@@ -10,6 +10,13 @@ import { pool } from '../db/pool';
 import { authenticate, requireRole } from '../middleware/auth';
 import { validateBody, validateQuery } from '../middleware/validation';
 
+// Shape of scraper-service responses (fields vary per endpoint)
+interface ScraperResponse {
+  count?: number;
+  records?: unknown[];
+  [key: string]: unknown;
+}
+
 const router = Router();
 
 // Validation schemas
@@ -57,7 +64,7 @@ router.get('/search', authenticate, validateQuery(searchSchema), async (req, res
       throw new Error(`Scraper error: ${response.status}`);
     }
     
-    const data = await response.json();
+    const data = (await response.json()) as ScraperResponse;
     res.json({
       success: true,
       count: data.count,
@@ -101,9 +108,9 @@ router.post('/import', authenticate, requireRole('analyst'), validateBody(import
             JSON.stringify({
               contract_type: record.contract_type,
               import_source: 'usaspending',
-              imported_by: req.user?.id,
+              imported_by: req.user?.userId,
             }),
-            req.user?.id,
+            req.user?.userId,
           ]
         );
         imported.push(result.rows[0]);

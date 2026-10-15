@@ -4,7 +4,6 @@
  */
 
 import Queue from 'bull';
-import Redis from 'ioredis';
 import { pool } from '../db/pool';
 
 const redisUrl = process.env.REDIS_URL || 'redis://redis:6379';
@@ -112,7 +111,7 @@ alertQueue.process('evaluate', 3, async (job) => {
   const currentValue = parseInt(countResult.rows[0].count);
   const threshold = parseFloat(alert.threshold);
   
-  let triggered = false;
+  let triggered: boolean;
   switch (alert.operator) {
     case 'gt': triggered = currentValue > threshold; break;
     case 'lt': triggered = currentValue < threshold; break;
@@ -151,7 +150,7 @@ mlQueue.process('detect-anomalies', 2, async (job) => {
     throw new Error(`ML service error: ${response.status}`);
   }
   
-  const result = await response.json();
+  const result = (await response.json()) as { anomalies?: any[] };
   
   // Store detected anomalies
   const anomalies = result.anomalies || [];

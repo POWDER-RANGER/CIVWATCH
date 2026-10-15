@@ -5,7 +5,7 @@ import { ProtectedRoute, AdminRoute, AnalystRoute } from './components/Protected
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { DashboardPage } from './pages/DashboardPage';
-import { AnomalyDashboard } from './pages/AnomalyDashboard';
+import AnomalyDashboard from './pages/AnomalyDashboard';
 import { SourcesPage } from './pages/SourcesPage';
 import { AlertsPage } from './pages/AlertsPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';

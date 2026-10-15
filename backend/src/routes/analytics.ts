@@ -4,6 +4,9 @@ import { requireAuth } from '../middleware/auth';
 
 const router = Router();
 
+// All analytics routes require a valid JWT (frontend analyticsApi sends it)
+router.use(requireAuth);
+
 // GET /api/analytics/overview — summary stats from civic_records + anomaly_scores
 router.get('/overview', async (_req: Request, res: Response) => {
   try {
