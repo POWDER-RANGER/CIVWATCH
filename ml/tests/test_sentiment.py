@@ -1,5 +1,6 @@
 """Unit tests for ml/main.py sentiment analysis endpoint."""
 
+import pytest
 from fastapi.testclient import TestClient
 import sys
 import os
@@ -10,6 +11,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from main import app  # noqa: E402
 
 client = TestClient(app)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def _run_app_startup():
+    """Enter the client as a context manager so FastAPI startup events run
+    (engine.load()); a bare TestClient skips them and every route returns 503."""
+    with client:
+        yield
 
 
 # ── Health / readiness ──────────────────────────────────────────────────────
