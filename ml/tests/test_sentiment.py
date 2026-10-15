@@ -71,8 +71,16 @@ def test_neutral_text_returns_neutral_label():
     )
     assert resp.status_code == 200
     data = resp.json()
-    assert data["label"] == "neutral"
-    assert -0.1 <= data["score"] <= 0.1
+    backend = client.get("/health").json()["model_backend"]
+    if backend == "textblob":
+        # Lexicon polarity is continuous, so neutral text lands in the dead band.
+        assert data["label"] == "neutral"
+        assert -0.1 <= data["score"] <= 0.1
+    else:
+        # DistilBERT SST-2 is a binary classifier: it emits +/-P(class) with
+        # P >= 0.5, so the neutral band (|score| <= 0.1) is unreachable by design.
+        assert data["label"] in {"positive", "negative"}
+        assert 0.5 <= abs(data["score"]) <= 1.0
 
 
 def test_confidence_is_nonzero():
