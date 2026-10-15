@@ -67,10 +67,10 @@ export const alertsApi = {
 
 // ── Ingest ────────────────────────────────────────────────────────────────────
 export const ingestApi = {
+  // Matches backend ingestSchema (backend/src/routes/ingest.ts)
   submit: (body: {
     source:    string;
-    category:  string;
-    value:     number;
+    content:   string;
     metadata?: Record<string, unknown>;
   }) => api.post('/ingest', body),
 };

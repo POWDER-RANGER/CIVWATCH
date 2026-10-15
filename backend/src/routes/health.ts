@@ -4,13 +4,11 @@ import { pool } from '../db';
 const router = Router();
 
 router.get('/health', async (_req: Request, res: Response) => {
-  let dbStatus = 'disconnected';
-  let dbLatencyMs = -1;
+  let dbLatencyMs: number;
   try {
     const t = Date.now();
     await pool.query('SELECT 1');
     dbLatencyMs = Date.now() - t;
-    dbStatus = 'connected';
   } catch {
     return res.status(503).json({ status: 'error', database: 'disconnected' });
   }
@@ -18,7 +16,7 @@ router.get('/health', async (_req: Request, res: Response) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    database: dbStatus,
+    database: 'connected',
     dbLatencyMs,
   });
 });

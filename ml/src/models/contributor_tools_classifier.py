@@ -8,7 +8,7 @@ Module: contributor_tools_classifier
 """
 
 import numpy as np
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any
 from datetime import datetime
 
 
@@ -23,14 +23,14 @@ class ContributorToolsClassifier:
     def __init__(self, classifier_config: Optional[Dict[str, Any]] = None):
         """
         Initialize the Contributor Tools ML Classifier.
-        
+
         Args:
             classifier_config: Optional configuration dictionary for the classifier
         """
         self.config = classifier_config or {
             "validation_threshold": 0.8,
             "quality_metrics": ["accuracy", "completeness", "timeliness"],
-            "matching_algorithm": "not_implemented"
+            "matching_algorithm": "not_implemented",
         }
         self.classifier = None
         self.is_trained = False
@@ -38,10 +38,10 @@ class ContributorToolsClassifier:
     def validate_contribution(self, contribution: Dict[str, Any]) -> Dict[str, Any]:
         """
         Validate a contribution using ML classification.
-        
+
         Args:
             contribution: Contribution data to validate
-            
+
         Returns:
             Validation results with confidence score
         """
@@ -51,16 +51,16 @@ class ContributorToolsClassifier:
             "confidence": 0.0,
             "validation_errors": [],
             "message": "Contribution validation not yet implemented",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     def assess_quality(self, contribution: Dict[str, Any]) -> Dict[str, Any]:
         """
         Assess the quality of a contribution.
-        
+
         Args:
             contribution: Contribution data to assess
-            
+
         Returns:
             Quality assessment scores
         """
@@ -69,30 +69,34 @@ class ContributorToolsClassifier:
             "quality_score": 0.0,
             "metrics": {},
             "recommendations": [],
-            "message": "Quality assessment not yet implemented"
+            "message": "Quality assessment not yet implemented",
         }
 
-    def match_contributors(self, task_requirements: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def match_contributors(
+        self, task_requirements: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """
         Match contributors to tasks based on skills and history.
-        
+
         Args:
             task_requirements: Requirements for the task
-            
+
         Returns:
             List of matched contributors with scores
         """
         # Placeholder implementation
         return []
 
-    def train_classifier(self, training_data: List[Dict[str, Any]], labels: np.ndarray) -> Dict[str, Any]:
+    def train_classifier(
+        self, training_data: List[Dict[str, Any]], labels: np.ndarray
+    ) -> Dict[str, Any]:
         """
         Train the contribution classifier.
-        
+
         Args:
             training_data: Training examples
             labels: Training labels
-            
+
         Returns:
             Training metrics
         """
@@ -101,16 +105,16 @@ class ContributorToolsClassifier:
             "status": "not_implemented",
             "accuracy": 0.0,
             "samples": len(training_data),
-            "message": "Classifier training not yet implemented"
+            "message": "Classifier training not yet implemented",
         }
 
     def detect_spam(self, contribution: Dict[str, Any]) -> Dict[str, Any]:
         """
         Detect spam or malicious contributions.
-        
+
         Args:
             contribution: Contribution to analyze
-            
+
         Returns:
             Spam detection results
         """
@@ -119,17 +123,19 @@ class ContributorToolsClassifier:
             "is_spam": False,
             "confidence": 0.0,
             "spam_indicators": [],
-            "message": "Spam detection not yet implemented"
+            "message": "Spam detection not yet implemented",
         }
 
-    def generate_feedback(self, contribution: Dict[str, Any], assessment: Dict[str, Any]) -> str:
+    def generate_feedback(
+        self, contribution: Dict[str, Any], assessment: Dict[str, Any]
+    ) -> str:
         """
         Generate constructive feedback for contributors.
-        
+
         Args:
             contribution: The contribution data
             assessment: Quality assessment results
-            
+
         Returns:
             Generated feedback text
         """

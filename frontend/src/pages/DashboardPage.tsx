@@ -28,7 +28,7 @@ export function DashboardPage() {
   const [anomalyStats,   setAnomalyStats]   = useState<any>(null);
   const [trend,          setTrend]          = useState<any[]>([]);
   const [sources,        setSources]        = useState<SourceBreakdown[]>([]);
-  const [recentAlerts,   setRecentAlerts]   = useState<AlertEvent[]>([]);
+  const [_recentAlerts,  setRecentAlerts]   = useState<AlertEvent[]>([]); // not rendered yet
   const [loading,        setLoading]        = useState(true);
 
   useEffect(() => {

@@ -47,9 +47,11 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
+          cache-dependency-path: package-lock.json
 
+      # Repo uses npm workspaces: one lockfile at the repo root.
       - name: Install dependencies
+        working-directory: ${{ github.workspace }}
         run: npm ci
 
       - name: Type check
@@ -98,10 +100,11 @@ jobs:
           flake8 . --max-line-length=120 --exclude=__pycache__
 
       - name: Run tests
-        run: pytest --cov=. --cov-report=xml --passWithNoTests -v
+        run: pytest --cov=. --cov-report=xml -v
 
       - name: Validate FastAPI app starts
-        run: python -c "from main import app; print('FastAPI app import: OK')"
+        run: |
+          python -c "from main import app; print('FastAPI app import: OK')"
 
       - name: Upload coverage
         uses: codecov/codecov-action@v5
@@ -123,9 +126,11 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: package-lock.json
 
+      # Repo uses npm workspaces: one lockfile at the repo root.
       - name: Install dependencies
+        working-directory: ${{ github.workspace }}
         run: npm ci
 
       - name: Type check
@@ -159,4 +164,4 @@ jobs:
         if: always()
         run: |
           pip install bandit
-          bandit -r . -ll --severity-level high
+          bandit -r . -x ./ml/tests --severity-level high

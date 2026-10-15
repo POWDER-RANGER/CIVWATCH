@@ -33,11 +33,17 @@ const envSchema = z.object({
   CONGRESS_API_KEY: z.string().optional(),
   OPENSTATES_API_KEY: z.string().optional(),
 
+  // HTTP / security
+  CORS_ORIGINS: z.string().default('http://localhost:4000,http://localhost:5173'),
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(15 * 60 * 1000),
+  RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().default(100),
+
   // Scraper
   SCRAPER_URL: z.string().default('http://scraper:5001'),
   CIVWATCH_BACKEND_URL: z.string().default('http://backend:3000/api'),
 
   // ML
+  ML_SERVICE_URL: z.string().default('http://ml:5000'),
   ML_MODEL_PATH: z.string().default('/app/models'),
   ANOMALY_THRESHOLD: z.string().default('0.7'),
 

@@ -21,3 +21,9 @@ export async function query<T = any>(text: string, params?: any[]): Promise<T[]>
     client.release();
   }
 }
+
+/** Verify the database is reachable; throws if not. */
+export async function connectPg(): Promise<void> {
+  await pool.query('SELECT 1');
+  console.log('✅ PostgreSQL connected');
+}

@@ -27,6 +27,7 @@ logger = logging.getLogger("civwatch-pipeline")
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CivicDocument:
     doc_id: str
@@ -51,8 +52,8 @@ class AnomalyResult:
 
 @dataclass
 class PipelineInsight:
-    insight_type: str          # 'anomaly_spike' | 'trend_shift' | 'cluster_outlier'
-    severity: str              # 'low' | 'medium' | 'high' | 'critical'
+    insight_type: str  # 'anomaly_spike' | 'trend_shift' | 'cluster_outlier'
+    severity: str  # 'low' | 'medium' | 'high' | 'critical'
     affected_doc_ids: List[str]
     description: str
     score_delta: float
@@ -62,6 +63,7 @@ class PipelineInsight:
 # ---------------------------------------------------------------------------
 # Pipeline
 # ---------------------------------------------------------------------------
+
 
 class CivicTransparencyPipeline:
     """
@@ -144,8 +146,11 @@ class CivicTransparencyPipeline:
         if len(documents) < 2:
             return [
                 AnomalyResult(
-                    doc_id=d.doc_id, score=d.score,
-                    is_anomaly=False, cluster_id=0, z_score=0.0
+                    doc_id=d.doc_id,
+                    score=d.score,
+                    is_anomaly=False,
+                    cluster_id=0,
+                    z_score=0.0,
                 )
                 for d in documents
             ]
@@ -168,13 +173,15 @@ class CivicTransparencyPipeline:
 
         results = []
         for i, doc in enumerate(documents):
-            results.append(AnomalyResult(
-                doc_id=doc.doc_id,
-                score=doc.score,
-                is_anomaly=bool(labels[i] == -1),
-                cluster_id=int(labels[i]),
-                z_score=round(float(z_scores[i]), 4),
-            ))
+            results.append(
+                AnomalyResult(
+                    doc_id=doc.doc_id,
+                    score=doc.score,
+                    is_anomaly=bool(labels[i] == -1),
+                    cluster_id=int(labels[i]),
+                    z_score=round(float(z_scores[i]), 4),
+                )
+            )
 
         return results
 
@@ -200,9 +207,7 @@ class CivicTransparencyPipeline:
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _analyze_trends(
-        self, documents: List[CivicDocument]
-    ) -> List[PipelineInsight]:
+    def _analyze_trends(self, documents: List[CivicDocument]) -> List[PipelineInsight]:
         """
         Rolling z-score trend detection.
         Flags windows where mean score shifts > anomaly_z_threshold std devs.
@@ -218,25 +223,29 @@ class CivicTransparencyPipeline:
         global_std = float(np.std(scores)) or 1.0
 
         for i in range(len(scores) - window + 1):
-            window_scores = scores[i:i + window]
+            window_scores = scores[i : i + window]
             window_mean = float(np.mean(window_scores))
             z = (window_mean - global_mean) / global_std
 
             if abs(z) >= self.anomaly_z_threshold:
-                affected = [d.doc_id for d in documents[i:i + window]]
-                severity = "critical" if abs(z) > 3.0 else "high" if abs(z) > 2.5 else "medium"
+                affected = [d.doc_id for d in documents[i : i + window]]
+                severity = (
+                    "critical" if abs(z) > 3.0 else "high" if abs(z) > 2.5 else "medium"
+                )
                 direction = "spike" if z > 0 else "drop"
-                insights.append(PipelineInsight(
-                    insight_type="trend_shift",
-                    severity=severity,
-                    affected_doc_ids=affected,
-                    description=(
-                        f"Score {direction} detected: window mean={window_mean:.3f} "
-                        f"(z={z:.2f}) over {window} documents"
-                    ),
-                    score_delta=round(window_mean - global_mean, 4),
-                    detected_at=datetime.utcnow(),
-                ))
+                insights.append(
+                    PipelineInsight(
+                        insight_type="trend_shift",
+                        severity=severity,
+                        affected_doc_ids=affected,
+                        description=(
+                            f"Score {direction} detected: window mean={window_mean:.3f} "
+                            f"(z={z:.2f}) over {window} documents"
+                        ),
+                        score_delta=round(window_mean - global_mean, 4),
+                        detected_at=datetime.utcnow(),
+                    )
+                )
 
         return insights
 
@@ -252,26 +261,28 @@ class CivicTransparencyPipeline:
         if not flagged:
             return insights
 
-        doc_map = {d.doc_id: d for d in documents}
         high_score_outliers = [
-            f for f in flagged
+            f
+            for f in flagged
             if f.score >= 0.65 and abs(f.z_score) >= self.anomaly_z_threshold
         ]
 
         if high_score_outliers:
             affected_ids = [f.doc_id for f in high_score_outliers]
             max_score = max(f.score for f in high_score_outliers)
-            insights.append(PipelineInsight(
-                insight_type="anomaly_spike",
-                severity="high" if max_score >= 0.80 else "medium",
-                affected_doc_ids=affected_ids,
-                description=(
-                    f"{len(high_score_outliers)} high-concern outlier(s) detected "
-                    f"(max score={max_score:.3f}, DBSCAN cluster=-1)"
-                ),
-                score_delta=round(max_score, 4),
-                detected_at=datetime.utcnow(),
-            ))
+            insights.append(
+                PipelineInsight(
+                    insight_type="anomaly_spike",
+                    severity="high" if max_score >= 0.80 else "medium",
+                    affected_doc_ids=affected_ids,
+                    description=(
+                        f"{len(high_score_outliers)} high-concern outlier(s) detected "
+                        f"(max score={max_score:.3f}, DBSCAN cluster=-1)"
+                    ),
+                    score_delta=round(max_score, 4),
+                    detected_at=datetime.utcnow(),
+                )
+            )
 
         return insights
 
@@ -294,6 +305,8 @@ class CivicTransparencyPipeline:
             "min_score": round(float(np.min(scores)), 4) if scores else 0.0,
             "std_score": round(float(np.std(scores)), 4) if scores else 0.0,
             "n_anomalies": n_anomalies,
-            "anomaly_rate": round(n_anomalies / len(documents), 4) if documents else 0.0,
+            "anomaly_rate": (
+                round(n_anomalies / len(documents), 4) if documents else 0.0
+            ),
             "label_distribution": label_dist,
         }

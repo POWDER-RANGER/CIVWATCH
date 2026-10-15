@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { alertsApi, analyticsApi, anomaliesApi, mlApi } from '../api/client';
+import { alertsApi, analyticsApi, mlApi } from '../api/client';
 
 /* =========================
    TYPES
@@ -23,19 +22,11 @@ type EventPacket = {
    UTILS
 ========================= */
 
-function clamp(n: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, n));
-}
-
 function scoreColor(v?: number | null) {
   if (v == null || Number.isNaN(v)) return '#94a3b8';
   if (v > 0.75) return '#ef4444';
   if (v > 0.5) return '#f59e0b';
   return '#22c55e';
-}
-
-function format(n: number) {
-  return new Intl.NumberFormat().format(n);
 }
 
 function Panel({ title, subtitle, children, action }: any) {
@@ -62,7 +53,7 @@ export function MasterDashboardPage() {
   const wsRef = useRef<WebSocket | null>(null);
 
   const [trend, setTrend] = useState<any[]>([]);
-  const [alerts, setAlerts] = useState<any[]>([]);
+  const [_alerts, setAlerts] = useState<any[]>([]); // not rendered yet
   const [ml, setMl] = useState<any>({});
 
   useEffect(() => {
@@ -118,7 +109,9 @@ export function MasterDashboardPage() {
 
           return updated;
         });
-      } catch {}
+      } catch {
+        // Ignore malformed WebSocket frames.
+      }
     };
 
     return () => ws.close();

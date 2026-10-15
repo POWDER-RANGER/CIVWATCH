@@ -23,3 +23,9 @@ torch==2.14.1
 # Tier 3: ONNX quantised inference (best CPU throughput — optional but recommended)
 # Install with: pip install optimum[onnxruntime]==1.19.2
 # optimum[onnxruntime]==1.19.2
+
+# Transitive pins: keep dependency resolvers off vulnerable minimum versions
+anyio==4.15.1
+idna==3.20
+httpx2==2.13.1
+httpcore2==2.13.1

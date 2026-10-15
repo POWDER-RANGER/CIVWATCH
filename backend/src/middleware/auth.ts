@@ -47,3 +47,6 @@ export function requireRole(...roles: string[]) {
     next();
   };
 }
+
+/** Alias used by the data-import routes. */
+export const authenticate = requireAuth;
