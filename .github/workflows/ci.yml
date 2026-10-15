@@ -164,4 +164,4 @@ jobs:
         if: always()
         run: |
           pip install bandit
-          bandit -r . -ll --severity-level high
+          bandit -r . --severity-level high
