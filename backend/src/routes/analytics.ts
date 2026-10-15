@@ -1,10 +1,18 @@
 import { Router, Request, Response } from 'express';
 import { pool } from '../db';
+import rateLimit from 'express-rate-limit';
 import { requireAuth } from '../middleware/auth';
+import { env } from '../config/env';
 
 const router = Router();
 
-// All analytics routes require a valid JWT (frontend analyticsApi sends it)
+// Rate limit first, then require a valid JWT (frontend analyticsApi sends it)
+router.use(rateLimit({
+  windowMs: env.RATE_LIMIT_WINDOW_MS,
+  max: env.RATE_LIMIT_MAX_REQUESTS,
+  standardHeaders: true,
+  legacyHeaders: false,
+}));
 router.use(requireAuth);
 
 // GET /api/analytics/overview — summary stats from civic_records + anomaly_scores
