@@ -17,7 +17,7 @@ jobs:
     container:
       image: returntocorp/semgrep
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Run Semgrep
         run: |
@@ -33,6 +33,6 @@ jobs:
       - name: Upload SARIF
         # Fork PRs get a read-only token; uploading there would fail again.
         if: github.event.pull_request.head.repo.fork != true
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4
         with:
           sarif_file: semgrep.sarif
