@@ -10,7 +10,9 @@
 
 ---
 
-## 📍 Where We Are Right Now
+> **Historical snapshot — last updated March 22, 2026.** This roadmap belongs to the legacy CIVWATCH repository. Milestone labels below record the state claimed at that date; they are not current CI evidence, production health, or acceptance approval. The canonical application is [CivilianIntelligence](https://github.com/POWDER-RANGER/CivilianIntelligence). Verify current work against the live status inventory and the [cross-repository integration contract](https://github.com/POWDER-RANGER/CivilianIntelligence/blob/main/docs/CROSS_REPO_INTEGRATION.md) before reusing this plan.
+
+## Historical milestone snapshot (as recorded March 22, 2026)
 
 ```
 ✅ PR0  — Damage Control         (DONE — OBELISK refs, SECURITY.md, credibility)
