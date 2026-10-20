@@ -404,6 +404,11 @@ pytest ml/tests/test_dbscan.py -v
 
 ## Documentation
 
+### Project-wide documentation standard
+
+Follow the [CIVWATCH Documentation Standard](https://github.com/POWDER-RANGER/CivilianIntelligence/blob/main/docs/DOCUMENTATION_STANDARD.md). Keep this guide focused on contribution workflow; use the canonical standard for AI-tool attribution, generated artifacts, historical status wording, and source/licence provenance. Preserve required software licences and public-data attribution.
+
+
 ### When to Update Docs
 
 Update documentation when changing:
