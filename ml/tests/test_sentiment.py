@@ -144,3 +144,28 @@ def test_reported_processing_ms_reasonable():
     resp = client.post("/analyze/sentiment", json={"text": "Quick check."})
     assert resp.status_code == 200
     assert resp.json()["processing_ms"] < 1000
+
+
+# ── CORS ────────────────────────────────────────────────────────────────────
+
+
+def test_cors_rejects_unlisted_origin():
+    resp = client.options(
+        "/health",
+        headers={
+            "Origin": "https://evil.example",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert "access-control-allow-origin" not in resp.headers
+
+
+def test_cors_allows_configured_origin():
+    resp = client.options(
+        "/health",
+        headers={
+            "Origin": "http://localhost:4000",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert resp.headers.get("access-control-allow-origin") == "http://localhost:4000"
