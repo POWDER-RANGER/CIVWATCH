@@ -103,15 +103,18 @@ When functionality is promoted into CivilianIntelligence, move its canonical con
 
 ## Documentation
 
+- [Repository documentation standard](https://github.com/POWDER-RANGER/CivilianIntelligence/blob/main/docs/DOCUMENTATION_STANDARD.md)
 - [ARCHITECTURE.md](./ARCHITECTURE.md)
 - [API.md](./API.md)
 - [THREAT_MODEL.md](./THREAT_MODEL.md)
 - [DATA_LINEAGE.md](./DATA_LINEAGE.md)
 - [DEPLOYMENT.md](./DEPLOYMENT.md)
 - [SECURITY.md](./SECURITY.md)
-- [STATUS.md](./STATUS.md)
+- [STATUS.md](./STATUS.md) — historical snapshot; verify current state using live probes.
 
-For the unified contract, see [CROSS_REPO_INTEGRATION.md](https://github.com/POWDER-RANGER/CivilianIntelligence/blob/main/docs/CROSS_REPO_INTEGRATION.md).
+### Historical planning records
+
+[START_HERE.md](./START_HERE.md), [NEXT_PHASE.md](./NEXT_PHASE.md), [PR0_DAMAGE_CONTROL.md](./PR0_DAMAGE_CONTROL.md), [PR1_DOCKER_GREEN.md](./PR1_DOCKER_GREEN.md), [IMPLEMENTATION_ROADMAP.md](./IMPLEMENTATION_ROADMAP.md), and [RESEARCH_VALIDATION.md](./RESEARCH_VALIDATION.md) are retained for context. Their original dates, checklists, and milestone claims are not current deployment approval; verify before reusing them.
 
 ## Related repositories
 
