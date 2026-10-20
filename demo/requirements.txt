@@ -16,3 +16,6 @@ Faker>=40.43.0
 # Optional: Additional visualization libraries
 # plotly>=5.14.0  # Uncomment for interactive visualizations
 # bokeh>=3.1.0    # Uncomment for interactive web-based plots
+
+# Transitive pins: keep dependency resolvers off vulnerable minimum versions
+pillow==13.0.0

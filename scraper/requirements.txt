@@ -13,3 +13,4 @@ python-dotenv==1.2.4
 # Transitive pins: keep dependency resolvers off vulnerable minimum versions
 anyio==4.15.1
 idna==3.20
+certifi==2026.10.19

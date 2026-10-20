@@ -12,7 +12,7 @@ textblob==0.20.1
 
 # ML layers — required for DBSCAN + TF-IDF composite scoring
 numpy>=2.5.4
-scikit-learn>=1.4.0
+scikit-learn>=1.5.0
 
 # DistilBERT transformer stack
 # Tier 4 (FP32 CPU) and Tier 1-2 (CUDA/MPS) — comment out if disk space is a constraint
@@ -29,3 +29,5 @@ anyio==4.15.1
 idna==3.20
 httpx2==2.13.1
 httpcore2==2.13.1
+certifi==2026.10.19
+nltk==3.10.3
