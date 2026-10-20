@@ -11,15 +11,15 @@ on:
       - main
   workflow_dispatch:
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"  # node24 guard — June 2 2026 deadline
-
 permissions: read-all
 
 jobs:
   analysis:
     name: Scorecard analysis
     runs-on: ubuntu-latest
+    # Job-level, not workflow-level: publish_results rejects workflows with global env.
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"  # node24 guard — June 2 2026 deadline
     permissions:
       security-events: write
       id-token: write
