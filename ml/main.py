@@ -12,6 +12,7 @@ Backward-compatible contract (ingest.ts, aggregate.ts depend on these fields):
                       z_score, flags                               (unchanged)
   /analyze/*      → score, confidence, label, processing_ms       (unchanged)
 """
+
 from __future__ import annotations
 
 import logging
@@ -46,87 +47,97 @@ app.add_middleware(
 
 # ── Pydantic schemas ──────────────────────────────────────────────────────────
 
+
 class SentimentRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=10000)
 
+
 class SentimentResponse(BaseModel):
-    score:         float
-    confidence:    float
-    label:         str
+    score: float
+    confidence: float
+    label: str
     processing_ms: float
 
 
 class BatchItem(BaseModel):
     item_id: int
-    title:   str = Field(default="")
-    body:    str = Field(default="", max_length=2000)
+    title: str = Field(default="")
+    body: str = Field(default="", max_length=2000)
+
 
 class BatchScoreRequest(BaseModel):
     items: List[BatchItem] = Field(..., min_length=1, max_length=500)
 
+
 class BatchScoreResult(BaseModel):
-    item_id:    int
-    score:      float
+    item_id: int
+    score: float
     confidence: float
-    label:      str
+    label: str
+
 
 class BatchScoreResponse(BaseModel):
-    results:       List[BatchScoreResult]
-    count:         int
+    results: List[BatchScoreResult]
+    count: int
     processing_ms: float
 
 
 class CivicRecord(BaseModel):
-    timestamp:  str   = Field(..., description="ISO-8601 timestamp")
-    source:     str   = Field(..., description="Data source identifier")
-    category:   str   = Field(..., description="Event category")
-    value:      float = Field(..., description="Numeric value to score")
-    text:       str   = Field(default="", description="Optional free text for NLP layers")
+    timestamp: str = Field(..., description="ISO-8601 timestamp")
+    source: str = Field(..., description="Data source identifier")
+    category: str = Field(..., description="Event category")
+    value: float = Field(..., description="Numeric value to score")
+    text: str = Field(default="", description="Optional free text for NLP layers")
+
 
 class PredictRequest(BaseModel):
     records: List[CivicRecord] = Field(..., min_length=1, max_length=500)
 
+
 class PredictResult(BaseModel):
     # Existing fields — unchanged for backward compat
-    timestamp:     str
-    source:        str
-    category:      str
-    value:         float
+    timestamp: str
+    source: str
+    category: str
+    value: float
     anomaly_score: float
-    is_anomalous:  bool
-    z_score:       float
-    flags:         List[str]
+    is_anomalous: bool
+    z_score: float
+    flags: List[str]
     # New fields — additive, ingest.ts can ignore safely
-    composite_score:  float
-    sentiment_score:  float
-    sentiment_label:  str
-    layers_used:      List[str]
+    composite_score: float
+    sentiment_score: float
+    sentiment_label: str
+    layers_used: List[str]
+
 
 class PredictResponse(BaseModel):
-    results:        List[PredictResult]
-    count:          int
-    anomalous:      int
-    processing_ms:  float
-    layers_active:  List[str]
-    insights:       List[Dict[str, Any]]
+    results: List[PredictResult]
+    count: int
+    anomalous: int
+    processing_ms: float
+    layers_active: List[str]
+    insights: List[Dict[str, Any]]
 
 
 class AnomalyRequest(BaseModel):
-    geo_cell:        str
-    category:        str
-    window_count:    int
+    geo_cell: str
+    category: str
+    window_count: int
     baseline_counts: List[int] = Field(..., min_length=1)
-    avg_confidence:  float     = Field(0.5, ge=0.0, le=1.0)
+    avg_confidence: float = Field(0.5, ge=0.0, le=1.0)
+
 
 class AnomalyResponse(BaseModel):
     anomaly_score: float
-    is_anomalous:  bool
-    reason:        Dict[str, str]
-    z_score:       float
-    flags:         List[str]
+    is_anomalous: bool
+    reason: Dict[str, str]
+    z_score: float
+    flags: List[str]
 
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
+
 
 @app.on_event("startup")
 async def startup() -> None:
@@ -135,25 +146,29 @@ async def startup() -> None:
 
 # ── Ops ───────────────────────────────────────────────────────────────────────
 
+
 @app.get("/health", tags=["ops"])
 async def health() -> dict:
     import platform
+
     gpu = False
     try:
         import torch
+
         gpu = torch.cuda.is_available()
     except ImportError:
         pass
     return {
-        "status":          "ok",
-        "model_loaded":    engine.is_loaded,
-        "model_backend":   engine.backend,
-        "device":          engine.device,
-        "gpu_available":   gpu,
-        "uptime_seconds":  round(time.time() - _startup_time, 2),
-        "python":          platform.python_version(),
-        "version":         "0.5.0",
+        "status": "ok",
+        "model_loaded": engine.is_loaded,
+        "model_backend": engine.backend,
+        "device": engine.device,
+        "gpu_available": gpu,
+        "uptime_seconds": round(time.time() - _startup_time, 2),
+        "python": platform.python_version(),
+        "version": "0.5.0",
     }
+
 
 @app.get("/ready", tags=["ops"])
 async def ready():
@@ -164,6 +179,7 @@ async def ready():
 
 # ── Inference ─────────────────────────────────────────────────────────────────
 
+
 @app.post("/analyze/sentiment", response_model=SentimentResponse, tags=["inference"])
 async def analyze_sentiment(req: SentimentRequest) -> SentimentResponse:
     """Single-text sentiment.  Backward-compatible with all existing callers."""
@@ -172,7 +188,9 @@ async def analyze_sentiment(req: SentimentRequest) -> SentimentResponse:
     t0 = time.perf_counter()
     score, conf, label = engine.score_text(req.text)
     return SentimentResponse(
-        score=score, confidence=conf, label=label,
+        score=score,
+        confidence=conf,
+        label=label,
         processing_ms=round((time.perf_counter() - t0) * 1000, 2),
     )
 
@@ -190,29 +208,39 @@ async def analyze_batch(req: BatchScoreRequest) -> BatchScoreResponse:
     records = [
         {
             "timestamp": "",
-            "source":    str(item.item_id),
-            "category":  "",
-            "value":     0.0,
-            "text":      f"{item.title} {item.body}".strip(),
+            "source": str(item.item_id),
+            "category": "",
+            "value": 0.0,
+            "text": f"{item.title} {item.body}".strip(),
         }
         for item in req.items
     ]
-    result  = engine.score_batch(records)
-    by_src  = {r.source: r for r in result.records}
+    result = engine.score_batch(records)
+    by_src = {r.source: r for r in result.records}
     results = [
         BatchScoreResult(
             item_id=item.item_id,
-            score=by_src[str(item.item_id)].sentiment_score
-                  if str(item.item_id) in by_src else 0.0,
-            confidence=by_src[str(item.item_id)].confidence
-                       if str(item.item_id) in by_src else 0.5,
-            label=by_src[str(item.item_id)].sentiment_label
-                  if str(item.item_id) in by_src else "neutral",
+            score=(
+                by_src[str(item.item_id)].sentiment_score
+                if str(item.item_id) in by_src
+                else 0.0
+            ),
+            confidence=(
+                by_src[str(item.item_id)].confidence
+                if str(item.item_id) in by_src
+                else 0.5
+            ),
+            label=(
+                by_src[str(item.item_id)].sentiment_label
+                if str(item.item_id) in by_src
+                else "neutral"
+            ),
         )
         for item in req.items
     ]
     return BatchScoreResponse(
-        results=results, count=len(results),
+        results=results,
+        count=len(results),
         processing_ms=round((time.perf_counter() - t0) * 1000, 2),
     )
 
@@ -227,7 +255,7 @@ async def predict(req: PredictRequest) -> PredictResponse:
         raise HTTPException(503, "Engine not ready")
 
     records = [r.model_dump() for r in req.records]
-    result  = engine.score_batch(records)
+    result = engine.score_batch(records)
 
     out = [
         PredictResult(
@@ -249,12 +277,12 @@ async def predict(req: PredictRequest) -> PredictResponse:
 
     insights_raw = [
         {
-            "insight_type":     i.insight_type,
-            "severity":         i.severity,
+            "insight_type": i.insight_type,
+            "severity": i.severity,
             "affected_sources": i.affected_sources,
-            "description":      i.description,
-            "score_delta":      i.score_delta,
-            "detected_at":      i.detected_at,
+            "description": i.description,
+            "score_delta": i.score_delta,
+            "detected_at": i.detected_at,
         }
         for i in result.insights
     ]
@@ -281,11 +309,14 @@ async def score_anomaly(req: AnomalyRequest) -> AnomalyResponse:
     if len(baseline) == 0 or baseline.std() == 0:
         z, flags = 0.0, []
     else:
-        z     = float((req.window_count - baseline.mean()) / baseline.std())
+        z = float((req.window_count - baseline.mean()) / baseline.std())
         flags = []
-        if z > 2.0: flags.append("volume_surge")
-        if z > 3.0: flags.append("extreme_volume_spike")
-        if req.avg_confidence < 0.3: flags.append("low_confidence_cluster")
+        if z > 2.0:
+            flags.append("volume_surge")
+        if z > 3.0:
+            flags.append("extreme_volume_spike")
+        if req.avg_confidence < 0.3:
+            flags.append("low_confidence_cluster")
 
     anomaly_score = round(min(abs(z) / 4.0, 1.0), 4)
     return AnomalyResponse(
@@ -319,15 +350,15 @@ async def get_insights() -> dict:
     return {
         "insights": [
             {
-                "insight_type":     i.insight_type,
-                "severity":         i.severity,
+                "insight_type": i.insight_type,
+                "severity": i.severity,
                 "affected_sources": i.affected_sources,
-                "description":      i.description,
-                "score_delta":      i.score_delta,
-                "detected_at":      i.detected_at,
+                "description": i.description,
+                "score_delta": i.score_delta,
+                "detected_at": i.detected_at,
             }
             for i in result
         ],
         "history_size": len(engine._history),
-        "backend":      engine.backend,
+        "backend": engine.backend,
     }

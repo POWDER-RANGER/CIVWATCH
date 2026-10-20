@@ -29,7 +29,7 @@ jobs:
         run: pip install bandit[sarif]
 
       - name: Run Bandit
-        run: bandit -r . -f sarif -o bandit-results.sarif --exit-zero
+        run: bandit -r . -x ./ml/tests -f sarif -o bandit-results.sarif --exit-zero  # pytest asserts (B101) are expected
 
       - name: Upload Bandit SARIF results
         uses: github/codeql-action/upload-sarif@v4  # node24 runtime (was @v3)

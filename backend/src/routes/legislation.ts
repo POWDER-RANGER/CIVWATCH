@@ -11,6 +11,13 @@ import { pool } from '../db/pool';
 import { authenticate, requireRole } from '../middleware/auth';
 import { validateBody, validateQuery } from '../middleware/validation';
 
+// Shape of scraper-service responses (fields vary per endpoint)
+interface ScraperResponse {
+  count?: number;
+  records?: unknown[];
+  [key: string]: unknown;
+}
+
 const router = Router();
 
 // Validation schemas
@@ -65,7 +72,7 @@ router.get('/federal/search', authenticate, validateQuery(federalSearchSchema), 
       throw new Error(`Scraper error: ${response.status}`);
     }
     
-    const data = await response.json();
+    const data = (await response.json()) as ScraperResponse;
     res.json({
       success: true,
       source: 'congress.gov',
@@ -90,7 +97,7 @@ router.get('/federal/bill/:congress/:billType/:billNumber', authenticate, async 
       throw new Error(`Scraper error: ${response.status}`);
     }
     
-    const data = await response.json();
+    const data = (await response.json()) as ScraperResponse;
     res.json({
       success: true,
       source: 'congress.gov',
@@ -122,7 +129,7 @@ router.get('/state/search', authenticate, validateQuery(stateSearchSchema), asyn
       throw new Error(`Scraper error: ${response.status}`);
     }
     
-    const data = await response.json();
+    const data = (await response.json()) as ScraperResponse;
     res.json({
       success: true,
       source: 'openstates',
@@ -150,7 +157,7 @@ router.get('/state/legislators', authenticate, async (req, res, next) => {
       throw new Error(`Scraper error: ${response.status}`);
     }
     
-    const data = await response.json();
+    const data = (await response.json()) as ScraperResponse;
     res.json({
       success: true,
       source: 'openstates',
@@ -201,9 +208,9 @@ router.post('/import', authenticate, requireRole('analyst'), validateBody(import
             JSON.stringify({
               latest_action: record.latest_action,
               import_source: isFederal ? 'congress.gov' : 'openstates',
-              imported_by: req.user?.id,
+              imported_by: req.user?.userId,
             }),
-            req.user?.id,
+            req.user?.userId,
           ]
         );
         imported.push(result.rows[0]);

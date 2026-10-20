@@ -45,14 +45,14 @@ export default function AnomalyDashboard() {
   const [insightsTick,   setInsightsTick]   = useState(0);
   const socketRef = useRef<Socket | null>(null);
 
-  // ── Initial REST load
+  // ── Initial REST load (score filtering happens client-side in `filtered`)
   const load = useCallback(() => {
     setLoading(true);
-    anomaliesApi.list({ limit: 100, minScore })
+    anomaliesApi.list({ limit: 100 })
       .then(r => setAnomalies((r.data?.anomalies ?? []).map(normalize)))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [minScore]);
+  }, []);
 
   useEffect(() => { load(); }, [load]);
 

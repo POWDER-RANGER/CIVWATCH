@@ -10,6 +10,10 @@ jobs:
   semgrep:
     name: Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     container:
       image: returntocorp/semgrep
     steps:
@@ -27,6 +31,8 @@ jobs:
             --error || true
 
       - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v3
+        # Fork PRs get a read-only token; uploading there would fail again.
+        if: github.event.pull_request.head.repo.fork != true
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: semgrep.sarif

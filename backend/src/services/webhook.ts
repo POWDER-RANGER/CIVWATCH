@@ -5,7 +5,6 @@
 import crypto from 'crypto';
 import https from 'https';
 import http from 'http';
-import { env } from '../config/env';
 
 interface WebhookPayload {
   event: string;

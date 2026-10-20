@@ -10,6 +10,13 @@ import { pool } from '../db/pool';
 import { authenticate, requireRole } from '../middleware/auth';
 import { validateBody, validateQuery } from '../middleware/validation';
 
+// Shape of scraper-service responses (fields vary per endpoint)
+interface ScraperResponse {
+  count?: number;
+  records?: unknown[];
+  [key: string]: unknown;
+}
+
 const router = Router();
 
 // Validation schemas
@@ -42,7 +49,7 @@ const importSchema = z.object({
 // Search FEC contributions
 router.get('/search', authenticate, validateQuery(searchSchema), async (req, res, next) => {
   try {
-    const { committee_id, candidate_id, contributor_name, min_date, max_date, limit } = req.query;
+    const { committee_id, candidate_id, min_date, max_date, limit } = req.query;
     
     const scraperUrl = process.env.SCRAPER_URL || 'http://scraper:5001';
     const params = new URLSearchParams();
@@ -58,7 +65,7 @@ router.get('/search', authenticate, validateQuery(searchSchema), async (req, res
       throw new Error(`Scraper error: ${response.status}`);
     }
     
-    const data = await response.json();
+    const data = (await response.json()) as ScraperResponse;
     res.json({
       success: true,
       count: data.count,
@@ -84,7 +91,7 @@ router.get('/committees', authenticate, async (req, res, next) => {
       throw new Error(`Scraper error: ${response.status}`);
     }
     
-    const data = await response.json();
+    const data = (await response.json()) as ScraperResponse;
     res.json({
       success: true,
       count: data.count,
@@ -129,9 +136,9 @@ router.post('/import', authenticate, requireRole('analyst'), validateBody(import
               contributor_employer: record.contributor_employer,
               committee_name: record.committee_name,
               import_source: 'fec',
-              imported_by: req.user?.id,
+              imported_by: req.user?.userId,
             }),
-            req.user?.id,
+            req.user?.userId,
           ]
         );
         imported.push(result.rows[0]);

@@ -22,7 +22,7 @@ L.Icon.Default.mergeOptions({
 
 export default function FeedMap() {
   const [events, setEvents] = useState([]);
-  const [selected, setSelected] = useState(null);
+  const [_selected, setSelected] = useState(null); // selection not rendered yet
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

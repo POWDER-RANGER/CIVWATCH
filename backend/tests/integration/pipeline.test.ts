@@ -1,4 +1,8 @@
 /**
+ * Requires a running API + ML service + Postgres (see header). Excluded from `npm test`;
+ * run with `npm run test:integration`.
+ */
+/**
  * CIVWATCH Integration Test Suite
  *
  * Verifies the full data pipeline end-to-end:
