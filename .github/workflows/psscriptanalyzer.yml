@@ -19,10 +19,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5  # node24 runtime (was @v4 / node20)
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5  # node24 runtime (was @v4 / node20)
 
       - name: Run PSScriptAnalyzer
-        uses: microsoft/psscriptanalyzer-action@v1.1
+        uses: microsoft/psscriptanalyzer-action@6b2948b1944407914a58661c49941824d149734f # v1.1
         with:
           path: .\\
           recurse: true
@@ -30,6 +30,6 @@ jobs:
           settings: CodeFormatting
 
       - name: Upload PSScriptAnalyzer results
-        uses: github/codeql-action/upload-sarif@v5  # node24 runtime (was @v4)
+        uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4  # node24 runtime (was @v4)
         with:
           sarif_file: results.sarif

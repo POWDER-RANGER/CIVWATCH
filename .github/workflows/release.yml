@@ -23,10 +23,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5  # node24 runtime (was @v4 / node20)
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5  # node24 runtime (was @v4 / node20)
 
       - name: Setup Node.js 24
-        uses: actions/setup-node@v5  # node24 runtime (was @v4 / node20)
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5  # node24 runtime (was @v4 / node20)
         with:
           node-version: '24'
 
@@ -55,14 +55,14 @@ jobs:
           NODE_ENV: production
 
       - name: Upload NSIS installer
-        uses: actions/upload-artifact@v5  # node24 runtime (was @v4 / node20)
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5  # node24 runtime (was @v4 / node20)
         with:
           name: civwatch-windows-nsis
           path: civwatch-desktop/out/make/nsis/**/*.exe
           if-no-files-found: warn
 
       - name: Upload Squirrel exe
-        uses: actions/upload-artifact@v5  # node24 runtime (was @v4 / node20)
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5  # node24 runtime (was @v4 / node20)
         with:
           name: civwatch-windows-exe
           path: civwatch-desktop/out/make/squirrel.windows/**/*.exe
@@ -76,21 +76,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5  # node24 runtime (was @v4 / node20)
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5  # node24 runtime (was @v4 / node20)
 
       - name: Setup Node.js 24
-        uses: actions/setup-node@v5  # node24 runtime (was @v4 / node20)
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5  # node24 runtime (was @v4 / node20)
         with:
           node-version: '24'
 
       - name: Setup Java 17
-        uses: actions/setup-java@v5  # node24 runtime (was @v4 / node20)
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5  # node24 runtime (was @v4 / node20)
         with:
           distribution: 'temurin'
           java-version: '17'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
 
       - name: Install frontend deps and build
         working-directory: frontend
@@ -123,7 +123,7 @@ jobs:
           ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
-        uses: actions/upload-artifact@v5  # node24 runtime (was @v4 / node20)
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5  # node24 runtime (was @v4 / node20)
         with:
           name: civwatch-android-apk
           path: android/android/app/build/outputs/apk/debug/*.apk
@@ -141,24 +141,24 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v5  # node24 runtime (was @v4 / node20)
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5  # node24 runtime (was @v4 / node20)
 
       - name: Download Windows NSIS
-        uses: actions/download-artifact@v5  # node24 runtime (was @v4 / node20)
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5  # node24 runtime (was @v4 / node20)
         with:
           name: civwatch-windows-nsis
           path: release-artifacts/windows
         continue-on-error: true
 
       - name: Download Windows Squirrel
-        uses: actions/download-artifact@v5  # node24 runtime (was @v4 / node20)
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5  # node24 runtime (was @v4 / node20)
         with:
           name: civwatch-windows-exe
           path: release-artifacts/windows
         continue-on-error: true
 
       - name: Download Android APK
-        uses: actions/download-artifact@v5  # node24 runtime (was @v4 / node20)
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5  # node24 runtime (was @v4 / node20)
         with:
           name: civwatch-android-apk
           path: release-artifacts/android
@@ -168,7 +168,7 @@ jobs:
         run: find release-artifacts -type f 2>/dev/null | sort || echo 'No artifacts found'
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           tag_name: ${{ github.ref_name }}
           name: CIVWATCH ${{ github.ref_name }}

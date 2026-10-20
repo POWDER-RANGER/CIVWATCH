@@ -18,10 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5  # node24 runtime (was @v4 / node20)
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5  # node24 runtime (was @v4 / node20)
 
       - name: Set up Python
-        uses: actions/setup-python@v7  # node24 runtime (was @v5 / node20)
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7  # node24 runtime (was @v5 / node20)
         with:
           python-version: '3.11'
 
@@ -32,6 +32,6 @@ jobs:
         run: bandit -r . -x ./ml/tests -f sarif -o bandit-results.sarif --exit-zero  # pytest asserts (B101) are expected
 
       - name: Upload Bandit SARIF results
-        uses: github/codeql-action/upload-sarif@v4  # node24 runtime (was @v3)
+        uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4  # node24 runtime (was @v3)
         with:
           sarif_file: bandit-results.sarif
