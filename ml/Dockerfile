@@ -1,5 +1,5 @@
-# CIVWATCH ML Service — Python 3.11 + FastAPI
-FROM python:3.11-slim
+# CIVWATCH ML Service — Python 3.12 + FastAPI
+FROM python:3.12-slim
 WORKDIR /app
 RUN addgroup --system civwatch && adduser --system --group civwatch
 COPY requirements.txt ./
