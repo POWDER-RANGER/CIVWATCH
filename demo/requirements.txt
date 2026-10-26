@@ -1,6 +1,6 @@
 # CIVWATCH Demo Dependencies
 # Data manipulation and analysis
-pandas>=2.0.0
+pandas>=3.1.0
 numpy>=2.5.4
 
 # Data visualization
