@@ -4,7 +4,7 @@ httpx==0.28.1
 beautifulsoup4==4.15.0
 lxml==6.1.3
 pydantic==2.14.1
-python-multipart==0.0.32
+python-multipart==0.0.33
 pdfplumber==0.11.10
 structlog==23.2.0
 redis==5.0.1
