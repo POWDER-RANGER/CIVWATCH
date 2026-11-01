@@ -30,4 +30,4 @@ idna==3.20
 httpx2==2.13.1
 httpcore2==2.13.1
 certifi==2026.10.19
-nltk==3.10.3
+nltk==3.10.4
