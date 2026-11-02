@@ -1,9 +1,9 @@
-fastapi==0.143.2
+fastapi==0.162.0
 uvicorn[standard]==0.54.0
 httpx==0.28.1
 beautifulsoup4==4.15.0
 lxml==6.1.3
-pydantic==2.14.1
+pydantic==2.14.2
 python-multipart==0.0.32
 pdfplumber==0.11.10
 structlog==23.2.0
@@ -13,4 +13,4 @@ python-dotenv==1.2.4
 # Transitive pins: keep dependency resolvers off vulnerable minimum versions
 anyio==4.15.1
 idna==3.20
-certifi==2026.10.19
+certifi==2026.10.23
