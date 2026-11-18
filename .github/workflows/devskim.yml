@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5  # node24 runtime (was @v4 / node20)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5  # node24 runtime (was @v4 / node20)
 
       - name: Run DevSkim scanner
         uses: microsoft/DevSkim-Action@734c6ed89671b1c7a5211ed334c79db261e3f221 # v1  # pinned to latest stable
@@ -29,6 +29,6 @@ jobs:
           directory-to-scan: .
 
       - name: Upload DevSkim SARIF file
-        uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4  # node24 runtime (was @v3)
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4  # node24 runtime (was @v3)
         with:
           sarif_file: devskim-results.sarif
